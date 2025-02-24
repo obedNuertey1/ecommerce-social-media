@@ -1,0 +1,24 @@
+{
+  "name": "ecommerce-pern-stack-tut3",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch backend/server.js",
+    "seed": "node backend/seeds/products.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@arcjet/node": "^1.0.0-beta.2",
+    "@neondatabase/serverless": "^0.10.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0"
+  }
+}

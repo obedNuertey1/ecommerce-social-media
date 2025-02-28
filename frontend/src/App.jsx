@@ -5,9 +5,14 @@ import { useEffect } from "react";
 
 // Pages
 import ProductPage from "./pages/ProductPage";
+import ProductPage2 from "./pages/ProductPage2";
+import ProductPage3 from "./pages/ProductPage3";
 import HomePage from "./pages/HomePage";
 import SettingsPage from "./pages/SettingsPage";
 import AuthPage from "./pages/AuthPage";
+
+// Components
+import ScrollToTopButton from "./components/ScrollToTopButton";
 
 // Stores
 import { useThemeStore } from "./store/useThemeStore";
@@ -76,12 +81,13 @@ function App() {
       <div className="min-h-screen mx-auto max-w-6xl backdrop-blur-sm">
         <Routes>
           <Route element={<HomePage />} path="/" />
-          <Route element={<ProductPage />} path="/product/:id" />
+          <Route element={<ProductPage3 />} path="/product/:id" />
           <Route element={<SettingsPage />} path="/settings" />
           <Route element={<AuthPage />} path="/auth" />
         </Routes>
       </div>
       <Toaster />
+      <ScrollToTopButton />
     </div>
   )
 }

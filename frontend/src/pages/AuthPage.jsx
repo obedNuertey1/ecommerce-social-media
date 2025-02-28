@@ -1,8 +1,11 @@
 import { FacebookIcon ,ShieldCheckIcon, FolderArchiveIcon } from "lucide-react";
 import { useState } from "react";
+import {LoginSocialFacebook} from "reactjs-social-login";
+import { useAuthStore } from "../store/useAuthStore";
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const {facebook_authenticate} = useAuthStore();
 
   const handleFacebookLogin = () => {
     setIsLoading(true);
@@ -27,20 +30,25 @@ export default function AuthPage() {
           </div>
 
           {/* Facebook Login Button */}
-          <button
-            onClick={handleFacebookLogin}
-            disabled={isLoading}
-            className="py-2 btn btn-lg w-full bg-[#1877F2] hover:bg-[#166FE5] text-white transition-all flex-nowrap text-nowrap"
+          <LoginSocialFacebook
+            appId="YOUR_APP_ID"
+            onResolve={facebook_authenticate}
           >
-            {isLoading ? (
-              <span className="loading loading-spinner"></span>
-            ) : (
-              <>
-                <FacebookIcon className="w-6 h-6" />
-                <span>Continue with Facebook</span>
-              </>
-            )}
-          </button>
+            <button
+              onClick={handleFacebookLogin}
+              disabled={isLoading}
+              className="py-2 btn btn-lg w-full bg-[#1877F2] hover:bg-[#166FE5] text-white transition-all flex-nowrap text-nowrap"
+            >
+              {isLoading ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                <>
+                  <FacebookIcon className="w-6 h-6" />
+                  <span>Continue with Facebook</span>
+                </>
+              )}
+            </button>
+          </LoginSocialFacebook>
              {/* <button
             onClick={handleFacebookLogin}
             disabled={isLoading}

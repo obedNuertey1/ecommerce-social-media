@@ -9,9 +9,9 @@ export const useProductStore = create((set, get)=>({
     error: null,
     loading: false,
     product: null,
-    formData: {name: "", price: "", image: ""},
+    formData: {name: "", price: "", description: "", image: '', media: []},
     setFormData: (formData)=>set({formData}),
-    resetFormData: ()=>set({formData: {name:"", price: "", image: ""}}),
+    resetFormData: ()=>set({formData: {name: "", price: "", description: "", image: '', media: []}}),
     updateProduct: async (id)=>{
         set({loading: true});
         try{
@@ -31,7 +31,7 @@ export const useProductStore = create((set, get)=>({
         try{
             const response = await axios.get(`${BASE_URL}/api/products/${id}`);
             console.log("response.data=",response.data);
-            set({formData: response.data.data, error: null, product: response.data.data})
+            set({formData: {...response.data.data, media: [response.data.data.image, "https://plus.unsplash.com/premium_photo-1681336999500-e4f96fe367f8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8aXBob25lfGVufDB8fDB8fHww", "https://images.unsplash.com/photo-1530319067432-f2a729c03db5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8aXBob25lfGVufDB8fDB8fHww", "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8aXBob25lfGVufDB8fDB8fHww"]}, error: null, product: {...response.data.data, media:[ response.data.data.image]}})
         }catch(e){
             console.log("Error fetching product ", e);
             set({error: "Something went wrong", product: null});

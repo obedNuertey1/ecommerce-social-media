@@ -1,10 +1,11 @@
 import { Link, useResolvedPath } from "react-router-dom";
-import { ShoppingCartIcon, ShoppingBagIcon } from "lucide-react";
+import { ShoppingCartIcon, ShoppingBagIcon, SettingsIcon } from "lucide-react";
 import ThemeSelector from "./ThemeSelector";
 import {useProductStore} from "../store/useProductStore";
 function Navbar(){
     const {pathname} = useResolvedPath();
     const isHomePage = pathname === "/";
+    const isSettingsPage = pathname === "/settings";
     const {products} = useProductStore();
     return (
         <div className="bg-base-100/80 backdrop-blur-lg border-b border-base-content/10 sticky top-0 z-50 w-full">
@@ -22,7 +23,12 @@ function Navbar(){
                     {/* RIGHT SECTION */}
                     <div className="flex items-center gap-4">
                         {/* ThemeSelector goes in here */}
-                        <ThemeSelector />
+                        {
+                            !isSettingsPage &&
+                            <Link to="/settings" tabIndex={0} className="btn btn-ghost btn-circle">
+                                <SettingsIcon className="size-5" />
+                            </Link>
+                        }
                         {/* Bag Icon */}
                         {isHomePage &&
                         <div className="indicator">

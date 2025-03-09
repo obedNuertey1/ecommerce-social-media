@@ -8,12 +8,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { LoginSocialInstagram, LoginSocialFacebook } from 'reactjs-social-login';
 import ThreadsSvgIcon from '../components/ThreadsSvgIcon';
+import { useProductStore } from '../store/useProductStore';
 
 const SettingsPage = () => {
   const socialMediaAutomationRef = useRef(null);
   const repostingRulesRef = useRef(null);
   const { settings, setSettings, saveSettings, loading, restoreDefaultSettings, location, handleGetLocation } = useSettingsStore();
   const { auth_data, facebook_authenticate, instagram_authenticate, threads_authenticate } = useAuthStore();
+  const { resetFormData } = useProductStore();
   const navigate = useNavigate();
   const modelDiversityRef = useRef(null);
   const reportFrequencyRef = useRef(null);
@@ -141,7 +143,8 @@ const SettingsPage = () => {
         >
           <button
             onClick={() => {
-              navigate("/")
+              resetFormData();
+              navigate("/");
             }}
             className="btn btn-ghost mb-8">
             <ArrowLeftIcon className="size-5 mr-2"
@@ -227,6 +230,60 @@ const SettingsPage = () => {
                             }
                           })}
                         />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="card bg-base-200 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title text-2xl mb-4">Notification Settings</h2>
+
+                  <div className="space-y-4">
+                    {/* Mute Toggle */}
+                    <div className="form-control">
+                      <label className="label cursor-pointer">
+                        <span className="label-text">Mute Notifications</span>
+                        <input
+                          type="checkbox"
+                          className="toggle"
+                          checked={settings.notifications.mute}
+                          onChange={(e) => setSettings({
+                            ...settings,
+                            notifications: {
+                              ...settings.notifications,
+                              mute: e.target.checked
+                            }
+                          })}
+                        />
+                      </label>
+                    </div>
+
+                    {/* Volume Control */}
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text">Notification Volume</span>
+                        <span className="label-text-alt">{settings.notifications.volume}%</span>
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={settings.notifications.volume}
+                        onChange={(e) => setSettings({
+                          ...settings,
+                          notifications: {
+                            ...settings.notifications,
+                            volume: parseInt(e.target.value)
+                          }
+                        })}
+                        className="range range-primary"
+                        disabled={settings.notifications.mute}
+                      />
+                      <div className="w-full flex justify-between text-xs px-2">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
                       </div>
                     </div>
                   </div>
@@ -414,7 +471,7 @@ const SettingsPage = () => {
                       >
                         <label className="label">Description Style</label>
                         <div className="join join-vertical w-full md:join-horizontal">
-                          <input className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Creative" value="creative" 
+                          <input className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Creative" value="creative"
                             onChange={(e) => setSettings(
                               {
                                 ...settings, aiConfigurations: {
@@ -587,30 +644,53 @@ const SettingsPage = () => {
                       </label>
                       <div
                         ref={reportFrequencyRef}
-                        className={`form-control mt-4 w-full ${settings.aiConfigurations.reportsGeneration.automaticPdfReports
+                        className={`${settings.aiConfigurations.reportsGeneration.automaticPdfReports
                           ? "visible opacity-100 h-auto"
                           : "invisible opacity-0 h-0"
                           } transition-all duration-500 overflow-hidden`}
                       >
-                        <label className="label">Report Frequency</label>
-                        <select
-                          className="select select-bordered w-full"
-                          value={settings.aiConfigurations.reportsGeneration.reportFrequency}
-                          onChange={(e) => setSettings({
-                            ...settings,
-                            aiConfigurations: {
-                              ...settings.aiConfigurations,
-                              reportsGeneration: {
-                                ...settings.aiConfigurations.reportsGeneration,
-                                reportFrequency: e.target.value
+                        <div className='form-control mt-4 w-full'>
+                          <label className="label">Report Frequency</label>
+                          <select
+                            className="select select-bordered w-full"
+                            value={settings.aiConfigurations.reportsGeneration.reportFrequency}
+                            onChange={(e) => setSettings({
+                              ...settings,
+                              aiConfigurations: {
+                                ...settings.aiConfigurations,
+                                reportsGeneration: {
+                                  ...settings.aiConfigurations.reportsGeneration,
+                                  reportFrequency: e.target.value
+                                }
                               }
-                            }
-                          })}
-                        >
-                          <option value="1">Daily</option>
-                          <option value="7">Weekly</option>
-                          <option value="30">Monthly</option>
-                        </select>
+                            })}
+                          >
+                            <option value="1">Daily</option>
+                            <option value="7">Weekly</option>
+                            <option value="30">Monthly</option>
+                          </select>
+                        </div>
+                        <div className='form-control mt-4 w-full'>
+                          <label className="label">
+                            <span className="label-text">Enter email</span>
+                          </label>
+                          <input
+                            type="email"
+                            className="input input-bordered"
+                            placeholder="Enter email to recieve pdf reports"
+                            value={settings.aiConfigurations.reportsGeneration.email}
+                            onChange={(e) => setSettings({
+                              ...settings,
+                              aiConfigurations: {
+                                ...settings.aiConfigurations,
+                                reportsGeneration: {
+                                  ...settings.aiConfigurations.reportsGeneration,
+                                  email: e.target.value
+                                }
+                              }
+                            })}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -702,81 +782,85 @@ const SettingsPage = () => {
                               }
                             })}
                           >
-                            {["clothing", "item"].map((option, i) => (
+                            {["clothing", "item", "property"].map((option, i) => (
                               <option key={i} value={option.toLowerCase()}>{option}</option>
                             ))}
                           </select>
                         </div>
+                        {settings.visualCustomization.productAiSettings.productType !== "property"
+                          &&
+                          <>
+                            <div className='divider m-0'></div>
 
-                        <div className='divider m-0'></div>
+                            <div className="form-control w-full">
+                              <label className="label">Model Diversity</label>
+                              <select
+                                className="select select-bordered w-full"
+                                value={settings.visualCustomization.productAiSettings.modelDiversity}
+                                onChange={(e) => setSettings({
+                                  ...settings,
+                                  visualCustomization: {
+                                    ...settings.visualCustomization,
+                                    productAiSettings: {
+                                      ...settings.visualCustomization.productAiSettings,
+                                      modelDiversity: e.target.value
+                                    }
+                                  }
+                                })}
+                              >
+                                {modelDiversityOptions.map((option, i) => (
+                                  <option key={i} value={option.toLowerCase()}>{option}</option>
+                                ))}
+                              </select>
+                            </div>
 
-                        <div className="form-control w-full">
-                          <label className="label">Model Diversity</label>
-                          <select
-                            className="select select-bordered w-full"
-                            value={settings.visualCustomization.productAiSettings.modelDiversity}
-                            onChange={(e) => setSettings({
-                              ...settings,
-                              visualCustomization: {
-                                ...settings.visualCustomization,
-                                productAiSettings: {
-                                  ...settings.visualCustomization.productAiSettings,
-                                  modelDiversity: e.target.value
-                                }
-                              }
-                            })}
-                          >
-                            {modelDiversityOptions.map((option, i) => (
-                              <option key={i} value={option.toLowerCase()}>{option}</option>
-                            ))}
-                          </select>
-                        </div>
+                            <div className="form-control w-full">
+                              <label className="label">
+                                <span className="label-text">Number of Poses</span>
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                max="6"
+                                className="input input-bordered w-full"
+                                value={settings.visualCustomization.productAiSettings.numberOfPoses}
+                                onChange={(e) => setSettings({
+                                  ...settings,
+                                  visualCustomization: {
+                                    ...settings.visualCustomization,
+                                    productAiSettings: {
+                                      ...settings.visualCustomization.productAiSettings,
+                                      numberOfPoses: e.target.value
+                                    }
+                                  }
+                                })}
+                              />
+                            </div>
 
-                        <div className="form-control w-full">
-                          <label className="label">
-                            <span className="label-text">Number of Poses</span>
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            max="6"
-                            className="input input-bordered w-full"
-                            value={settings.visualCustomization.productAiSettings.numberOfPoses}
-                            onChange={(e) => setSettings({
-                              ...settings,
-                              visualCustomization: {
-                                ...settings.visualCustomization,
-                                productAiSettings: {
-                                  ...settings.visualCustomization.productAiSettings,
-                                  numberOfPoses: e.target.value
-                                }
-                              }
-                            })}
-                          />
-                        </div>
-
-                        <div className="form-control w-full">
-                          <label className="label">
-                            <span className="label-text">Skin Tone Variation</span>
-                          </label>
-                          <input
-                            type="range"
-                            min="1"
-                            max="5"
-                            className="range range-primary"
-                            value={settings.visualCustomization.productAiSettings.skinToneVariation}
-                            onChange={(e) => setSettings({
-                              ...settings,
-                              visualCustomization: {
-                                ...settings.visualCustomization,
-                                productAiSettings: {
-                                  ...settings.visualCustomization.productAiSettings,
-                                  skinToneVariation: e.target.value
-                                }
-                              }
-                            })}
-                          />
-                        </div>
+                            <div className="form-control w-full">
+                              <label className="label">
+                                <span className="label-text">Skin Tone Variation</span>
+                              </label>
+                              <input
+                                type="range"
+                                min="1"
+                                max="5"
+                                className="range range-primary"
+                                value={settings.visualCustomization.productAiSettings.skinToneVariation}
+                                onChange={(e) => setSettings({
+                                  ...settings,
+                                  visualCustomization: {
+                                    ...settings.visualCustomization,
+                                    productAiSettings: {
+                                      ...settings.visualCustomization.productAiSettings,
+                                      skinToneVariation: e.target.value
+                                    }
+                                  }
+                                })}
+                              />
+                            </div>
+                          </>
+                        }
                       </div>
                     </div>
                   </div>

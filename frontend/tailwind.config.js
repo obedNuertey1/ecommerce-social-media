@@ -6,7 +6,12 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      transitionProperty: {
+        'transform': 'transform',
+        'opacity': 'opacity'
+      }
+    }
   },
   plugins: [daisyui],
   daisyui:{
@@ -44,5 +49,8 @@ export default {
       "nord",
       "sunset",
     ],
+    styled: true,
+    base: true,
+    utils: true,
   }
 }

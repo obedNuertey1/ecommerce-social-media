@@ -1,3 +1,4 @@
+// src/constants/index.js
 export const THEMES = [
     {
         name: "pastel",

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
 import { useEffect, useState, useRef } from "react";
 
-function ProductPage2() {
+function ProductPage3() {
     const navigate = useNavigate();
     const { id } = useParams();
     const { fetchProduct, formData, loading, error, setFormData, product, deleteProduct, updateProduct, resetFormData } = useProductStore();
@@ -299,4 +299,4 @@ function ProductPage2() {
     );
 }
 
-export default ProductPage2;
+export default ProductPage3;

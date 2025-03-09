@@ -88,7 +88,8 @@ export const useSettingsStore = create((set, get)=>({
             },
             reportsGeneration:{
                 automaticPdfReports: true,
-                reportFrequency: "30" // 1=daily, 7=weekly, 30=monthly
+                reportFrequency: "30", // 1=daily, 7=weekly, 30=monthly
+                email: ""
             }
         },
         visualCustomization: {
@@ -109,8 +110,19 @@ export const useSettingsStore = create((set, get)=>({
                 productType: "clothing"
             }
         },
+        notifications: {
+            mute: false,
+            volume: 100, // 0-100
+        }
     },
     resetToDefault: {
+        address: {
+            display_name: "",
+            country: "",
+            country_code: "",
+            timestamp: null,
+            manualAddress: ""
+        },
         autoPost: {
             instagram: true,
             facebook: true,
@@ -135,14 +147,15 @@ export const useSettingsStore = create((set, get)=>({
             },
             reportsGeneration:{
                 automaticPdfReports: true,
-                reportFrequency: "30" // 1=daily, 7=weekly, 30=monthly
+                reportFrequency: "30", // 1=daily, 7=weekly, 30=monthly
+                email: ""
             }
         },
         visualCustomization: {
             themeSelection: {
-                theme: "forest"
+                theme: localStorage.getItem("preferred-theme") || "forest"
             },
-            clothingAiSettings: {
+            productAiSettings: {
                 enableVirtualTryOnGeneration: true,
                 modelDiversity: 'multiracial', /**      "Multiracial",
                 "White",
@@ -152,9 +165,14 @@ export const useSettingsStore = create((set, get)=>({
                 "Native Hawaiian or Other Pacific Islander",
                 "Hispanic or Latino" */
                 numberOfPoses: 4,
-                skinToneVariation: 1
+                skinToneVariation: 1,
+                productType: "clothing"
             }
         },
+        notifications: {
+            mute: false,
+            volume: 100, // 0-100
+        }
     },
     setSettings : (settings)=>(set({settings})),
     saveSettings: async ()=>{

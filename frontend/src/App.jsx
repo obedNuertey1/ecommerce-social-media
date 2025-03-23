@@ -9,8 +9,6 @@ import installDepsWorker from "./workers/installDepsWorker?worker";
 import * as Comlink from "comlink";
 
 // Pages
-import ProductPage from "./pages/ProductPage";
-import ProductPage2 from "./pages/ProductPage2";
 import ProductPage3 from "./pages/ProductPage3";
 import HomePage from "./pages/HomePage";
 import SettingsPage from "./pages/SettingsPage";
@@ -89,25 +87,25 @@ function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  useEffect(()=>{
-    async function runWorker(){
-      const worker1 = new installDepsWorker();
-      const api1 = Comlink.wrap(worker1);
+  // useEffect(()=>{
+  //   async function runWorker(){
+  //     const worker1 = new installDepsWorker();
+  //     const api1 = Comlink.wrap(worker1);
 
-      const result1 = await api1.installDeps();
-      // Create a new instance of the worker.
-      const worker = new PyodideWorker();
-      // Wrap the worker in a Comlink proxy.
-      const api = Comlink.wrap(worker);
+  //     const result1 = await api1.installDeps();
+  //     // Create a new instance of the worker.
+  //     const worker = new PyodideWorker();
+  //     // Wrap the worker in a Comlink proxy.
+  //     const api = Comlink.wrap(worker);
 
-      // Run some Python code in the worker.
-      // For example, run a simple addition.
-      const result = await api.runPython("Me Me Me Obed");
-      console.log({result1: JSON.parse(result1)});
-      console.log({result});
-    }
-    runWorker();
-  }, [])
+  //     // Run some Python code in the worker.
+  //     // For example, run a simple addition.
+  //     const result = await api.runPython("Me Me Me Obed");
+  //     console.log({result1: JSON.parse(result1)});
+  //     console.log({result});
+  //   }
+  //   runWorker();
+  // }, [])
 
   return (
     <div className="min-h-screen bg-base-200 transition-colors duration-300">

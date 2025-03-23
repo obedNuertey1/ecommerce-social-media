@@ -2,6 +2,7 @@ import { ArrowLeftIcon, PlusCircleIcon, SaveIcon, Package2Icon, DollarSignIcon, 
 import { useNavigate, useParams } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
 import { useEffect, useState, useRef } from "react";
+import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 
 function ProductPage3() {
     const navigate = useNavigate();
@@ -11,9 +12,10 @@ function ProductPage3() {
     const [newImageUrl, setNewImageUrl] = useState("");
     const timeoutRef = useRef(null);
     const delayRef = useRef(3000);
+    const {gapi} = useGoogleAuthContext();
 
     useEffect(() => {
-        fetchProduct(id);
+        fetchProduct(id, gapi);
     }, [id, fetchProduct]);
 
     useEffect(() => {

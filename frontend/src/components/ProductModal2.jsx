@@ -1,12 +1,15 @@
 import { PlusCircleIcon, Package2Icon, DollarSignIcon, ImageIcon, XIcon } from "lucide-react";
 import { useProductStore } from "../store/useProductStore";
 import { useCallback } from "react";
+import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 
 function ProductModal2() {
     const { addProduct, formData, setFormData, resetFormData, loading } = useProductStore();
+    const {gapi} = useGoogleAuthContext();
 
     const handleMediaUpload = useCallback((e) => {
         const files = Array.from(e.target.files);
+        console.log("Array.from(e.target.files)=",files)
         const remainingSlots = 8 - formData.media.length;
         const newFiles = files.slice(0, remainingSlots).map(file => ({
             file,
@@ -22,6 +25,7 @@ function ProductModal2() {
         // Reset the input so the same file can be selected again if needed
         e.target.value = "";
     }, [formData, setFormData]);
+    console.log({formData})
 
     const handleRemoveMedia = useCallback((mediaId) => {
         const mediaToRemove = formData.media.find(m => m.id === mediaId);
@@ -42,7 +46,7 @@ function ProductModal2() {
                 <h3 className="font-bold text-lg mb-8">Add New Product</h3>
                 <form onSubmit={(e) => {
                     e.preventDefault();
-                    addProduct();
+                    addProduct(gapi);
                 }} className="space-y-6">
                     <div className="grid gap-6">
                         {/* Existing fields */}
@@ -159,7 +163,7 @@ function ProductModal2() {
                             <button onClick={resetFormData} className="btn btn-ghost">Cancel</button>
                         </form>
                         <button
-                            disabled={!formData.name || !formData.price || !formData.image}
+                            disabled={!formData.name || !formData.price || !formData.media}
                             type="submit"
                             className="btn btn-md btn-primary"
                         >

@@ -2,11 +2,13 @@ import { EditIcon, Trash2Icon, BarChart2Icon, MessageCircle } from "lucide-react
 import {Link} from "react-router-dom";
 import {useProductStore} from "../store/useProductStore";
 import { useRef, useEffect, useState } from "react";
+import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 
 function ProductCard({product}){
     const {deleteProduct} = useProductStore();
     let randNumRef = useRef(null);
     const randNum = useState(Math.floor(Math.random() * 11))
+    const {gapi} = useGoogleAuthContext();
 
     useEffect(() => {
       if (randNumRef.current) {
@@ -30,7 +32,7 @@ function ProductCard({product}){
                 <h2 className="card-title">
                     {product.name}
                 </h2>
-                <p className="text-2xl font-bold text-primary">${product.price}</p>
+                <p className="text-2xl font-bold text-primary">${Number(product.price).toFixed(2)}</p>
                 <div className="card-actions justify-between">
                     <div className="flex flex-row justify-start items-center gap-2">
                         <Link to={`/product/${product.id}/analytics/`} className="btn btn-primary btn-sm btn-outline">
@@ -48,7 +50,7 @@ function ProductCard({product}){
                             <EditIcon className="size-5" />
                         </Link>
                         <button 
-                        onClick={()=>deleteProduct(product.id)}
+                        onClick={()=>deleteProduct(product.id, gapi, product.mediaFolderId)}
                         className="btn btn-error btn-sm btn-outline">
                             <Trash2Icon className="size-5" />
                         </button>

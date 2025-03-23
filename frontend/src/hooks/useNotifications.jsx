@@ -1,35 +1,3 @@
-// // Create a new file hooks/useNotifications.js
-// import { useEffect, useRef } from 'react';
-// import { useSettingsStore } from '../store/useSettingsStore';
-
-// export const useNotifications = () => {
-//     const { settings } = useSettingsStore();
-//     const audioRef = useRef(null);
-
-//     // Initialize audio
-//     useEffect(() => {
-//         audioRef.current = new Audio('/notification_sound.mp3');
-//         audioRef.current.volume = settings.notifications.volume / 100;
-//     }, []);
-
-//     // Update volume when changed
-//     useEffect(() => {
-//         if (audioRef.current) {
-//             audioRef.current.volume = settings.notifications.volume / 100;
-//         }
-//     }, [settings.notifications.volume]);
-
-//     const playNotification = () => {
-//         if (!settings.notifications.mute && audioRef.current) {
-//             audioRef.current.play().catch(error => {
-//                 console.log('Audio playback failed:', error);
-//             });
-//         }
-//     };
-
-//     return { playNotification };
-// };
-
 // hooks/useNotifications.js
 import { useEffect, useRef } from 'react';
 import { useSettingsStore } from '../store/useSettingsStore';

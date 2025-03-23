@@ -1,7 +1,9 @@
 import {create} from "zustand";
 import {toast} from "react-hot-toast";
 import axios from "axios";
-import { waiting } from "../hooks/waiting";
+// import { waiting } from "../hooks/waiting";
+import {cancellableWaiting, waiting} from "../funcs/waiting";
+import { GoogleSheetsAPI } from "../lib/googleLibs";
 
 export const useSettingsStore = create((set, get)=>({
     loading: false,
@@ -175,10 +177,15 @@ export const useSettingsStore = create((set, get)=>({
         }
     },
     setSettings : (settings)=>(set({settings})),
-    saveSettings: async ()=>{
+    settingsSchema : ()=>({sheetName: "Settings", shape: Object.keys(get().settings)}),
+    saveSettings: async (gapi)=>{
         set({loading: true});
         try{
-            console.log("settings=", get().settings);
+            const spreadsheetName = "EcommerceSpreadSheet";
+            const schema = get().settingsSchema().shape;
+            const {settings} = get();
+            const spreadsheet = new GoogleSheetsAPI(gapi);
+            await spreadsheet.postOneRowPage(spreadsheetName, settings, schema, 2)
             toast.success("Settings saved successfully");
             set({error: null})
         }catch(e){
@@ -189,14 +196,33 @@ export const useSettingsStore = create((set, get)=>({
             set({loading: false});
         }
     },
-    restoreDefaultSettings: async ()=>{
+    restoreDefaultSettings: async (gapi)=>{
         set({loading: true});
         try{
-            set({settings: get().resetToDefault});
+            const spreadsheetName = "EcommerceSpreadSheet";
+            const schema = get().settingsSchema().shape;
+            const {resetToDefault} = get();
+            const spreadsheet = new GoogleSheetsAPI(gapi);
+            await spreadsheet.postOneRowPage(spreadsheetName, resetToDefault, schema, 2)
             toast.success("Default settings restored successfully");
+            set(prev => ({...prev, settings: resetToDefault, error:null}));
         }catch(e){
             console.log(`Error restoring default settings: ${e}`);
             toast.error("Something went wrong");
+        }finally{
+            set({loading: false});
+        }
+    },
+    loadSettings: async (gapi)=>{
+        set({loading: true});
+        try{
+            const spreadsheetName = "EcommerceSpreadSheet";
+            const spreadsheet = new GoogleSheetsAPI(gapi);
+            const settings = await spreadsheet.getSettingsFronSpreadsheetByName(spreadsheetName);
+            set({settings, error:null});
+            console.log("Settings loaded:", settings);
+        }catch(e){
+            console.log("Error loading settings:", e);
         }finally{
             set({loading: false});
         }

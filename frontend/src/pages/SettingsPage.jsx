@@ -3,12 +3,14 @@ import { SaveIcon, RefreshCwIcon, ArrowLeftIcon, Instagram, Facebook, MessageCir
 import { useSettingsStore } from '../store/useSettingsStore';
 import { THEMES } from '../constants';
 import CustomThemeSelect from '../components/CustomThemeSelect';
-import { waiting } from "../hooks/waiting";
+// import { waiting } from "../hooks/waiting";
+import { cancellableWaiting } from '../funcs/waiting';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { LoginSocialInstagram, LoginSocialFacebook } from 'reactjs-social-login';
 import ThreadsSvgIcon from '../components/ThreadsSvgIcon';
 import { useProductStore } from '../store/useProductStore';
+import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 
 const SettingsPage = () => {
   const socialMediaAutomationRef = useRef(null);
@@ -20,6 +22,9 @@ const SettingsPage = () => {
   const modelDiversityRef = useRef(null);
   const reportFrequencyRef = useRef(null);
   const descriptionStyleRef = useRef(null);
+  const {gapi} = useGoogleAuthContext();
+
+
 
 
   useEffect(() => {
@@ -27,15 +32,21 @@ const SettingsPage = () => {
       if (settings.autoPost.instagram || settings.autoPost.facebook || settings.autoPost.threads) {
         // startTimer();
         // socialMediaAutomationRef.current?.classList.add('grid-cols-1');
-        await waiting(500);
+        const {promise, cancel} = cancellableWaiting(500);
+        // await waiting(500);
+        await promise();
         repostingRulesRef.current?.classList.remove("hidden");
         socialMediaAutomationRef.current?.classList.add('md:grid-cols-2');
+        cancel();
       } else {
-        await waiting(500);
+        // await waiting(500);
+        const {promise, cancel} = cancellableWaiting(500);
+        await promise();
         // startTimer();
         socialMediaAutomationRef.current?.classList.remove('md:grid-cols-2');
         // socialMediaAutomationRef.current?.classList.remove("grid-cols-1");
         repostingRulesRef.current?.classList.add("hidden")
+        cancel();
       }
     }
     updateUI();
@@ -45,7 +56,7 @@ const SettingsPage = () => {
   const handleRestoreDefaults = () => {
     if (confirm("Are you sure you want to restore default settings?")) {
       localStorage.setItem("preferred-theme", "forest");
-      restoreDefaultSettings();
+      restoreDefaultSettings(gapi);
     }
   }
 
@@ -131,7 +142,7 @@ const SettingsPage = () => {
   // Handler for the Save button
   const handleSave = () => {
     // Your save logic here; for demo, we'll show an alert.
-    saveSettings();
+    saveSettings(gapi);
   };
 
   return (
@@ -450,12 +461,15 @@ const SettingsPage = () => {
                                 }
                               }
                             })
-                            await waiting(500);
+                            // await waiting(500);
+                            const {promise, cancel} = cancellableWaiting(500);
+                            await promise();
                             if (e.target.checked && !descriptionStyleRef.current?.classList.contains("hidden")) {
                               descriptionStyleRef.current?.classList.remove("hidden");
                             } else {
                               descriptionStyleRef.current?.classList.add("hidden");
                             }
+                            cancel();
                           }
                           }
                         />
@@ -749,12 +763,15 @@ const SettingsPage = () => {
                               }
 
                             })
-                            await waiting(500);
+                            // await waiting(500);
+                            const {promise, cancel} = cancellableWaiting(500);
+                            await promise();
                             if (e.target.checked && !modelDiversityRef.current?.classList.contains("hidden")) {
                               modelDiversityRef.current?.classList.remove("hidden");
                             } else {
                               modelDiversityRef.current?.classList.add("hidden");
                             }
+                            cancel();
                           }}
                         />
                       </label>

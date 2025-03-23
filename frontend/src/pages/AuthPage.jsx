@@ -1,9 +1,14 @@
-import { FacebookIcon, ShieldCheckIcon, KeyIcon } from "lucide-react";
+import { FacebookIcon, ShieldCheckIcon, KeyIcon} from "lucide-react";
 import { useState } from "react";
-import { LoginSocialFacebook } from "reactjs-social-login";
+import { LoginSocialFacebook, LoginSocialGoogle } from "reactjs-social-login";
 import { useAuthStore } from "../store/useAuthStore";
 import { toast } from "react-hot-toast";
 import {Link} from "react-router-dom";
+import { useGoogleAuthContext } from "../contexts/GoogleAuthContext.jsx";
+
+const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
+const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
+const CLIENT_SECRET = "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";
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,6 +16,7 @@ export default function AuthPage() {
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { facebook_authenticate, passkey_authenticate } = useAuthStore();
+  const { gapi } = useGoogleAuthContext();
 
   const handleFacebookLogin = () => {
     if (!acceptedTerms) {
@@ -20,6 +26,34 @@ export default function AuthPage() {
     setIsLoading(true);
     // Existing Facebook logic
   };
+
+  const listFiles = () => {
+    const accessToken = gapi.auth.getToken().access_token;
+    console.log({ accessToken });
+    fetch("https://www.googleapis.com/drive/v3/files?pageSize=10&fields=files(id,name,mimeType)", {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    }).then((response) => {
+        if (!response.ok) {
+            throw new Error("Failed to fetch files from google drive");
+        }
+        return response.json();
+    })
+        .then((data) => {
+            console.log(data);
+            // setFiles(data?.files);
+        })
+}
+  const handleGoogleLogin = (response) => {
+    localStorage.setItem('logged-in', 'true');
+    setIsAuthenticated(true)
+    gapi.auth2.getAuthInstance().signIn()
+    listFiles()
+    localStorage.setItem("logged-in", "true")
+    console.log(response);
+  }
 
   const handlePasskeyLogin = async (e) => {
     e.preventDefault();
@@ -112,6 +146,23 @@ export default function AuthPage() {
                 )}
               </button>
             </LoginSocialFacebook>
+            <LoginSocialGoogle client_id={CLIENT_ID} onResolve={handleGoogleLogin}>
+              <button
+                // onClick={handleFacebookLogin}
+                disabled={isLoading || !acceptedTerms}
+                className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
+              >
+                {/* bg-[#1877F2] hover:bg-[#166FE5] text-white */}
+                {isLoading ? (
+                  <span className="loading loading-spinner"></span>
+                ) : (
+                  <>
+                    <FacebookIcon className="w-4 h-4 sm:w-6 sm:h-6" />
+                    <span className="text-xs sm:text-base">Continue with Google</span>
+                  </>
+                )}
+              </button>
+            </LoginSocialGoogle>
 
             {/* Divider */}
             <div className="flex items-center gap-2 sm:gap-4 text-base-content/50 text-xs">

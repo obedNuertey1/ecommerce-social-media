@@ -20,8 +20,12 @@ const func = {
     },
     getMediaUrls(products){
         return products.map((product)=>{
-            let media = product.mediaIds.map((mediaId)=>(`https://drive.google.com/thumbnail?id=${mediaId}&sz=s800`));
-            let image = media.length > 0 ? media[0] : "https://plus.unsplash.com/premium_vector-1736769626427-4aeac3ae63e5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fG5vdCUyMGZvdW5kfGVufDB8fDB8fHww";
+            let media = product.mediaIds.map((mediaId)=>({
+                id: mediaId.id,
+                mediaUrl: (mediaId.mimeType.startsWith("image/")) ? `https://drive.google.com/thumbnail?id=${mediaId.id}&sz=s800`/*`https://lh3.googleusercontent.com/d/${mediaId.id}=s800`*/ : `https://drive.google.com/file/d/${mediaId.id}/preview`,
+                mimeType: mediaId.mimeType
+            }));
+            let image = media.length > 0 ? media[0] : {id: null, mediaUrl: "https://plus.unsplash.com/premium_vector-1736769626427-4aeac3ae63e5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fG5vdCUyMGZvdW5kfGVufDB8fDB8fHww", mimeType: "image/jpeg"};
             product.image = image;
             product.media = media;
             return product;

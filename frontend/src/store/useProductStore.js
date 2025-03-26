@@ -17,12 +17,58 @@ export const useProductStore = create((set, get)=>({
     formData: {name: "", price: "", description: "", image: '', media: []},
     setFormData: (formData)=>set({formData}),
     resetFormData: ()=>set({formData: {name: "", price: "", description: "", image: '', media: []}}),
-    updateProduct: async (id)=>{
+    updateProduct: async (id, gapi, imagesToDelete)=>{
         set({loading: true});
         try{
-            const {formData} = get();
-            await axios.put(`${BASE_URL}/api/products/${id}`, formData);
-            await get().fetchProduct(id);
+            const spreadsheetName = "EcommerceSpreadSheet";
+            const sheetName = "Products";
+            const {formData, product} = get();
+            const newImagesToAdd = formData.media.filter((blob)=>blob?.operation === "add");
+            const imagesToUpdate = formData.media.filter((blob)=>(blob?.operation === "update"));
+            const getAllMediaInFolder = formData.media.map((blob)=>{
+                    if(blob?.operation === "update" || !blob.hasOwnProperty("operation")){
+                        console.log({blob})
+                        const mediaId = product.mediaIds.find((media)=>media?.id == blob?.id);
+                        return {
+                            id: mediaId.id,
+                            name: mediaId.name,
+                            mimeType: mediaId.mimeType
+                        }
+                    }
+                    return null;
+            })
+            .filter((media)=>media !== null);
+            console.log({newImagesToAdd, imagesToUpdate, imagesToDelete, product
+                , getAllMediaInFolder
+            });
+            const googleDrive = new GoogleDriveAPI(gapi);
+            const googleSheet = new GoogleSheetsAPI(gapi);
+            console.log({folderId: product.mediaFolderId});
+            // // update media in the product's folder
+            const updateRes = await googleDrive.replaceMultipleFilesInFolder(product.mediaFolderId, imagesToUpdate);
+            // // add new media to the prouduct's folder
+            const drive = await googleDrive.addMultipleFilesToFolder(product.mediaFolderId, newImagesToAdd);
+            // // delete media from the product's folder
+            const deleteRes = await googleDrive.deleteMultipleFilesFromFolder(imagesToDelete);
+
+            if(product.name !== formData.name){
+                const folderRenameRes = await googleDrive.renameFolder(product.mediaFolderId, formData.name);
+            }
+            const newMediaIds = [...getAllMediaInFolder, ...drive];
+
+            // construct the spreadsheet row
+            const updatedRow = {
+                ...product,
+                mediaIds: newMediaIds,
+                name: formData.name,
+                price: formData.price,
+                description: formData.description
+            }
+
+            const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
+
+            // await axios.put(`${BASE_URL}/api/products/${id}`, formData);
+            await get().fetchProduct(id, gapi);
             toast.success("Product updated successfully");
         }catch(e){
             console.log(`Error updating product: ${e}`);
@@ -31,29 +77,27 @@ export const useProductStore = create((set, get)=>({
             set({loading: false});
         }
     },
-    fetchProduct: async (id, gapi)=>{
+    fetchProduct: async (id, gapi, retries=10, error=null)=>{
+        if(retries === 0){
+            if(error){
+                set({error: error, product: null, loading: false})
+            }
+            return;
+        }
         set({loading: true});
+        const {promise, cancel} = cancellableWaiting(1000);
         try{
             const googleSheet = new GoogleSheetsAPI(gapi);
             const product = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Products", id);
-            console.log({product});
-            set({formData: {name: product.name, price: product.price, description: product.description, image: product.image, media: product.media}, error: null, product: product})
+            set({formData: {name: product.name, price: product.price, description: product.description, image: product.image, media: product.media}, error: null, product: product, loading: false});
+            return;
         }catch(e){
-            console.log(`Error fetching product: ${e}`);
-            toast.error("Something went wrong");
-        }finally{
-            set({loading: false});
+            console.warn(`Attempts ${Math.abs(11 - retries)} failed:`,e);
+            error = "Something went wrong";
+            await promise;
+            await get().fetchProduct(id, gapi, retries - 1, error);
+            cancel();
         }
-        // try{
-        //     const response = await axios.get(`${BASE_URL}/api/products/${id}`);
-        //     set({formData: {...response.data.data, media: [response.data.data.image, "https://plus.unsplash.com/premium_photo-1681336999500-e4f96fe367f8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8aXBob25lfGVufDB8fDB8fHww", "https://images.unsplash.com/photo-1530319067432-f2a729c03db5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8aXBob25lfGVufDB8fDB8fHww", "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8aXBob25lfGVufDB8fDB8fHww"]}, error: null, product: {...response.data.data, media:[ response.data.data.image]}})
-        //     console.log({product: get().product})
-        // }catch(e){
-        //     console.log("Error fetching product ", e);
-        //     set({error: "Something went wrong", product: null});
-        // }finally{
-        //     set({loading: false});
-        // }
     },
     addProduct: async (gapi)=>{
         set({loading: true});
@@ -82,19 +126,6 @@ export const useProductStore = create((set, get)=>({
         }finally{
             set({loading: false});
         }
-        // try{
-        //     const {formData} = get();
-        //     await axios.post(`${BASE_URL}/api/products`, formData);
-        //     await get().fetchProducts();
-        //     set({formData: {name: "", price: "", image: ""}});
-        //     toast.success("Product added successfully");
-        //     document.getElementById("my_modal_2").close();
-        // }catch(e){
-        //     console.log(`Error adding product: ${e}`);
-        //     toast.error("Something went wrong");
-        // }finally{
-        //     set({loading: false});
-        // }
     },
     deleteProduct: async (id, gapi, mediaFolderId)=>{
         set({loading: true});
@@ -104,9 +135,9 @@ export const useProductStore = create((set, get)=>({
             // First Delete folder containing the media from google drive if this is successfull
             const driveResult = await googleDrive.deleteFolderAndContents(mediaFolderId);
             // Delete row from google sheet using the spreadSheetName, sheetName, and rowIndex
-            console.log({index: id})
+            // console.log({index: id})
             const sheetResult = await googleSheet.deleteRowAtIndexByName("EcommerceSpreadSheet", "Products", id-1);
-            console.log({driveResult, sheetResult});
+            // console.log({driveResult, sheetResult});
             set((prev)=>(
                 {products: prev.products.filter((product)=>product.id !== id)}
             ));
@@ -117,47 +148,27 @@ export const useProductStore = create((set, get)=>({
         }finally{
             set({loading: false});
         }
-        // try{
-        //     await axios.delete(`${BASE_URL}/api/products/${id}`);
-        //     set((prev)=>(
-        //         {products: prev.products.filter((product)=> product.id !== id)}
-        //     )
-        //     );
-        //     toast.success("Product deleted successfully");
-        // }catch(e){
-        //     console.log(`Error deleting product: ${e}`);
-        //     toast.error("Something went wrong");
-        // }finally{
-        //     set({loading: false});
-        // }
     },
-    fetchProducts: async ()=>{
+    fetchProducts: async (gapi, retries = 10, error=null)=>{
+        if(retries === 0){
+            if(error){
+                set({error: error, products: [], loading: false})
+            }
+            return;
+        }
         set({loading: true});
-        const {promise, cancel} = cancellableWaiting(3500);
+        const {promise, cancel} = cancellableWaiting(1000);
         try{
-            // Get all products from GoogleSheetsAPI
-            await promise;
             const googleSheet = new GoogleSheetsAPI(gapi);
             const products = await googleSheet.getSpreadsheetValuesByName("EcommerceSpreadSheet", "Products");
-            console.log({products});
-            set({products: products.reverse(), error: null});
+            set({products: products.reverse(), error: null, loading: false});
+            return;
         }catch(e){
-            set({error: "Something went wrong", products: []});
-        }finally{
-            set({loading: false});
+            console.warn(`Attempts ${Math.abs(11 - retries)} failed:`, e);
+            error = "Something went wrong";
+            await promise;
+            await get().fetchProducts(gapi, retries - 1, error);
             cancel();
         }
-        // try{
-        //     const response = await axios.get(`${BASE_URL}/api/products`);
-        //     set({products: response.data.data, error: null});
-        // }catch(e){
-        //     if(e.status === 429){
-        //         set({error: "Rate Limit exceeded", products: []});
-        //     }else{
-        //         set({error: "Something went wrong", products: []});
-        //     }
-        // }finally{
-        //     set({loading: false});
-        // }
     }
 }));

@@ -220,7 +220,7 @@ export const useSettingsStore = create((set, get)=>({
             const spreadsheet = new GoogleSheetsAPI(gapi);
             const settings = await spreadsheet.getSettingsFronSpreadsheetByName(spreadsheetName);
             set({settings, error:null});
-            console.log("Settings loaded:", settings);
+            // console.log("Settings loaded:", settings);
         }catch(e){
             console.log("Error loading settings:", e);
         }finally{

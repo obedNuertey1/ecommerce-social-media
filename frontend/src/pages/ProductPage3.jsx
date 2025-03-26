@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
 import { useEffect, useState, useRef } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
+import {toast} from "react-hot-toast";
 
 function ProductPage3() {
     const navigate = useNavigate();
@@ -10,6 +11,7 @@ function ProductPage3() {
     const { fetchProduct, formData, loading, error, setFormData, product, deleteProduct, updateProduct, resetFormData } = useProductStore();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [newImageUrl, setNewImageUrl] = useState("");
+    const [mediaToDelete, setMediaToDelete] = useState([]);
     const timeoutRef = useRef(null);
     const delayRef = useRef(3000);
     const {gapi} = useGoogleAuthContext();
@@ -43,9 +45,13 @@ function ProductPage3() {
         delayRef.current = 5000; // Pause for 5 seconds after interaction
     };
 
-    const handleDeleteImage = (index) => {
+    const handleDeleteImage = (index, blob) => {
         const newImages = formData.media.filter((_, i) => i !== index);
         setFormData({ ...formData, media: newImages });
+        
+        if(blob?.operation !== "add" || !blob?.operation){
+            setMediaToDelete(prev=>[...prev, blob])
+        }
 
         if (currentImageIndex >= newImages.length) {
             setCurrentImageIndex(Math.max(0, newImages.length - 1));
@@ -53,33 +59,62 @@ function ProductPage3() {
         handleUserInteraction();
     };
 
-    const handleFileUpload = async (file, index) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            if (index !== undefined) {
-                // Update existing image
-                const newMedia = [...formData.media];
-                newMedia[index] = e.target?.result;
-                setFormData({ ...formData, media: newMedia });
-            } else {
-                // Add new image
-                setFormData({ 
-                    ...formData, 
-                    media: [...formData.media, e.target?.result] 
-                });
-            }
-        };
-        reader.readAsDataURL(file);
+    const handleFileUpload = async (file, index, fileId=null) => {
+        if(formData.media.length >= 8){
+            toast.error("You can upload up to 8 media")
+            return
+        }
+
+        if(index !== undefined 
+            && (!formData.media[index]?.operation || formData.media[index]?.operation === "update")
+        ){
+            // Update existing image
+            const newMedia = [...formData.media];
+            newMedia[index] = {
+                id: fileId,
+                mediaUrl: URL.createObjectURL(file),
+                mimeType: file.type,
+                file: file,
+                operation: "update"
+            };
+            setFormData({...formData, media: newMedia});
+        }else if(index !== undefined && (!formData.media[index]?.operation || formData.media[index]?.operation === "add")){
+            const newMedia = [...formData.media];
+            newMedia[index] = {
+                id: fileId,
+                mediaUrl: URL.createObjectURL(file),
+                mimeType: file.type,
+                file: file,
+                operation: "add"
+            };
+            setFormData({...formData, media: newMedia});
+        }
+        else{
+            // Add new image
+            const freshMedia = {
+                id: Math.random().toString(36).substr(2, 9),
+                mediaUrl: URL.createObjectURL(file),
+                mimeType: file.type,
+                file: file,
+                operation: "add"
+            };
+            
+            setFormData({
+                ...formData,
+                media: [...formData.media, freshMedia]
+            })
+        }
     };
 
-    const handleChangeImage = async (index) => {
+
+    const handleChangeImage = async (index, blobId) => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
         input.onchange = (e) => {
             const file = e.target.files ? e.target.files[0] : undefined;
             if (file) {
-                handleFileUpload(file, index);
+                handleFileUpload(file, index, blobId);
                 handleUserInteraction();
             }
         };
@@ -104,7 +139,8 @@ function ProductPage3() {
 
     const handleDelete = async () => {
         if (confirm("Are you sure you want to delete this product?")) {
-            await deleteProduct(id);
+            await deleteProduct(id, gapi, product.mediaFolderId);
+            resetFormData();
             navigate("/");
         }
     };
@@ -131,22 +167,22 @@ function ProductPage3() {
                             <>
                                 <div className="flex transition-transform duration-300 ease-in-out h-full"
                                     style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
-                                    {formData.media.map((image, index) => (
+                                    {formData.media.map((blob, index) => (
                                         <div key={index} className="w-full flex-shrink-0 relative h-full">
-                                            <img src={image} className="w-full h-full object-cover" alt={formData.name} />
+                                            <img src={blob.mediaUrl} id={blob.id} className="w-full h-full object-cover" alt={formData.name} />
                                             {/* ... rest of carousel content ... */}
                                             <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
                                                 {index + 1}/{formData.media.length}
                                             </div>
                                             <div className="absolute top-4 right-4 flex gap-2">
                                                 <button
-                                                    onClick={() => handleChangeImage(index)}
+                                                    onClick={() => handleChangeImage(index, blob.id)}
                                                     className="btn btn-sm btn-circle btn-primary"
                                                 >
                                                     <EditIcon className="size-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteImage(index)}
+                                                    onClick={() => handleDeleteImage(index, blob)}
                                                     className="btn btn-sm btn-circle btn-error"
                                                 >
                                                     <Trash2Icon className="size-4" />
@@ -190,7 +226,7 @@ function ProductPage3() {
                             <h2 className="card-title text-2xl mb-6">Edit Product</h2>
                             <form className="flex-1 flex flex-col" onSubmit={(e) => {
                                 e.preventDefault();
-                                updateProduct(id);
+                                updateProduct(id, gapi, mediaToDelete);
                             }}>
                                 {/* ... form controls ... */}
                                 <div className="form-control">

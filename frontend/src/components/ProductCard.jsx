@@ -14,7 +14,7 @@ function ProductCard({product}){
       if (randNumRef.current) {
         const randomValue = Math.floor(Math.random() * 11);
         randNumRef.current.value = 56;
-        console.log({ randNumRef: randomValue });
+        // console.log({ randNumRef: randomValue });
       }
     }, []);
     return (
@@ -23,7 +23,8 @@ function ProductCard({product}){
             className="relative pt-[56.25%]"
             >
                 <img
-                src={product.image}
+                src={product.image.mediaUrl}
+                id={product.image.id}
                 alt={product.name} 
                 className="absolute top-0 left-0 w-full h-full object-cover" 
                 />

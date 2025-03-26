@@ -4,13 +4,15 @@ import ProductCard from "../components/ProductCard";
 import ProductModal2 from "../components/ProductModal2";
 import { useProductStore } from "../store/useProductStore";
 import { useEffect, useState } from "react";
+import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 
 function HomePage() {
     const { fetchProducts, loading, error, products, resetFormData } = useProductStore();
     const [searchTerm, setSearchTerm] = useState("");
+    const {gapi} = useGoogleAuthContext();
 
     useEffect(() => {
-        fetchProducts();
+        fetchProducts(gapi);
     }, [fetchProducts]);
 
     const filteredProducts = products.filter(product =>
@@ -42,7 +44,7 @@ function HomePage() {
 
                     <button
                         onClick={() => {
-                            fetchProducts();
+                            fetchProducts(gapi);
                             setSearchTerm("");
                         }}
                         className="btn btn-ghost btn-circle"

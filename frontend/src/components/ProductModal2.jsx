@@ -25,7 +25,7 @@ function ProductModal2() {
         // Reset the input so the same file can be selected again if needed
         e.target.value = "";
     }, [formData, setFormData]);
-    console.log({formData})
+    // console.log({formData})
 
     const handleRemoveMedia = useCallback((mediaId) => {
         const mediaToRemove = formData.media.find(m => m.id === mediaId);

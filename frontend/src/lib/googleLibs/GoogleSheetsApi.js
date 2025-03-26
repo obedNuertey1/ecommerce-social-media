@@ -94,7 +94,7 @@ class GoogleSheetsAPI {
                 return response.json();
             })
             .then((data) => {
-                console.log("Retrieved values:", data);
+                // console.log("Retrieved values:", data);
                 return data;
             })
             .catch((error) => {
@@ -113,11 +113,12 @@ class GoogleSheetsAPI {
             }
             const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
             const result = await this.getSpreadsheetValues(spreadsheetId, sheetName);
-            console.log("googl", { result })
+            // console.log("googl", { result })
             // result.values
             const resultObjArr = await convert2dArrToObjArr(result.values);
 
             const finalResult = await getMediaUrls(resultObjArr);
+            console.log({finalResult});
             return finalResult;
         } catch (e) {
             console.log(e);
@@ -189,7 +190,7 @@ class GoogleSheetsAPI {
                 return response.json();
             })
             .then((data) => {
-                console.log("Spreadsheet values appended:", data);
+                // console.log("Spreadsheet values appended:", data);
                 return data;
             })
             .catch((error) => {
@@ -221,7 +222,7 @@ class GoogleSheetsAPI {
                 return response.json();
             })
             .then((data) => {
-                console.log("Spreadsheet values cleared:", data);
+                // console.log("Spreadsheet values cleared:", data);
                 return data;
             })
             .catch((error) => {
@@ -259,7 +260,7 @@ class GoogleSheetsAPI {
                 return response.json();
             })
             .then((data) => {
-                console.log(`Sheet "${sheetTitle}" created:`, data);
+                // console.log(`Sheet "${sheetTitle}" created:`, data);
                 return data;
             })
             .catch((error) => {
@@ -296,7 +297,7 @@ class GoogleSheetsAPI {
                 return response.json();
             })
             .then((data) => {
-                console.log("Header section updated:", data);
+                // console.log("Header section updated:", data);
                 return data;
             })
             .catch((error) => {
@@ -320,7 +321,7 @@ class GoogleSheetsAPI {
                 if (!response.ok) {
                     throw new Error("Error deleting spreadsheet: " + response.statusText);
                 }
-                console.log("Spreadsheet deleted");
+                // console.log("Spreadsheet deleted");
                 return response;
             })
             .catch((error) => {
@@ -444,7 +445,7 @@ class GoogleSheetsAPI {
                 return response.json();
             })
             .then((data) => {
-                console.log("Row deleted successfully:", data);
+                // console.log("Row deleted successfully:", data);
                 return data;
             })
             .catch((error) => {
@@ -524,10 +525,10 @@ class GoogleSheetsAPI {
             })
             .then((data) => {
                 if (data.files && data.files.length > 0) {
-                    console.log("Spreadsheet found:", data.files[0]);
+                    // console.log("Spreadsheet found:", data.files[0]);
                     return data.files[0];
                 } else {
-                    console.log("Spreadsheet not found with title:", title);
+                    // console.log("Spreadsheet not found with title:", title);
                     return null;
                 }
             })
@@ -549,7 +550,7 @@ class GoogleSheetsAPI {
     createSpreadsheetIfNotExists(title) {
         return this.getSpreadsheetByName(title)
             .then((file) => {
-                console.log({ file })
+                // console.log({ file })
                 if (file) {
                     // Spreadsheet exists – return it.
                     return file;
@@ -584,7 +585,7 @@ class GoogleSheetsAPI {
                 return response.json();
             })
             .then(data => {
-                console.log("Spreadsheet retrieved:", data);
+                // console.log("Spreadsheet retrieved:", data);
                 return data;
             })
             .catch(error => {
@@ -734,7 +735,7 @@ class GoogleSheetsAPI {
                 return response.json();
             })
             .then((data) => {
-                console.log("Row deleted successfully:", data);
+                // console.log("Row deleted successfully:", data);
                 return data;
             });
     }
@@ -785,7 +786,7 @@ class GoogleSheetsAPI {
                     // Try to retrieve the sheet ID (will throw an error if not found).
                     await this.getSheetIdByName(spreadsheetId, schema.sheetName);
                     sheetExists = true;
-                    console.log(`Sheet "${schema.sheetName}" already exists.`);
+                    // console.log(`Sheet "${schema.sheetName}" already exists.`);
                 } catch (error) {
                     // If not found, we'll create the sheet.
                     sheetExists = false;
@@ -829,7 +830,7 @@ class GoogleSheetsAPI {
                     await this.getSheetIdByName(spreadsheetId, schema.sheetName);
                     // If exists, update the header (first row) with the shape array.
                     await this.setHeaderSection(spreadsheetId, schema.sheetName, schema.shape);
-                    console.log(`Updated header for "${schema.sheetName}" with: ${schema.shape}`);
+                    // console.log(`Updated header for "${schema.sheetName}" with: ${schema.shape}`);
                 } catch (error) {
                     console.error(`Error updating header for "${schema.sheetName}": ${error.message}`);
                     // Optionally, you could create the sheet here if it doesn't exist.
@@ -874,7 +875,7 @@ class GoogleSheetsAPI {
                     await this.getSheetIdByName(spreadsheetId, schema.sheetName);
                     // Update the header (first row) with the shape array.
                     await this.setHeaderSection(spreadsheetId, schema.sheetName, schema.shape);
-                    console.log(`Updated header for "${schema.sheetName}" with: ${schema.shape}`);
+                    // console.log(`Updated header for "${schema.sheetName}" with: ${schema.shape}`);
                 } catch (error) {
                     console.error(`Error updating header for "${schema.sheetName}": ${error.message}`);
                     // Optionally, you could decide to create the sheet if it doesn't exist.
@@ -925,7 +926,57 @@ class GoogleSheetsAPI {
             // if(!response){
             // }
             const response2 = await this.insertRowAtIndex(spreadsheetId, "Settings", rowData, rowIndex);
-            console.log("Settings row appended:", response2);
+            // console.log("Settings row appended:", response2);
+            return response2;
+            // console.log("Settings row appended:", response);
+            // return response;
+        } catch (error) {
+            console.error("Error posting settings page:", error);
+            throw error;
+        }
+    }
+
+        /**
+ * Posts the current settings data to the "Settings" sheet.
+ *
+ * This method retrieves the spreadsheet by its name, then appends a new row to the "Settings"
+ * sheet using the following schema:
+ * ["address", "autoPost", "repostingRules", "aiConfigurations", "visualCustomization", "notifications"]
+ *
+ * @param {String} spreadsheetName - The name of the spreadsheet.
+ * @param {String} sheetName - The name of the sheet inside of the spreadsheet.
+ * @param {Array<String>} schema - The settings data (from your store) to post.
+ * @param {Object} data - The data to post.
+ * @param {String | Number} - The row index in the sheet 
+ * @returns {Promise<Object>} A promise that resolves with the response from appending the row.
+ */
+    async updateRowByRowId(spreadsheetName, sheetName, schema, data, rowIndex){
+        try {
+            // Retrieve the spreadsheet by name.
+            const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+            if (!spreadsheet) {
+                throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
+            }
+            const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+
+            // Convert the data object into an array based on the schema order.
+            const rowData = schema.map(key => {
+                let value = data[key];
+                // If the value is an object, you can store it as a JSON string.
+                if (value && typeof value === "object") {
+                    return JSON.stringify(value);
+                }
+                return value;
+            });
+
+            // Append the row to the "Settings" sheet.
+            // Assume you have defined appendRow which wraps appendSpreadsheetValues.
+            // let response;
+            // const response = await this.updateRowAtIndex(spreadsheetId, "Settings", rowData, rowIndex);
+            // if(!response){
+            // }
+            const response2 = await this.insertRowAtIndex(spreadsheetId, sheetName, rowData, rowIndex);
+            // console.log("Settings row appended:", response2);
             return response2;
             // console.log("Settings row appended:", response);
             // return response;
@@ -970,7 +1021,7 @@ class GoogleSheetsAPI {
             // Append the row to the "Settings" sheet.
             // Assume you have defined appendRow which wraps appendSpreadsheetValues.
             const response = await this.appendRow(spreadsheetId, sheetName, rowData);
-            console.log(`${sheetName} row appended:`, response);
+            // console.log(`${sheetName} row appended:`, response);
             return response;
         } catch (error) {
             console.error(`Error posting ${sheetName} page:`, error);
@@ -1016,7 +1067,7 @@ class GoogleSheetsAPI {
                 settings[key] = value;
             });
 
-            console.log("Retrieved settings:", settings);
+            // console.log("Retrieved settings:", settings);
             return settings;
         } catch (error) {
             console.error("Error getting settings from spreadsheet:", error);
@@ -1187,7 +1238,7 @@ class GoogleSheetsAPI {
                 return response.json();
             })
             .then((data) => {
-                console.log("Row deleted successfully:", data);
+                // console.log("Row deleted successfully:", data);
                 return data;
             });
     }
@@ -1238,11 +1289,11 @@ class GoogleSheetsAPI {
                     // Try to retrieve the sheet ID (will throw an error if not found).
                     await this.getSheetIdByName(spreadsheetId, schema.sheetName);
                     sheetExists = true;
-                    console.log(`Sheet "${schema.sheetName}" already exists.`);
+                    // console.log(`Sheet "${schema.sheetName}" already exists.`);
                 } catch (error) {
                     // If not found, we'll create the sheet.
                     sheetExists = false;
-                    console.log(`Sheet "${schema.sheetName}" does not exist. Creating it...`);
+                    // console.log(`Sheet "${schema.sheetName}" does not exist. Creating it...`);
                 }
 
                 if (!sheetExists) {
@@ -1282,7 +1333,7 @@ class GoogleSheetsAPI {
                     await this.getSheetIdByName(spreadsheetId, schema.sheetName);
                     // If exists, update the header (first row) with the shape array.
                     await this.setHeaderSection(spreadsheetId, schema.sheetName, schema.shape);
-                    console.log(`Updated header for "${schema.sheetName}" with: ${schema.shape}`);
+                    // console.log(`Updated header for "${schema.sheetName}" with: ${schema.shape}`);
                 } catch (error) {
                     console.error(`Error updating header for "${schema.sheetName}": ${error.message}`);
                     // Optionally, you could create the sheet here if it doesn't exist.
@@ -1327,7 +1378,7 @@ class GoogleSheetsAPI {
                     await this.getSheetIdByName(spreadsheetId, schema.sheetName);
                     // Update the header (first row) with the shape array.
                     await this.setHeaderSection(spreadsheetId, schema.sheetName, schema.shape);
-                    console.log(`Updated header for "${schema.sheetName}" with: ${schema.shape}`);
+                    // console.log(`Updated header for "${schema.sheetName}" with: ${schema.shape}`);
                 } catch (error) {
                     console.error(`Error updating header for "${schema.sheetName}": ${error.message}`);
                     // Optionally, you could decide to create the sheet if it doesn't exist.
@@ -1378,7 +1429,7 @@ class GoogleSheetsAPI {
             // if(!response){
             // }
             const response2 = await this.insertRowAtIndex(spreadsheetId, "Settings", rowData, rowIndex);
-            console.log("Settings row appended:", response2);
+            // console.log("Settings row appended:", response2);
             return response2;
             // console.log("Settings row appended:", response);
             // return response;
@@ -1423,7 +1474,7 @@ class GoogleSheetsAPI {
             // Append the row to the "Settings" sheet.
             // Assume you have defined appendRow which wraps appendSpreadsheetValues.
             const response = await this.appendRow(spreadsheetId, sheetName, rowData);
-            console.log(`${sheetName} row appended:`, response);
+            // console.log(`${sheetName} row appended:`, response);
             return response;
         } catch (error) {
             console.error(`Error posting ${sheetName} page:`, error);
@@ -1469,7 +1520,7 @@ class GoogleSheetsAPI {
                 settings[key] = value;
             });
 
-            console.log("Retrieved settings:", settings);
+            // console.log("Retrieved settings:", settings);
             return settings;
         } catch (error) {
             console.error("Error getting settings from spreadsheet:", error);
@@ -1523,7 +1574,9 @@ class GoogleSheetsAPI {
             // data.values is an array of rows, but since we requested a single row, return the first element.
             data.values.unshift(headers);
             const toObjArr = await convert2dArrToObjArr(data.values);
+            console.log({toObjArr})
             const getMediaUrlsResult = await getMediaUrls(toObjArr);
+            console.log({getMediaUrlsResult: getMediaUrlsResult[0]})
             return getMediaUrlsResult[0];
         } catch (error) {
             console.error(`Error retrieving row ${rowIndex} from sheet ${sheetName}:`, error);

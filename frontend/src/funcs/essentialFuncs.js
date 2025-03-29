@@ -16,3 +16,11 @@ export const getMediaUrls = async (products) => {
     const result = await funcs.getMediaUrls(products)
     return result;
 }
+
+export const objectDifference = async (arr1, arr2) => {
+    const worker = new funcsWorker();
+    const funcs = Comlink.wrap(worker);
+
+    const result = await funcs.objectDifference(arr1, arr2);
+    return result;
+}

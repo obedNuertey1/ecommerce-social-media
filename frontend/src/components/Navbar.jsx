@@ -1,6 +1,7 @@
 import { Link, useResolvedPath, useNavigate } from "react-router-dom";
 import { ShoppingCartIcon, ShoppingBagIcon, SettingsIcon, PackageIcon, KeyIcon, MenuIcon, XIcon } from "lucide-react";
 import { useProductStore } from "../store/useProductStore";
+import {useOrderStore} from "../store/useOrderStore";
 import {useState, useRef, useEffect} from "react";
 
 function Navbar() {
@@ -14,6 +15,7 @@ function Navbar() {
     const isInfoPage = /^\/info\/?.*$/.test(pathname);
     const isAuth = pathname === "/auth";
     const { products, resetFormData } = useProductStore();
+    const {orders} = useOrderStore();
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -46,7 +48,7 @@ function Navbar() {
                         <PackageIcon className="size-5" />
                         Orders
                     </div>
-                    <span className="badge badge-primary">{3}</span>
+                    <span className="badge badge-primary">{orders.length}</span>
                 </Link>
             </li>
             <li>
@@ -104,7 +106,7 @@ function Navbar() {
                             <>
                                 <div className="indicator">
                                     <Link to="/orders" className="btn btn-ghost btn-circle">
-                                        <span className="indicator-item badge badge-primary badge-sm top-2 right-2">{3}</span>
+                                        <span className="indicator-item badge badge-primary badge-sm top-2 right-2">{orders.length}</span>
                                         <PackageIcon className="size-5" />
                                     </Link>
                                 </div>
@@ -121,7 +123,7 @@ function Navbar() {
                             <>
                                 <div className="indicator">
                                     <Link to="/orders" className="btn btn-ghost btn-circle">
-                                        <span className="indicator-item badge badge-primary badge-sm top-2 right-2">{3}</span>
+                                        <span className="indicator-item badge badge-primary badge-sm top-2 right-2">{orders.length}</span>
                                         <PackageIcon className="size-5" />
                                     </Link>
                                 </div>

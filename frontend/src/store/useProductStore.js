@@ -119,7 +119,7 @@ export const useProductStore = create((set, get)=>({
             document.getElementById("my_modal_2").close();
             toast.success("Product added successfully");
             
-            await get().fetchProducts();
+            await get().fetchProducts(gapi);
         }catch(e){
             console.log(`Error adding product: ${e}`);
             toast.error("Something went wrong");

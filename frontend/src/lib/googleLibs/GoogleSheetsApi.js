@@ -126,6 +126,27 @@ class GoogleSheetsAPI {
         }
     }
 
+    async getSpreadsheetValuesByName2(spreadsheetName, sheetName) {
+
+        // get spreadsheet by name
+        try {
+            const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+            if (!spreadsheet) {
+                throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
+            }
+            const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+            const result = await this.getSpreadsheetValues(spreadsheetId, sheetName);
+            // console.log("googl", { result })
+            // result.values
+            const finalResult  = await convert2dArrToObjArr(result.values);
+
+            return finalResult;
+        } catch (e) {
+            console.log(e);
+            throw new Error(e);
+        }
+    }
+
     /**
      * Updates values in a specified range of a spreadsheet.
      */
@@ -747,6 +768,66 @@ class GoogleSheetsAPI {
         }
         const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
         return this.deleteRowAtIndex(spreadsheetId, sheetName, rowIndex);
+    }
+
+        /**
+     * Deletes all rows in a sheet.
+     *
+     * @param {string} spreadsheetId - The ID of the spreadsheet.
+     * @param {string} sheetName - The name of the sheet.
+     * @param {Array} range - an array of values representing the range of the rows.
+     * @returns {Promise<Object>} A promise that resolves with the deletion response.
+     */
+    deleteAllRows(spreadsheetId, sheetName, range){
+        return this.getSheetIdByName(spreadsheetId, sheetName)
+            .then((sheetId) => {
+                const accessToken = this.gapi.auth.getToken().access_token;
+                const payload = {
+                    requests: [
+                        {
+                            deleteDimension: {
+                                range: {
+                                    sheetId: sheetId,
+                                    dimension: "ROWS",
+                                    startIndex: range[0],
+                                    endIndex: range[1] + 1,
+                                },
+                            },
+                        },
+                    ],
+                };
+
+                return fetch(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                        body: JSON.stringify(payload),
+                    }
+                );
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Error deleting row: " + response.statusText);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                // console.log("Row deleted successfully:", data);
+                return data;
+            });
+    }
+
+    async deleteAllRowsByName(spreadsheetName, sheetName, range){
+        const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+        if (!spreadsheet) {
+            throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
+        }
+        const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+        return this.deleteAllRows(spreadsheetId, sheetName, range);
     }
 
     /**

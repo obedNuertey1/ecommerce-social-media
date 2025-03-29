@@ -1,12 +1,13 @@
-import {Routes, Route} from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import {Toaster} from "react-hot-toast";
-import { useEffect } from "react";
+import { Toaster, toast } from "react-hot-toast";
+import { useEffect, useCallback } from "react";
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorFallback from "./components/ErrorFallback";
 import PyodideWorker from "./workers/pyodideWorker?worker";
 import installDepsWorker from "./workers/installDepsWorker?worker";
 import * as Comlink from "comlink";
+import { useQuery } from "@tanstack/react-query";
 
 // Pages
 import ProductPage3 from "./pages/ProductPage3";
@@ -23,6 +24,9 @@ import ProductComments from "./pages/ProductComments";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicyPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import { useGoogleAuthContext } from "./contexts/GoogleAuthContext";
+import { cancellableWaiting } from "./hooks/waiting";
+import { useNotifications } from './hooks/useNotifications';
 
 // Components
 import ScrollToTopButton from "./components/ScrollToTopButton";
@@ -31,6 +35,8 @@ import NavigateTo404 from "./components/NavigateTo404";
 // Stores
 import { useThemeStore } from "./store/useThemeStore";
 import { useSettingsStore } from "./store/useSettingsStore";
+import { useOrderStore } from "./store/useOrderStore";
+
 
 // Patterns
 import SvgPastel from "./patterns/SvgPastel";
@@ -47,8 +53,8 @@ import SvgBusiness from "./patterns/SvgBusiness";
 import SvgNight from "./patterns/SvgNight";
 import SvgDracula from "./patterns/SvgDracula";
 
-const BgPatterns = ()=>{
-  switch(useSettingsStore.getState().settings.visualCustomization.themeSelection.theme){
+const BgPatterns = () => {
+  switch (useSettingsStore.getState().settings.visualCustomization.themeSelection.theme) {
     case "pastel":
       return <SvgPastel />
     case "retro":
@@ -80,32 +86,124 @@ const BgPatterns = ()=>{
   }
 }
 
+const truncateText = (text, maxLength) => {
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+};
+
 
 function App() {
-  const {theme} = useSettingsStore().settings.visualCustomization.themeSelection;
+  const { theme } = useSettingsStore().settings.visualCustomization.themeSelection;
+  const { gapi } = useGoogleAuthContext()
+  const { fetchNewOrders, newOrders, resetNewOrders, fetchOrders } = useOrderStore();
+
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['orders'],
+    queryFn: ()=>fetchNewOrders(gapi),
+    refetchInterval: 1000 * 30,
+    refetchIntervalInBackground: true
+  });
+
+  const {playNotification} = useNotifications();
+
+  const processOrders = async (data) => {
+    for (let i = 0; i < data.length; i++) {
+      // It's unclear if cancel should be called in every iteration.
+      // Typically, you might call cancel() if you need to abort the waiting promise.
+      const { promise, cancel } = cancellableWaiting(1000);
+      await promise;
+      let newOrder = data[i];
+      playNotification();
+      toast.custom(
+        (t) => (
+          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
+                      bg-base-100 border border-base-300 rounded-box p-4 shadow-lg`}>
+            <div className="flex items-center gap-3">
+              <div className="flex-none">
+                <div className="avatar placeholder">
+                  <div className="bg-neutral text-neutral-content rounded-full w-8">
+                    <span className="text-xs">🛒</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold">New Order!</h3>
+                <p className="text-sm">
+                  {newOrder.phone} ordered{' '}
+                  {newOrder.items.map((item, idx) => (
+                    <span key={idx}>
+                      {truncateText(`${item.name} (x${item.quantity})`, 30)}
+                      {idx < newOrder.items.length - 1 ? ', ' : ''}
+                    </span>
+                  ))}
+                </p>
+              </div>
+            </div>
+          </div>
+        ),
+        { duration: 5000 }
+      );
+      cancel();
+      // Wait for 1 second delay before processing next order.
+    }
+    // cancel();
+    // resetNewOrders()
+  };
+
+  const res = useCallback(() => {
+    // processOrders(newOrders);
+    processOrders(data);
+    return data;
+  }, [data]);
+
+
+  useEffect(()=>{
+    res();
+  },[data]);
+
+  // const res = useCallback(() => {
+  //   (async () => {
+  //     const { promise, cancel } = cancellableWaiting(1000);
+  //     for (let i = 0; i < data.length; i++) {
+  //       cancel();
+  //       let newOrder = data[i];
+  //       playNotification();
+  //       toast.custom((t) => (
+  //         <>
+  //           <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
+  //                   bg-base-100 border border-base-300 rounded-box p-4 shadow-lg`}>
+  //             <div className="flex items-center gap-3">
+  //               <div className="flex-none">
+  //                 <div className="avatar placeholder">
+  //                   <div className="bg-neutral text-neutral-content rounded-full w-8">
+  //                     <span className="text-xs">🛒</span>
+  //                   </div>
+  //                 </div>
+  //               </div>
+  //               <div className="flex-1">
+  //                 <h3 className="font-semibold">New Order!</h3>
+  //                 <p className="text-sm">
+  //                   {newOrder.phone} ordered{' '}
+  //                   {newOrder.items.map((item, idx) => (
+  //                     <span key={idx}>
+  //                       {truncateText(`${item.name} (x${item.quantity})`, 30)}
+  //                       {idx < newOrder.items.length - 1 ? ', ' : ''}
+  //                     </span>
+  //                   ))}
+  //                 </p>
+  //               </div>
+  //             </div>
+  //           </div>
+  //         </>
+  //       ), { duration: 5000 });
+  //       await promise;
+  //     }
+  //   })();
+  //   return data;
+  // }, [data])
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
-
-  // useEffect(()=>{
-  //   async function runWorker(){
-  //     const worker1 = new installDepsWorker();
-  //     const api1 = Comlink.wrap(worker1);
-
-  //     const result1 = await api1.installDeps();
-  //     // Create a new instance of the worker.
-  //     const worker = new PyodideWorker();
-  //     // Wrap the worker in a Comlink proxy.
-  //     const api = Comlink.wrap(worker);
-
-  //     // Run some Python code in the worker.
-  //     // For example, run a simple addition.
-  //     const result = await api.runPython("Me Me Me Obed");
-  //     console.log({result1: JSON.parse(result1)});
-  //     console.log({result});
-  //   }
-  //   runWorker();
-  // }, [])
 
   return (
     <div className="min-h-screen bg-base-200 transition-colors duration-300">
@@ -124,7 +222,7 @@ function App() {
             <ErrorBoundary FallbackComponent={ErrorFallback}>
               <ProductComments />
             </ErrorBoundary>
-        } path="/product/:id/comments" />
+          } path="/product/:id/comments" />
           <Route element={<OrdersPage />} path="/orders" />
           <Route element={<PasskeyPage />} path="/passkey" />
           <Route element={<PasskeyLogsPage />} path="/passkey/logs" />

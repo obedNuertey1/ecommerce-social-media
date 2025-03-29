@@ -6,10 +6,10 @@ import { toast } from "react-hot-toast";
 import {Link} from "react-router-dom";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext.jsx";
 
-// Configuration 3
-const CLIENT_ID = "910108858778-o50b1l20nuscpivqco8munjb3i9rffsj.apps.googleusercontent.com";
-const API_KEY = "AIzaSyDybWEDPdJ6ERF2GMf9pkbD5fB1wmpAnOQ";
-const CLIENT_SECRET = "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";
+// Configuration 1
+const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
+const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
+const CLIENT_SECRET = "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";
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);

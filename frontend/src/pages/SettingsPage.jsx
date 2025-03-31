@@ -34,14 +34,14 @@ const SettingsPage = () => {
         // socialMediaAutomationRef.current?.classList.add('grid-cols-1');
         const {promise, cancel} = cancellableWaiting(500);
         // await waiting(500);
-        await promise();
+        await promise;
         repostingRulesRef.current?.classList.remove("hidden");
         socialMediaAutomationRef.current?.classList.add('md:grid-cols-2');
         cancel();
       } else {
         // await waiting(500);
         const {promise, cancel} = cancellableWaiting(500);
-        await promise();
+        await promise;
         // startTimer();
         socialMediaAutomationRef.current?.classList.remove('md:grid-cols-2');
         // socialMediaAutomationRef.current?.classList.remove("grid-cols-1");
@@ -463,7 +463,7 @@ const SettingsPage = () => {
                             })
                             // await waiting(500);
                             const {promise, cancel} = cancellableWaiting(500);
-                            await promise();
+                            await promise;
                             if (e.target.checked && !descriptionStyleRef.current?.classList.contains("hidden")) {
                               descriptionStyleRef.current?.classList.remove("hidden");
                             } else {
@@ -765,7 +765,7 @@ const SettingsPage = () => {
                             })
                             // await waiting(500);
                             const {promise, cancel} = cancellableWaiting(500);
-                            await promise();
+                            await promise;
                             if (e.target.checked && !modelDiversityRef.current?.classList.contains("hidden")) {
                               modelDiversityRef.current?.classList.remove("hidden");
                             } else {

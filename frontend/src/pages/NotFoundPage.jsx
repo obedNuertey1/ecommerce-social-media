@@ -1,7 +1,14 @@
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useNotifications } from '../hooks/useNotifications';
+import { useEffect } from 'react';
 
 const NotFoundPage = () => {
+  const {playNotification: playNotFoundSound} = useNotifications("not_found_sound");
+  useEffect(()=>{
+    playNotFoundSound();
+    return ()=>{};
+  },[]);
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="card bg-base-100 shadow-xl max-w-md w-full">

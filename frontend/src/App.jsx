@@ -8,6 +8,7 @@ import PyodideWorker from "./workers/pyodideWorker?worker";
 import installDepsWorker from "./workers/installDepsWorker?worker";
 import * as Comlink from "comlink";
 import { useQuery } from "@tanstack/react-query";
+import {textToSpeech} from "./funcs/essentialFuncs"
 
 // Pages
 import ProductPage3 from "./pages/ProductPage3";
@@ -95,6 +96,7 @@ function App() {
   const { theme } = useSettingsStore().settings.visualCustomization.themeSelection;
   const { gapi } = useGoogleAuthContext()
   const { fetchNewOrders, newOrders, resetNewOrders, fetchOrders } = useOrderStore();
+  const {settings} = useSettingsStore();
 
   const { data, error, isLoading } = useQuery({
     queryKey: ['orders'],
@@ -103,7 +105,8 @@ function App() {
     refetchIntervalInBackground: true
   });
 
-  const {playNotification} = useNotifications();
+  const {playNotification} = useNotifications("orders_notification_sound");
+  const {playNotification: playNewArrivlsNotification} = useNotifications("new_arrivals_sound");
 
   const processOrders = async (data) => {
     for (let i = 0; i < data.length; i++) {
@@ -145,7 +148,20 @@ function App() {
       cancel();
       // Wait for 1 second delay before processing next order.
     }
-    // cancel();
+    if(data.length > 0){
+      const {promise, cancel} = cancellableWaiting(1000);
+      await promise;
+      playNewArrivlsNotification();
+      cancel();
+      await promise;
+      console.log("settings.notifications.volume / 100=", settings.notifications.volume / 100)
+      if(data.length === 1){
+        textToSpeech(`You have a new order.`, "en-GB", 1, 1, 5, (settings.notifications.volume / 100));
+      }else{
+        textToSpeech(`You have ${data.length} new orders.`, "en-GB", 1, 1, 5, (settings.notifications.volume / 100));
+      }
+      cancel();
+    }
     // resetNewOrders()
   };
 

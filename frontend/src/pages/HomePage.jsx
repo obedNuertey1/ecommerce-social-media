@@ -3,16 +3,34 @@ import { PlusCircleIcon, RefreshCwIcon, PackageIcon, SearchIcon } from "lucide-r
 import ProductCard from "../components/ProductCard";
 import ProductModal2 from "../components/ProductModal2";
 import { useProductStore } from "../store/useProductStore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
+import {useNotifications} from "../hooks/useNotifications";
 
 function HomePage() {
     const { fetchProducts, loading, error, products, resetFormData } = useProductStore();
     const [searchTerm, setSearchTerm] = useState("");
+    const playNotifRef = useRef(false);
     const {gapi} = useGoogleAuthContext();
-
+    const {playNotification: playEmptyProductSound} = useNotifications("empty_list_sound");
+    
+    const emptyProductSound = useCallback(()=>{
+        if(products.length === 0 && !error){
+            playEmptyProductSound();
+        }
+        return products;
+    }, [products]);
+    
     useEffect(() => {
         fetchProducts(gapi);
+        const playSound = ()=>{
+            if(playNotifRef.current)  return;
+            playNotifRef.current = true;
+            emptyProductSound();
+        }
+        playSound();
+        return ()=>{};
+        // emptyProductSound();
     }, [fetchProducts]);
 
     const filteredProducts = products.filter(product =>

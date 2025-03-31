@@ -24,3 +24,26 @@ export const objectDifference = async (arr1, arr2) => {
     const result = await funcs.objectDifference(arr1, arr2);
     return result;
 }
+
+export const textToSpeech = (text, lang="en-US", pitch=1, rate=1, voice=0, volume=1) => {
+    function loadVoices(){
+        const voices = window.speechSynthesis.getVoices();
+        console.log("Available voices:", voices);
+    }
+    // Sometimes voices load asynchronously so we set an event listener.
+    window.speechSynthesis.onvoiceschnaged = loadVoices;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    utterance.lang = lang;
+    utterance.pitch = pitch;
+    utterance.rate = rate;
+    utterance.volume = volume;
+
+    const voices = window.speechSynthesis.getVoices();
+    if(voices.length > 0){
+        utterance.voice = voices[voice]
+    }
+
+    window.speechSynthesis.speak(utterance);
+}

@@ -4,7 +4,7 @@ import { loadPyodide } from 'pyodide';
 
 async function loadPyodideInstance() {
   // Load Pyodide from your local assets or CDN.
-  const pyodide = await loadPyodide({ indexURL: '/pyodide2/' });
+  const pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.3/full/' });
   return pyodide;
 }
 

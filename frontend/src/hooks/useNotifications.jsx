@@ -2,14 +2,15 @@
 import { useEffect, useRef } from 'react';
 import { useSettingsStore } from '../store/useSettingsStore';
 
-export const useNotifications = () => {
+export const useNotifications = (soundFile) => {
     const { settings } = useSettingsStore();
     const audioRef = useRef(null);
 
     // Initialize audio
     useEffect(() => {
         // Use absolute path from public folder
-        audioRef.current = new Audio('/notification_sound.mp3');
+        // audioRef.current = new Audio('/notification_sound.mp3');
+        audioRef.current = new Audio(`/sounds/${soundFile}.mp3`);
         audioRef.current.preload = 'auto';
         
         // Handle audio loading errors

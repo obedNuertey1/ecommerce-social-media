@@ -5,6 +5,7 @@ export const schemas = [
     ,
     { sheetName: "Orders", shape: ["phone", "items", "total", "orderId", "status"]}
     ,
-    { sheetName: "NewOrders", shape: ["phone", "items", "total", "orderId", "status"]}
+    { sheetName: "NewOrders", shape: ["phone", "items", "total", "orderId", "status"]},
+    { sheetName: "Auth", shape: ["googleUserId", "googleAccessToken", "googleRefreshToken", "facebookUserId", "facebookAccessToken", "facebookRefreshToken", "threadsUserId", "threadsAccessToken", "threadsRefreshToken", "instagramUserId", "instagramAccessToken", "instagramRefreshToken", "businessProfileId"]},
     // { sheetName: "Settings", shape: ["address", "autoPost"] },
 ];

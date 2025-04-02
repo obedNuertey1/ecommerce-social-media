@@ -5,6 +5,8 @@ import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas as initSheetSchema } from "../schemas/initSheetSchema";
 import { useSettingsStore } from "../store/useSettingsStore";
 import { cancellableWaiting } from "../funcs/waiting";
+import useQuery from "../hooks/useQuery";
+import useTokenRefresh from "../hooks/useTokenRefresh";
 
 const AuthContext = createContext(null);
 
@@ -14,9 +16,14 @@ export function useGoogleAuthContext() {
 
 
 // Configuration 1
-const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
+// const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
+// const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
+// const CLIENT_SECRET = "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";
+
+// Configuration temporary
+const CLIENT_ID = "735897969269-0nhfejn5pre40a511kvcprm6551bon5n.apps.googleusercontent.com";
 const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
-const CLIENT_SECRET = "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";
+const CLIENT_SECRET = "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";
 
 // Configuration 2
 // const CLIENT_ID = "735897969269-79cbatqg3sv47pvgi8famqnqjv289kg4.apps.googleusercontent.com";
@@ -33,8 +40,11 @@ export function GoogleAuthProvider({ children }) {
     const [error, setError] = useState("");
     const [files, setFiles] = useState(null);
     const initializationStarted = useRef(false);
-    
+    // const query = useQuery();
+    // const code = query.get("code");
     const {settingsSchema, loadSettings} = useSettingsStore();
+    useTokenRefresh();
+
 
     useEffect(() => {
         const initializeGapiClient = async () => {
@@ -51,6 +61,12 @@ export function GoogleAuthProvider({ children }) {
                         'https://www.googleapis.com/discovery/v1/apis/sheets/v4/rest',
                     ],
                 });
+
+                const storedToken = localStorage.getItem("googleAuthToken");
+                if(storedToken){
+                    gapi.auth.setToken(JSON.parse(storedToken));
+                    gapi.client.setToken(JSON.parse(storedToken));
+                }
 
                 const authInstance = gapi.auth2.getAuthInstance();
                 const isSignedIn = await authInstance.isSignedIn.get();
@@ -78,6 +94,7 @@ export function GoogleAuthProvider({ children }) {
             // }
         }
         gapi.load('client:auth2', initializeGapiClient);
+        return ()=>{}
     }, [])
 
     const handleLoginSuccess = (response) => {

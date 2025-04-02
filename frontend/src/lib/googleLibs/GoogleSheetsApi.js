@@ -981,7 +981,7 @@ class GoogleSheetsAPI {
  * @param {Array<String>} schema - The settings data (from your store) to post.
  * @returns {Promise<Object>} A promise that resolves with the response from appending the row.
  */
-    async postOneRowPage(spreadsheetName, data, schema, rowIndex) {
+    async postOneRowPage(spreadsheetName, data, schema, rowIndex, schemaName="Settings") {
         try {
             // Retrieve the spreadsheet by name.
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
@@ -1006,7 +1006,7 @@ class GoogleSheetsAPI {
             // const response = await this.updateRowAtIndex(spreadsheetId, "Settings", rowData, rowIndex);
             // if(!response){
             // }
-            const response2 = await this.insertRowAtIndex(spreadsheetId, "Settings", rowData, rowIndex);
+            const response2 = await this.insertRowAtIndex(spreadsheetId, schemaName, rowData, rowIndex);
             // console.log("Settings row appended:", response2);
             return response2;
             // console.log("Settings row appended:", response);

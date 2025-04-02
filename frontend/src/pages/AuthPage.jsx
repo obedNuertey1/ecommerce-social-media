@@ -1,15 +1,21 @@
-import { FacebookIcon, ShieldCheckIcon, KeyIcon} from "lucide-react";
+import { FacebookIcon, ShieldCheckIcon, KeyIcon } from "lucide-react";
 import { useState } from "react";
 import { LoginSocialFacebook, LoginSocialGoogle } from "reactjs-social-login";
 import { useAuthStore } from "../store/useAuthStore";
 import { toast } from "react-hot-toast";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext.jsx";
 
 // Configuration 1
-const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
+// const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
+// const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
+// const CLIENT_SECRET = "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";
+
+// Configuration temporary
+const CLIENT_ID = "735897969269-0nhfejn5pre40a511kvcprm6551bon5n.apps.googleusercontent.com";
 const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
-const CLIENT_SECRET = "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";
+const CLIENT_SECRET = "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";
+const REDIRECT_URI = "http://localhost:5173/google/auth/callback/";
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,21 +38,21 @@ export default function AuthPage() {
     const accessToken = gapi.auth.getToken().access_token;
     console.log({ accessToken });
     fetch("https://www.googleapis.com/drive/v3/files?pageSize=10&fields=files(id,name,mimeType)", {
-        method: 'GET',
-        headers: {
-            Authorization: `Bearer ${accessToken}`
-        }
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
     }).then((response) => {
-        if (!response.ok) {
-            throw new Error("Failed to fetch files from google drive");
-        }
-        return response.json();
+      if (!response.ok) {
+        throw new Error("Failed to fetch files from google drive");
+      }
+      return response.json();
     })
-        .then((data) => {
-            console.log(data);
-            // setFiles(data?.files);
-        })
-}
+      .then((data) => {
+        console.log(data);
+        // setFiles(data?.files);
+      })
+  }
   const handleGoogleLogin = (response) => {
     localStorage.setItem('logged-in', 'true');
     setIsAuthenticated(true)
@@ -149,11 +155,9 @@ export default function AuthPage() {
             </LoginSocialFacebook>
             <LoginSocialGoogle client_id={CLIENT_ID} onResolve={handleGoogleLogin}>
               <button
-                // onClick={handleFacebookLogin}
                 disabled={isLoading || !acceptedTerms}
                 className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
               >
-                {/* bg-[#1877F2] hover:bg-[#166FE5] text-white */}
                 {isLoading ? (
                   <span className="loading loading-spinner"></span>
                 ) : (
@@ -164,6 +168,21 @@ export default function AuthPage() {
                 )}
               </button>
             </LoginSocialGoogle>
+            {/* <a
+              disabled={isLoading || !acceptedTerms}
+              className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
+              href={`https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=https://www.googleapis.com/auth/drive%20https://www.googleapis.com/auth/spreadsheets%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile&access_type=offline&prompt=consent
+              `}
+            >
+              {isLoading ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                <>
+                  <FacebookIcon className="w-4 h-4 sm:w-6 sm:h-6" />
+                  <span className="text-xs sm:text-base">Continue with Google</span>
+                </>
+              )}
+            </a> */}
 
             {/* Divider */}
             <div className="flex items-center gap-2 sm:gap-4 text-base-content/50 text-xs">

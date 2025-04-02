@@ -53,6 +53,7 @@ import SvgAqua from "./patterns/SvgAqua";
 import SvgBusiness from "./patterns/SvgBusiness";
 import SvgNight from "./patterns/SvgNight";
 import SvgDracula from "./patterns/SvgDracula";
+import GoogleAuthCallback from "./pages/GoogleAuthCallback";
 
 const BgPatterns = () => {
   switch (useSettingsStore.getState().settings.visualCustomization.themeSelection.theme) {
@@ -230,6 +231,7 @@ function App() {
       <div className="min-h-screen mx-auto max-w-6xl backdrop-blur-sm">
         <Routes>
           <Route element={<HomePage />} path="/" />
+          <Route element={<GoogleAuthCallback />} path="/google/auth/callback/" />
           <Route element={<ProductPage3 />} path="/product/:id" />
           <Route element={<SettingsPage />} path="/settings" />
           <Route element={<AuthPage />} path="/auth" />

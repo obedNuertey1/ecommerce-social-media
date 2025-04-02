@@ -52,6 +52,125 @@ const func = {
 
         // return uniqueArr
         return uniqueArr.filter(obj => obj.status === "new");
+    },
+    encryptData(plaintext, password) {
+        function textToArrayBuffer(str) {
+            return new TextEncoder().encode(str).buffer;
+        }
+
+        function arrayBufferToBase64(buffer) {
+            const bytes = new Uint8Array(buffer);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary);
+        }
+
+        return (async (plaintext, password) => {
+            try {
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+
+                const keyMaterial = await crypto.subtle.importKey(
+                    "raw",
+                    textToArrayBuffer(password),
+                    "PBKDF2",
+                    false,
+                    ["deriveKey"]
+                );
+
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: "PBKDF2",
+                        salt,
+                        iterations: 100000,
+                        hash: "SHA-256",
+                    },
+                    keyMaterial,
+                    { name: "AES-GCM", length: 256 },
+                    true,
+                    ["encrypt", "decrypt"]
+                );
+
+                const ciphertext = await crypto.subtle.encrypt(
+                    { name: "AES-GCM", iv },
+                    key,
+                    textToArrayBuffer(plaintext)
+                );
+
+                return [
+                    arrayBufferToBase64(salt),
+                    arrayBufferToBase64(iv),
+                    arrayBufferToBase64(ciphertext),
+                ].join(".");
+            } catch (error) {
+                throw new Error("Encryption failed: " + error.message);
+            }
+        })(plaintext, password);
+    },
+    decryptData(encryptedData, password) {
+        function textToArrayBuffer(str) {
+            return new TextEncoder().encode(str).buffer;
+        }
+
+        function arrayBufferToText(buffer) {
+            return new TextDecoder().decode(buffer);
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        return (async (encryptedData, password) => {
+            try {
+                const [saltB64, ivB64, ciphertextB64] = encryptedData.split(".");
+                if (!saltB64 || !ivB64 || !ciphertextB64) {
+                    throw new Error("Invalid encrypted data format");
+                }
+
+                const salt = base64ToArrayBuffer(saltB64);
+                const iv = base64ToArrayBuffer(ivB64);
+                const ciphertext = base64ToArrayBuffer(ciphertextB64);
+
+                const keyMaterial = await crypto.subtle.importKey(
+                    "raw",
+                    textToArrayBuffer(password),
+                    "PBKDF2",
+                    false,
+                    ["deriveKey"]
+                );
+
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: "PBKDF2",
+                        salt,
+                        iterations: 100000,
+                        hash: "SHA-256",
+                    },
+                    keyMaterial,
+                    { name: "AES-GCM", length: 256 },
+                    true,
+                    ["decrypt"]
+                );
+
+                const plaintextBuffer = await crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv },
+                    key,
+                    ciphertext
+                );
+
+                return arrayBufferToText(plaintextBuffer);
+            } catch (error) {
+                throw new Error("Decryption failed: " + error.message);
+            }
+        })(encryptedData, password);
     }
     // , objectDifference(arr1, arr2) {
     //     function isEqual(obj1, obj2) {

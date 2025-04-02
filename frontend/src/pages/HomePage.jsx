@@ -1,4 +1,4 @@
-
+// src/pages/HomePage.jsx
 import { PlusCircleIcon, RefreshCwIcon, PackageIcon, SearchIcon } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import ProductModal2 from "../components/ProductModal2";

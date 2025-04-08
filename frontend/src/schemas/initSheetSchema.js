@@ -6,6 +6,6 @@ export const schemas = [
     { sheetName: "Orders", shape: ["phone", "items", "total", "orderId", "status"]}
     ,
     { sheetName: "NewOrders", shape: ["phone", "items", "total", "orderId", "status"]},
-    { sheetName: "Auth", shape: ["googleUserId", "googleAccessToken", "googleRefreshToken", "facebookUserId", "facebookAccessToken", "facebookRefreshToken", "threadsUserId", "threadsAccessToken", "threadsRefreshToken", "instagramUserId", "instagramAccessToken", "instagramRefreshToken", "businessProfileId"]},
+    { sheetName: "Auth", shape: ["googleUserId", "googleRefreshToken", "googleRefreshTokenExpires" , "facebookUserId", "facebookLongLivedAccessToken", "facebookLongLivedAccessTokenExpires", "threadsUserId", "threadsLongLivedAccessToken", "threadsLongLivedAccessTokenExpires", "instagramUserId", "instagramLongLivedAccessToken", "instagramLongLivedAccessTokenExpires", "businessProfileId"]},
     // { sheetName: "Settings", shape: ["address", "autoPost"] },
 ];

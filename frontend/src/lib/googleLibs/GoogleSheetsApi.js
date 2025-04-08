@@ -1649,13 +1649,17 @@ class GoogleSheetsAPI {
             const range = `${sheetName}!${rowIndex}:${rowIndex}`;
             const data = await this.getSpreadsheetValues(spreadsheetId, range);
             if (!data.values || data.values.length === 0) {
-                throw new Error(`Row ${rowIndex} not found in sheet ${sheetName}`);
+                console.log(`Error Row ${rowIndex} not found in sheet ${sheetName}`);
+                return null;
             }
             const headers = schemas.find((schema)=>schema.sheetName===sheetName).shape;
             // data.values is an array of rows, but since we requested a single row, return the first element.
             data.values.unshift(headers);
             const toObjArr = await convert2dArrToObjArr(data.values);
             console.log({toObjArr})
+            if(sheetName === "Auth"){
+                return toObjArr ? toObjArr[0] : null;
+            }
             const getMediaUrlsResult = await getMediaUrls(toObjArr);
             console.log({getMediaUrlsResult: getMediaUrlsResult[0]})
             return getMediaUrlsResult[0];

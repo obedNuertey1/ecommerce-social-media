@@ -1,13 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 import useQuery from '../hooks/useQuery';
-import {useNavigate} from "react-router-dom";
-import {encryptData, getUserIdFromIdToken} from "../funcs/essentialFuncs"
-import {schemas} from "../schemas/initSheetSchema";
+import { useNavigate } from "react-router-dom";
+import { encryptData, getUserIdFromIdToken } from "../funcs/essentialFuncs"
+import { schemas } from "../schemas/initSheetSchema";
 import { GoogleSheetsAPI } from '../lib/googleLibs';
 import { cancellableWaiting } from "../funcs/waiting";
+import { useSettingsStore } from '../store/useSettingsStore';
 
-const AuthSchema = schemas.find((elem)=>elem.sheetName === "Auth");
+const AuthSchema = schemas.find((elem) => elem.sheetName === "Auth");
 
 // Configuration temporary
 const CLIENT_ID = "735897969269-0nhfejn5pre40a511kvcprm6551bon5n.apps.googleusercontent.com";
@@ -15,15 +16,47 @@ const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
 const CLIENT_SECRET = "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";
 const REDIRECT_URI = "http://localhost:5173/google/auth/callback/";
 const ENCRYPT_DECRYPT_KEY = "elephantTusk";
+const FACEBOOK_APP_ID = "827316916277859";
+const FACEBOOK_APP_SECRET = "c8dbc0605397eccf104d6a0081029614";
+
+
+async function exchangeFacebookToken(appId, appSecret, shortLivedToken) {
+    
+    const params = new URLSearchParams({
+        grant_type: 'fb_exchange_token',
+        client_id: appId,
+        client_secret: appSecret,
+        fb_exchange_token: shortLivedToken,
+    });
+
+    try {
+        const response = await fetch(
+            `https://graph.facebook.com/v11.0/oauth/access_token?${params.toString()}`,
+            { method: 'GET' }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Long-lived token data:', data);
+        return data;
+    } catch (error) {
+        console.error('Error exchanging token:', error);
+        throw error;
+    }
+}
 
 function GoogleAuthCallback() {
     const navigate = useNavigate();
     const { gapi } = useGoogleAuthContext();
     const query = useQuery();
+    const { loadSettings } = useSettingsStore();
     // get code
     const code = query.get("code");
     const runOnceRef = useRef(false);
-    console.log({code})
+    console.log({ code })
     useEffect(() => {
         const getRefreshToken = async () => {
             if (runOnceRef.current) return;
@@ -34,7 +67,7 @@ function GoogleAuthCallback() {
             data.append("client_secret", CLIENT_SECRET);
             data.append("redirect_uri", REDIRECT_URI);
             data.append("grant_type", "authorization_code");
-            
+
             fetch("https://oauth2.googleapis.com/token", {
                 method: "POST",
                 headers: {
@@ -42,22 +75,25 @@ function GoogleAuthCallback() {
                 },
                 body: data.toString()
             })
-                .then(response => response.json())
+                .then(response => {
+                    console.log({response});
+                    return response.json();
+                })
                 .then(async (result) => {
-                    try{
-                        const {promise, cancel} = cancellableWaiting(2000);
-                        console.log({result});
-                        localStorage.setItem("googleAuthToken", JSON.stringify(result));
+                    try {
+                        // const {promise, cancel} = cancellableWaiting(2000);
+                        console.log({ result });
                         const spreadsheetName = "EcommerceSpreadSheet";
                         const userId = getUserIdFromIdToken(result.id_token);
                         // this.gapi.auth.getToken().access_token
                         const gapi2 = {
                             auth: {
-                                getToken(){
+                                getToken() {
                                     return result;
                                 }
                             }
                         }
+                        console.log({gapi2});
                         // Set tokens to authenticate user
                         gapi.auth.setToken(result);
                         // gapi.auth2.getAuthInstance().setAccessToken(result.access_token);
@@ -67,51 +103,42 @@ function GoogleAuthCallback() {
                         const googleRefreshToken = await encryptData(result.refresh_token, ENCRYPT_DECRYPT_KEY);
                         // Encrypt meta refresh and access tokens
                         const googleSheet = new GoogleSheetsAPI(gapi2);
-                        // await spreadsheet.postOneRowPage(spreadsheetName, {
-                        //     googleUserId: userId,
-                        //     googleAccessToken: null,
-                        //     googleRefreshToken: googleRefreshToken,
-                        //     facebookUserId: null,
-                        //     facebookAccessToken: null,
-                        //     facebookRefreshToken: null,
-                        //     threadsUserId: null,
-                        //     threadsAccessToken: null,
-                        //     threadsRefreshToken: null,
-                        //     instagramUserId: null,
-                        //     instagramAccessToken: null,
-                        //     instagramRefreshToken: null,
-                        //     businessProfileId: null
-                        // }, AuthSchema.shape, 2, AuthSchema.sheetName);
+                        const facebookAuthData = JSON.parse(localStorage.getItem("facebookAuthToken"));
+                        console.log({facebookAuthData});
+                        const longLivedFBTokenData = {};
+                        if (facebookAuthData) {
+                            const facebookAccessToken = facebookAuthData.accessToken
+                            const longLivedTokenData = await exchangeFacebookToken(FACEBOOK_APP_ID, FACEBOOK_APP_SECRET, facebookAccessToken);
+                            longLivedFBTokenData["facebookLongLivedAccessToken"] = await encryptData(longLivedTokenData.access_token, ENCRYPT_DECRYPT_KEY);
+                            longLivedFBTokenData["facebookLongLivedAccessTokenExpires"] = longLivedTokenData.expires_in;
+                            longLivedFBTokenData["facebookUserId"] = facebookAuthData.userID;
+                            console.log({longLivedTokenData, facebookAccessToken})
+                        }
 
                         await googleSheet.appendRowInPage("EcommerceSpreadSheet", AuthSchema.sheetName, {
                             googleUserId: userId,
-                            googleAccessToken: null,
-                            googleRefreshToken: googleRefreshToken,
-                            facebookUserId: null,
-                            facebookAccessToken: null,
-                            facebookRefreshToken: null,
+                            googleRefreshToken: googleRefreshToken, // encrypted
+                            googleRefreshTokenExpires: result.expires_in,
+                            facebookUserId: longLivedFBTokenData.facebookUserId,
+                            facebookLongLivedAccessToken: longLivedFBTokenData.facebookLongLivedAccessToken, // encrypted
+                            facebookLongLivedAccessTokenExpires: longLivedFBTokenData.facebookLongLivedAccessTokenExpires,
                             threadsUserId: null,
-                            threadsAccessToken: null,
-                            threadsRefreshToken: null,
+                            threadsLongLivedAccessToken: null,
+                            threadsLongLivedAccessTokenExpires: null,
                             instagramUserId: null,
-                            instagramAccessToken: null,
-                            instagramRefreshToken: null,
+                            instagramLongLivedAccessToken: null,
+                            instagramLongLivedAccessTokenExpires: null,
                             businessProfileId: null
                         }, AuthSchema.shape);
-                        console.log({result})
-
-                        // clear userIds and meta auth tokens from localStorage (do same with google auth tokens and userId)
-                        await promise;
-                        localStorage.setItem("fb_refresh_token", "");
-                        localStorage.setItem("inst_refresh_token", "");
-                        localStorage.setItem("th_refresh_token", "");
-                        localStorage.setItem("fb_access_token", "")
-                        localStorage.setItem("inst_access_token", "")
-                        localStorage.setItem("th_access_token", "")
+                        console.log({ result })
                         // Authenticate user and redirect to homepage (if given the right privilege)
-                        cancel();
-                        navigate("/");
-                    }catch(e){
+                        // localStorage.clear();
+                        localStorage.setItem("googleAuthToken", JSON.stringify(result));
+                        localStorage.removeItem("facebookAuthToken");
+                        localStorage.setItem("logged-in", JSON.stringify(true));
+                        await loadSettings(gapi2);
+                        window.location.href = "/";
+                    } catch (e) {
                         console.log(e);
                         throw new Error(e);
                     }

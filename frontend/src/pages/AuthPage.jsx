@@ -1,10 +1,16 @@
 import { FacebookIcon, ShieldCheckIcon, KeyIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LoginSocialFacebook, LoginSocialGoogle } from "reactjs-social-login";
 import { useAuthStore } from "../store/useAuthStore";
 import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext.jsx";
+import { useNavigate } from "react-router-dom";
+import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
+import { getUserIdFromIdToken } from "../funcs/essentialFuncs";
+import { cancellableWaiting } from "../funcs/waiting";
+import { useSettingsStore } from "../store/useSettingsStore.js";
+import { schemas as initSheetSchema } from "../schemas/initSheetSchema";
 
 // Configuration 1
 // const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
@@ -16,6 +22,7 @@ const CLIENT_ID = "735897969269-0nhfejn5pre40a511kvcprm6551bon5n.apps.googleuser
 const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
 const CLIENT_SECRET = "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";
 const REDIRECT_URI = "http://localhost:5173/google/auth/callback/";
+const FACEBOOK_APP_ID = "827316916277859";
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,43 +31,130 @@ export default function AuthPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { facebook_authenticate, passkey_authenticate } = useAuthStore();
   const { gapi } = useGoogleAuthContext();
+  const { loadSettings, settingsSchema } = useSettingsStore();
+  const navigate = useNavigate();
 
-  const handleFacebookLogin = () => {
+  const handleFacebookLogin = (response) => {
+    setIsLoading(true);
+    console.log({response})
     if (!acceptedTerms) {
       toast.error("You must accept the terms to continue");
+      setIsLoading(false);
       return;
     }
-    setIsLoading(true);
+    localStorage.setItem("facebookAuthToken", JSON.stringify(response.data));
+
+    setIsLoading(false);
     // Existing Facebook logic
+    localStorage.setItem("facebookAuthCallbackActivated", "true");
+    window.location.href = "/facebook/auth/callback/";
   };
 
-  const listFiles = () => {
-    const accessToken = gapi.auth.getToken().access_token;
-    console.log({ accessToken });
-    fetch("https://www.googleapis.com/drive/v3/files?pageSize=10&fields=files(id,name,mimeType)", {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    }).then((response) => {
-      if (!response.ok) {
-        throw new Error("Failed to fetch files from google drive");
-      }
-      return response.json();
-    })
-      .then((data) => {
-        console.log(data);
-        // setFiles(data?.files);
-      })
-  }
-  const handleGoogleLogin = (response) => {
-    localStorage.setItem('logged-in', 'true');
-    setIsAuthenticated(true)
-    gapi.auth2.getAuthInstance().signIn()
-    listFiles()
-    localStorage.setItem("logged-in", "true")
-    console.log(response);
-  }
+  const [googleIsLoading, setGoogleIsLoading] = useState(false);
+  useEffect(() => {
+    return () => {
+      setGoogleIsLoading(false);
+    }
+  }, []);
+  // const handleGoogleLogin = () => {
+  //   setGoogleIsLoading(true);
+  //   gapi.auth2.getAuthInstance().signIn()
+  //     .then(async (googleUser) => {
+  //       // Access basic profile information
+  //       const profile = googleUser.getBasicProfile();
+  //       console.log("ID: " + profile.getId());
+  //       console.log("Name: " + profile.getName());
+  //       console.log("Image URL: " + profile.getImageUrl());
+  //       console.log("Email: " + profile.getEmail());
+  //       console.log("gapi.auth.getToken()=", gapi.auth.getToken());
+
+  //       // You can also access the auth response, which includes the access token.
+  //       const authResponse = googleUser.getAuthResponse();
+  //       console.log("Access Token: ", authResponse.access_token);
+  //       try {
+  //         const storedToken = localStorage.getItem("googleAuthToken");
+  //         if (storedToken) {
+  //           gapi.auth.setToken(JSON.parse(storedToken));
+  //           gapi.client.setToken(JSON.parse(storedToken));
+  //         }
+
+  //         const authInstance = gapi.auth2.getAuthInstance();
+  //         const isSignedIn = await authInstance.isSignedIn.get();
+  //         const title = "EcommerceSpreadSheet";
+
+  //         console.log("Before if (isSignedIn) { This is supposed to house the authData");
+  //         if (isSignedIn) {
+  //           // console.log({initSheetSchema})
+  //           const googleDrive = new GoogleDriveAPI(gapi);
+  //           const googleSheet = new GoogleSheetsAPI(gapi);
+  //           const driveRes = await googleDrive.createFolderIfNotExists("EcommerceWebsite");
+  //           initSheetSchema.push(settingsSchema())
+  //           const sheetRes = await googleSheet.createSpreadsheetWithSheetsAndHeaders(title, initSheetSchema);
+  //           const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
+  //           console.log("After if (isSignedIn) { This is supposed to house the authData");
+
+  //           // Check google spreadsheet if google refresh token exist
+  //           console.log("This is supposed to house the authData");
+  //           if (authData) {
+  //             console.log({ authData })
+  //             if (authData.googleRefreshToken) {
+  //               // console.log("This is authData:",{authData});
+  //               const id_token = gapi.auth.getToken().id_token;
+  //               const googleUserId = authData.googleUserId;
+  //               const userId = getUserIdFromIdToken(id_token);
+  //               // console.log("googleUserId === userId",(googleUserId === userId))
+  //               // Check if google userId matches spreadsheet userId
+  //               if (googleUserId !== userId) {
+  //                 gapi.auth2.getAuthInstance().signOut();
+  //                 localStorage.clear();
+  //                 localStorage.setItem('logged-in', 'false');
+  //                 navigate("/auth");
+  //               } else if (googleUserId === userId) {
+  //                 // Check if logged in meta tokens is equal to spreadsheet meta tokens
+  //                 // if false update Auth sheet with new meta tokens
+  //                 // clear userIds and meta auth tokens from localstorage (do same with google drive)
+  //               }
+  //             }
+  //           } else if (!authData) {
+  //             console.log("else if (!authData) {")
+  //             // Means the user is a new user
+  //             // If so we need to create a refresh token for the new user
+  //             // logoutuser
+  //             gapi.auth2.getAuthInstance().signOut()
+  //             localStorage.clear();
+  //             const { cancel, promise } = cancellableWaiting(3000);
+  //             await promise;
+  //             // redirect to authenticate page by getting code
+  //             const url = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=https://www.googleapis.com/auth/drive%20https://www.googleapis.com/auth/spreadsheets%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile&access_type=offline&prompt=consent
+  //               `;
+  //             const link = document.createElement("a");
+  //             link.href = url;
+  //             document.body.appendChild(link);
+  //             cancel();
+  //             link.click();
+  //             document.body.removeChild(link);
+  //           }
+
+  //           await googleSheet.updateHeadersByName(title, initSheetSchema);
+  //           // console.log({ driveRes, sheetRes })
+  //           await loadSettings(gapi);
+  //           if (isSignedIn) {
+  //             localStorage.setItem('logged-in', 'true');
+  //           } else if (!isSignedIn) {
+  //             localStorage.setItem("logged-in", "false");
+  //           }
+
+  //           console.log("Navigate to home page");
+  //           window.location.href = "/";
+  //         }
+  //       } catch (e) {
+  //         console.log(e);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error during sign-in:", error);
+  //     });
+  // }
 
   const handlePasskeyLogin = async (e) => {
     e.preventDefault();
@@ -136,9 +230,10 @@ export default function AuthPage() {
           {/* Login Options */}
           <div className="w-full space-y-3 sm:space-y-4">
             {/* Facebook Button */}
-            <LoginSocialFacebook appId="YOUR_APP_ID" onResolve={facebook_authenticate}>
+            <LoginSocialFacebook appId={FACEBOOK_APP_ID} fields="name,email,picture" onResolve={handleFacebookLogin} onReject={()=>{
+              toast.error("Facebook Login failed");
+            }}>
               <button
-                onClick={handleFacebookLogin}
                 disabled={isLoading || !acceptedTerms}
                 className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
               >
@@ -153,21 +248,29 @@ export default function AuthPage() {
                 )}
               </button>
             </LoginSocialFacebook>
-            <LoginSocialGoogle client_id={CLIENT_ID} onResolve={handleGoogleLogin}>
-              <button
-                disabled={isLoading || !acceptedTerms}
-                className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
-              >
-                {isLoading ? (
-                  <span className="loading loading-spinner"></span>
-                ) : (
-                  <>
-                    <FacebookIcon className="w-4 h-4 sm:w-6 sm:h-6" />
-                    <span className="text-xs sm:text-base">Continue with Google</span>
-                  </>
-                )}
-              </button>
-            </LoginSocialGoogle>
+            {/* <LoginSocialGoogle client_id={CLIENT_ID} onResolve={(response) => {
+              alert("Google login successful!");
+              // handleGoogleLogin(response); // Call your handler if needed.
+            }}
+            onReject={(error)=>{
+              alert("Google login failed!");
+            }}
+            > */}
+            {/* <button
+              onClick={handleGoogleLogin}
+              disabled={googleIsLoading || !acceptedTerms}
+              className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
+            >
+              {googleIsLoading ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                <>
+                  <FacebookIcon className="w-4 h-4 sm:w-6 sm:h-6" />
+                  <span className="text-xs sm:text-base">Continue with Google</span>
+                </>
+              )}
+            </button> */}
+            {/* </LoginSocialGoogle> */}
             {/* <a
               disabled={isLoading || !acceptedTerms}
               className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"

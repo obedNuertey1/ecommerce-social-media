@@ -7,13 +7,14 @@ import { useSettingsStore } from "../store/useSettingsStore";
 import { cancellableWaiting } from "../funcs/waiting";
 import useQuery from "../hooks/useQuery";
 import useTokenRefresh from "../hooks/useTokenRefresh";
+import { getUserIdFromIdToken } from "../funcs/essentialFuncs"
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(null);
 
 export function useGoogleAuthContext() {
     return useContext(AuthContext);
 }
-
 
 // Configuration 1
 // const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
@@ -24,6 +25,7 @@ export function useGoogleAuthContext() {
 const CLIENT_ID = "735897969269-0nhfejn5pre40a511kvcprm6551bon5n.apps.googleusercontent.com";
 const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
 const CLIENT_SECRET = "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";
+const REDIRECT_URI = "http://localhost:5173/google/auth/callback/";
 
 // Configuration 2
 // const CLIENT_ID = "735897969269-79cbatqg3sv47pvgi8famqnqjv289kg4.apps.googleusercontent.com";
@@ -40,9 +42,10 @@ export function GoogleAuthProvider({ children }) {
     const [error, setError] = useState("");
     const [files, setFiles] = useState(null);
     const initializationStarted = useRef(false);
+    const navigate = useNavigate();
     // const query = useQuery();
     // const code = query.get("code");
-    const {settingsSchema, loadSettings} = useSettingsStore();
+    const { settingsSchema, loadSettings} = useSettingsStore();
     useTokenRefresh();
 
 
@@ -63,7 +66,7 @@ export function GoogleAuthProvider({ children }) {
                 });
 
                 const storedToken = localStorage.getItem("googleAuthToken");
-                if(storedToken){
+                if (storedToken) {
                     gapi.auth.setToken(JSON.parse(storedToken));
                     gapi.client.setToken(JSON.parse(storedToken));
                 }
@@ -73,6 +76,13 @@ export function GoogleAuthProvider({ children }) {
                 const title = "EcommerceSpreadSheet";
 
                 setIsAuthenticated(isSignedIn);
+                if (isSignedIn || gapi.auth.getToken().access_token || gapi.client.getToken().access_token) {
+                    localStorage.setItem('logged-in', 'true');
+                } else if (!isSignedIn || !gapi.auth.getToken().access_token || !gapi.client.getToken().access_token) {
+                    localStorage.setItem("logged-in", "false");
+                }
+
+                console.log("Before if (isSignedIn) { This is supposed to house the authData");
                 if (isSignedIn) {
                     // console.log({initSheetSchema})
                     const googleDrive = new GoogleDriveAPI(gapi);
@@ -80,7 +90,52 @@ export function GoogleAuthProvider({ children }) {
                     const driveRes = await googleDrive.createFolderIfNotExists("EcommerceWebsite");
                     initSheetSchema.push(settingsSchema())
                     const sheetRes = await googleSheet.createSpreadsheetWithSheetsAndHeaders(title, initSheetSchema);
-                    // const sheetRes = await googleSheet.updateHeadersByName(title, initSheetSchema);
+                    const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
+                    console.log("After if (isSignedIn) { This is supposed to house the authData");
+
+                    // Check google spreadsheet if google refresh token exist
+                    console.log("This is supposed to house the authData");
+                    // if (authData) {
+                    //     console.log({authData})
+                    //     if (authData.googleRefreshToken) {
+                    //         // console.log("This is authData:",{authData});
+                    //         const id_token = gapi.auth.getToken().id_token;
+                    //         const googleUserId = authData.googleUserId;
+                    //         const userId = getUserIdFromIdToken(id_token);
+                    //         // console.log("googleUserId === userId",(googleUserId === userId))
+                    //         // Check if google userId matches spreadsheet userId
+                    //         if (googleUserId !== userId) {
+                    //             gapi.auth2.getAuthInstance().signOut();
+                    //             localStorage.clear();
+                    //             localStorage.setItem('logged-in', 'false');
+                    //             navigate("/auth");
+                    //         } else if (googleUserId === userId) {
+                    //             // Check if logged in meta tokens is equal to spreadsheet meta tokens
+                    //             // if false update Auth sheet with new meta tokens
+                    //             // clear userIds and meta auth tokens from localstorage (do same with google drive)
+                    //         }
+                    //     }
+                    // } else if (!authData) {
+                    //     console.log("else if (!authData) {")
+                    //     // Means the user is a new user
+                    //     // If so we need to create a refresh token for the new user
+                    //     // logoutuser
+                    //     gapi.auth2.getAuthInstance().signOut()
+                    //     localStorage.clear();
+                    //     const {cancel, promise} = cancellableWaiting(3000);
+                    //     await promise;
+                    //     // redirect to authenticate page by getting code
+                    //     const url = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=https://www.googleapis.com/auth/drive%20https://www.googleapis.com/auth/spreadsheets%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile&access_type=offline&prompt=consent
+                    //     `;
+                    //     const link = document.createElement("a");
+                    //     link.href = url;
+                    //     document.body.appendChild(link);
+                    //     cancel();
+                    //     link.click();
+                    //     document.body.removeChild(link);
+                    // }
+
+                    await googleSheet.updateHeadersByName(title, initSheetSchema);
                     // console.log({ driveRes, sheetRes })
                     await loadSettings(gapi);
                 }
@@ -94,7 +149,7 @@ export function GoogleAuthProvider({ children }) {
             // }
         }
         gapi.load('client:auth2', initializeGapiClient);
-        return ()=>{}
+        // return () => { }
     }, [])
 
     const handleLoginSuccess = (response) => {

@@ -31,7 +31,7 @@ export const textToSpeech = (text, lang = "en-US", pitch = 1, rate = 1, voice = 
         console.log("Available voices:", voices);
     }
     // Sometimes voices load asynchronously so we set an event listener.
-    window.speechSynthesis.onvoiceschnaged = loadVoices;
+    window.speechSynthesis.onvoiceschanged = loadVoices;
 
     const utterance = new SpeechSynthesisUtterance(text);
 
@@ -47,6 +47,66 @@ export const textToSpeech = (text, lang = "en-US", pitch = 1, rate = 1, voice = 
 
     window.speechSynthesis.speak(utterance);
 }
+// export const textToSpeech = async (
+//     text,
+//     lang = "en-US",
+//     pitch = 1,
+//     rate = 1,
+//     voiceIndex = 0,
+//     volume = 1
+// ) => {
+//     // Wait for voices to load
+//     const voices = await new Promise((resolve) => {
+//         const voices = window.speechSynthesis.getVoices();
+//         if (voices.length) return resolve(voices);
+
+//         window.speechSynthesis.onvoiceschanged = () => {
+//             resolve(window.speechSynthesis.getVoices());
+//         };
+//     });
+
+//     const utterance = new SpeechSynthesisUtterance(text);
+
+//     utterance.lang = lang;
+//     utterance.pitch = pitch;
+//     utterance.rate = rate;
+//     utterance.volume = volume;
+
+//     // Validate and set voice
+//     if (voices[voiceIndex]) {
+//         utterance.voice = voices[voiceIndex];
+//     } else {
+//         console.warn(`Voice index ${voiceIndex} not available, using default voice`);
+//     }
+
+//     window.speechSynthesis.speak(utterance);
+// };
+
+// export const textToSpeech = (text, lang = "en-US", pitch = 1, rate = 1, voice = 0, volume = 1) => {
+//     const utterance = new SpeechSynthesisUtterance(text);
+//     utterance.lang = lang;
+//     utterance.pitch = pitch;
+//     utterance.rate = rate;
+//     utterance.volume = volume;
+
+//     function speakWhenVoicesReady() {
+//         const voices = window.speechSynthesis.getVoices();
+//         if (voices.length > 0) {
+//             // Set the selected voice.
+//             utterance.voice = voices[voice];
+//             window.speechSynthesis.speak(utterance);
+//         } else {
+//             // If no voices available yet, try again after 100ms.
+//             setTimeout(speakWhenVoicesReady, 100);
+//         }
+//     }
+
+//     // Option 1: Listen for the voiceschanged event, then speak.
+//     window.speechSynthesis.onvoiceschanged = speakWhenVoicesReady;
+
+//     // Option 2: Immediately try to speak; if voices aren't ready, our recursive function will handle it.
+//     speakWhenVoicesReady();
+// };
 
 export const encryptData = async (plaintext, password) => {
     const worker = new funcsWorker();

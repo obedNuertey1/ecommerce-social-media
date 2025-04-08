@@ -22,6 +22,8 @@ function HomePage() {
     }, [products]);
     
     useEffect(() => {
+        resetFormData();
+        // localStorage.setItem("googleAuthCallbackActivated", "true");
         fetchProducts(gapi);
         const playSound = ()=>{
             if(playNotifRef.current)  return;

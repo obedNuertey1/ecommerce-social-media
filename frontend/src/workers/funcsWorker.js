@@ -16,7 +16,7 @@ const func = {
             obj.id = idx + 2;
             return obj;
         })
-        return result;
+        return result ? result : null;
     },
     getMediaUrls(products) {
         return products.map((product) => {

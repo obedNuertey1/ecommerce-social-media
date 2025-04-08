@@ -1,8 +1,9 @@
 import { Link, useResolvedPath, useNavigate } from "react-router-dom";
-import { ShoppingCartIcon, ShoppingBagIcon, SettingsIcon, PackageIcon, KeyIcon, MenuIcon, XIcon } from "lucide-react";
+import { ShoppingCartIcon, ShoppingBagIcon, SettingsIcon, PackageIcon, KeyIcon, MenuIcon, XIcon, LogOutIcon } from "lucide-react";
 import { useProductStore } from "../store/useProductStore";
-import {useOrderStore} from "../store/useOrderStore";
-import {useState, useRef, useEffect} from "react";
+import { useOrderStore } from "../store/useOrderStore";
+import { useState, useRef, useEffect } from "react";
+import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 
 function Navbar() {
     const { pathname } = useResolvedPath();
@@ -15,12 +16,23 @@ function Navbar() {
     const isInfoPage = /^\/info\/?.*$/.test(pathname);
     const isAuth = pathname === "/auth";
     const { products, resetFormData } = useProductStore();
-    const {orders} = useOrderStore();
+    const { orders } = useOrderStore();
+    const {gapi} = useGoogleAuthContext();
 
     const [isOpen, setIsOpen] = useState(false);
 
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
+
+    const handleLogout = () => {
+        // authService.logout();
+        // Clear any relevant store data if needed
+        gapi.auth2.getAuthInstance().signOut()
+        resetFormData();
+        localStorage.clear();
+        // navigate("/auth");
+        window.location.href = "/auth";
+    };
 
     // Click outside handler
     useEffect(() => {
@@ -43,7 +55,7 @@ function Navbar() {
     const mobileMenuLinks = (
         <>
             <li>
-                <Link to="/orders" onClick={()=>setIsOpen(false)} className="flex justify-between">
+                <Link to="/orders" onClick={() => setIsOpen(false)} className="flex justify-between">
                     <div className="flex items-center gap-2">
                         <PackageIcon className="size-5" />
                         Orders
@@ -52,20 +64,20 @@ function Navbar() {
                 </Link>
             </li>
             <li>
-                <Link to="/passkey" onClick={()=>setIsOpen(false)} className="flex items-center gap-2">
+                <Link to="/passkey" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
                     <KeyIcon className="size-5" />
                     Generate Passkey
                 </Link>
             </li>
             <li>
-                <Link to="/settings" onClick={()=>setIsOpen(false)} className="flex items-center gap-2">
+                <Link to="/settings" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
                     <SettingsIcon className="size-5" />
                     Settings
                 </Link>
             </li>
             {isHomePage && (
                 <li>
-                    <Link to="/products" onClick={()=>setIsOpen(false)} className="flex justify-between">
+                    <Link to="/products" onClick={() => setIsOpen(false)} className="flex justify-between">
                         <div className="flex items-center gap-2">
                             <ShoppingBagIcon className="size-5" />
                             Products
@@ -74,6 +86,20 @@ function Navbar() {
                     </Link>
                 </li>
             )}
+            <li>
+                <button
+                    onClick={() => {
+                        setIsOpen(false);
+                        handleLogout();
+                    }}
+                    className="flex text-error justify-between text-left hover:bg-base-200"
+                >
+                    <div className="flex items-center gap-2">
+                        <LogOutIcon className="size-5" />
+                        Logout
+                    </div>
+                </button>
+            </li>
         </>
     );
 
@@ -141,40 +167,47 @@ function Navbar() {
                                         <ShoppingBagIcon className="size-5" />
                                     </div>
                                 </div>
+                                <button 
+                                    onClick={handleLogout}
+                                    className="btn btn-error btn-outline btn-circle"
+                                    title="Logout"
+                                >
+                                    <LogOutIcon className="size-5" />
+                                </button>
                             </>
                         )}
                     </div>
                     {/* Mobile Menu */}
-                    {!isAuth && 
-                    <div className="flex-none md:hidden">
-                        <div className={`dropdown ${isOpen ? "dropdown-open" : ""}`}>
-                            <button ref={buttonRef} onClick={(e)=>{
-                                e.preventDefault();
-                                setIsOpen(!isOpen);
-                            }} tabIndex={0} className="btn btn-ghost btn-circle">
-                                <div className="indicator">
-                                    <MenuIcon className={`size-5 transition-all duration-300 ${isOpen ? 'rotate-180 opacity-0' : 'rotate-0 opacity-100'}`} />
-                                    <XIcon className={`absolute size-5 transition-all duration-300 ${isOpen ? 'scale-100 opacity-100 rotate-180' : 'scale-90 opacity-0 rotate-0'}`} />
-                                    {!isOpen && 
-                                    <div className="indicator indicator-item indicator-end flex items-center justify-end gap-[1px]">
-                                        <span className="bg-primary border border-primary-content size-2 rounded-full" />
-                                        {/* Will do same for spam above in the near future */}
-                                        {(isHomePage && products.length > 0) && <span className="bg-accent border border-accent-content size-2 rounded-full" />}
+                    {!isAuth &&
+                        <div className="flex-none md:hidden">
+                            <div className={`dropdown ${isOpen ? "dropdown-open" : ""}`}>
+                                <button ref={buttonRef} onClick={(e) => {
+                                    e.preventDefault();
+                                    setIsOpen(!isOpen);
+                                }} tabIndex={0} className="btn btn-ghost btn-circle">
+                                    <div className="indicator">
+                                        <MenuIcon className={`size-5 transition-all duration-300 ${isOpen ? 'rotate-180 opacity-0' : 'rotate-0 opacity-100'}`} />
+                                        <XIcon className={`absolute size-5 transition-all duration-300 ${isOpen ? 'scale-100 opacity-100 rotate-180' : 'scale-90 opacity-0 rotate-0'}`} />
+                                        {!isOpen &&
+                                            <div className="indicator indicator-item indicator-end flex items-center justify-end gap-[1px]">
+                                                <span className="bg-primary border border-primary-content size-2 rounded-full" />
+                                                {/* Will do same for spam above in the near future */}
+                                                {(isHomePage && products.length > 0) && <span className="bg-accent border border-accent-content size-2 rounded-full" />}
+                                            </div>
+                                        }
                                     </div>
-                                    }
-                                </div>
-                            </button>
-                            {isOpen && 
-                            <ul
-                                ref={menuRef}
-                                tabIndex={0}
-                                className="dropdown-content right-0 mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
-                            >
-                                {mobileMenuLinks}
-                            </ul>
-                            }
+                                </button>
+                                {isOpen &&
+                                    <ul
+                                        ref={menuRef}
+                                        tabIndex={0}
+                                        className="dropdown-content right-0 mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
+                                    >
+                                        {mobileMenuLinks}
+                                    </ul>
+                                }
+                            </div>
                         </div>
-                    </div>
                     }
                 </div>
             </div>

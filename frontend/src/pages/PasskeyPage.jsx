@@ -11,16 +11,19 @@ const PasskeyPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [viewPrivilegesModal, setViewPrivilegesModal] = useState(false);
     const [selectedRoles, setSelectedRoles] = useState([]);
+    const [selectedPages, setSelectedPages] = useState([]);
     const [passkeyData, setPasskeyData] = useState({
         name: '',
         passkey: '',
         privileges: [],
+        accessiblePages: [],
     });
 
     const navigate = useNavigate();
     const { resetFormData } = useProductStore();
 
     const [viewedPrivileges, setViewedPrivileges] = useState([]);
+    const [viewedPages, setViewedPages] = useState([]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -36,6 +39,16 @@ const PasskeyPage = () => {
         { label: 'Editor', value: 'editor' },
         { label: 'Viewer', value: 'viewer' },
         { label: 'Billing', value: 'billing' },
+    ];
+
+    const pages = [
+        { label: 'Products', value: 'products' },
+        { label: 'Orders', value: 'orders' },
+        { label: 'Settings', value: 'settings' },
+        { label: 'Analytics', value: 'analytics' },
+        { label: 'Passkeys', value: 'passkeys' },
+        { label: 'Passkey Logs', value: 'passkey-logs' },
+        { label: "Chat", value: "chat"}
     ];
 
     const generateRandomHash = () => {
@@ -59,6 +72,13 @@ const PasskeyPage = () => {
         );
     };
 
+    const togglePage = (page) => {
+        setSelectedPages(prev => 
+            prev.includes(page) ? prev.filter(p => p !== page) :
+            [...prev, page]
+        );
+    }
+
     const handleSavePasskey = () => {
         if (!passkeyData.name || !passkeyData.passkey) {
             toast.error('Please fill all required fields');
@@ -68,6 +88,7 @@ const PasskeyPage = () => {
         const newPasskey = {
             ...passkeyData,
             privileges: selectedRoles,
+            accessiblePages: selectedPages,
             dateCreated: new Date().toISOString(),
             dateModified: new Date().toISOString(),
         };
@@ -88,12 +109,14 @@ const PasskeyPage = () => {
         setIsModalOpen(false);
         setIsEditing(false);
         setSelectedRoles([]);
+        setSelectedPages([]);
         setPasskeyData({ name: '', passkey: '', privileges: [] });
     };
 
     const handleEdit = (passkey) => {
         setPasskeyData(passkey);
         setSelectedRoles(passkey.privileges);
+        setSelectedPages(passkey.accessiblePages);
         setIsEditing(true);
         setIsModalOpen(true);
     };
@@ -206,6 +229,7 @@ const PasskeyPage = () => {
                                             <button
                                                 onClick={() => {
                                                     setViewedPrivileges(pk.privileges);
+                                                    setViewedPages(pk.accessiblePages);
                                                     setViewPrivilegesModal(true);
                                                 }}
                                                 className="btn btn-ghost btn-xs"
@@ -290,6 +314,21 @@ const PasskeyPage = () => {
                                 ))}
                             </div>
                         </div>
+                        <div>
+                            <label className="label">Accessible Pages</label>
+                            <div className="flex flex-wrap gap-2">
+                                {pages.map(page => (
+                                    <button
+                                        key={page.value}
+                                        onClick={() => togglePage(page.value)}
+                                        className={`btn btn-sm ${selectedPages.includes(page.value) ? 'btn-primary' : 'btn-ghost'
+                                            }`}
+                                    >
+                                        {page.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="modal-action">
@@ -304,14 +343,26 @@ const PasskeyPage = () => {
             {/* View Privileges Modal */}
             {createPortal(<div className={`modal ${viewPrivilegesModal ? 'modal-open' : ''}`}>
                 <div className="modal-box">
-                    <h3 className="font-bold text-lg mb-4">Passkey Privileges</h3>
-                    <ul className="list-disc pl-5 space-y-2">
+                    <h3 className="font-bold text-lg mb-4">Passkey</h3>
+                    <h4 className="font-bold text-sm mb-1">Privileges</h4>
+                    <ul className="list-disc pl-5 space-y-2 mb-3">
                         {viewedPrivileges.map(role => (
                             <li
                                 key={role}
                                 className="capitalize badge badge-outline badge-sm mr-2"
                             >
                                 {role}
+                            </li>
+                        ))}
+                    </ul>
+                    <h4 className="font-bold text-sm mb-1">Pages</h4>
+                    <ul className="list-disc pl-5 space-y-2">
+                        {viewedPages.map(page => (
+                            <li
+                                key={page}
+                                className="capitalize badge badge-outline badge-sm mr-2"
+                            >
+                                {page}
                             </li>
                         ))}
                     </ul>

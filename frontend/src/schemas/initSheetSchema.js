@@ -7,5 +7,13 @@ export const schemas = [
     ,
     { sheetName: "NewOrders", shape: ["phone", "items", "total", "orderId", "status"]},
     { sheetName: "Auth", shape: ["googleUserId", "googleRefreshToken", "googleRefreshTokenExpires" , "facebookUserId", "facebookLongLivedAccessToken", "facebookLongLivedAccessTokenExpires", "threadsUserId", "threadsLongLivedAccessToken", "threadsLongLivedAccessTokenExpires", "instagramUserId", "instagramLongLivedAccessToken", "instagramLongLivedAccessTokenExpires", "businessProfileId"]},
+    { sheetName: "Passkeys", shape: [
+        "name",
+        "passkey", 
+        "privileges", // privileges: admin, editor, viewer, billing  an array of strings
+        "accessiblePages", // page privileges an array of strings
+        "dateCreated", 
+        "dateModified"
+    ]},
     // { sheetName: "Settings", shape: ["address", "autoPost"] },
 ];

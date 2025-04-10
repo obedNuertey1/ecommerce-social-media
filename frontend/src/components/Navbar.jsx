@@ -2,6 +2,7 @@ import { Link, useResolvedPath, useNavigate } from "react-router-dom";
 import { ShoppingCartIcon, ShoppingBagIcon, SettingsIcon, PackageIcon, KeyIcon, MenuIcon, XIcon, LogOutIcon } from "lucide-react";
 import { useProductStore } from "../store/useProductStore";
 import { useOrderStore } from "../store/useOrderStore";
+import { usePasskeyStore } from "../store/usePasskeyStore";
 import { useState, useRef, useEffect } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 
@@ -17,6 +18,7 @@ function Navbar() {
     const isAuth = pathname === "/auth";
     const { products, resetFormData } = useProductStore();
     const { orders } = useOrderStore();
+    const {setPasskey, updatePasskey} = usePasskeyStore();
     const {gapi} = useGoogleAuthContext();
 
     const [isOpen, setIsOpen] = useState(false);
@@ -24,14 +26,27 @@ function Navbar() {
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
 
-    const handleLogout = () => {
-        // authService.logout();
-        // Clear any relevant store data if needed
-        gapi.auth2.getAuthInstance().signOut()
-        resetFormData();
-        localStorage.clear();
-        // navigate("/auth");
-        window.location.href = "/auth";
+    const handleLogout = async () => {
+        try{
+            let passkey = JSON.parse(localStorage.getItem("passkey"));
+            if(passkey){
+                passkey.isOnline = "false";
+                passkey.accessiblePages = JSON.stringify(passkey.accessiblePages);
+                passkey.privileges = JSON.stringify(passkey.privileges);
+                setPasskey(passkey);
+                await updatePasskey(gapi, passkey.id);
+            }
+            // authService.logout();
+            // Clear any relevant store data if needed
+            gapi.auth2.getAuthInstance().signOut()
+            resetFormData();
+            localStorage.clear();
+            // navigate("/auth");
+            window.location.href = "/auth";
+        }catch(e){
+            console.log(e);
+            toast.error("Something went wrong");
+        }
     };
 
     // Click outside handler

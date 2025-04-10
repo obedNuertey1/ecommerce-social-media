@@ -7,10 +7,11 @@ import { Link } from "react-router-dom";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
-import { getUserIdFromIdToken } from "../funcs/essentialFuncs";
+import { getUserIdFromIdToken, decryptData } from "../funcs/essentialFuncs";
 import { cancellableWaiting } from "../funcs/waiting";
 import { useSettingsStore } from "../store/useSettingsStore.js";
 import { schemas as initSheetSchema } from "../schemas/initSheetSchema";
+import { usePasskeyStore } from "../store/usePasskeyStore.js";
 
 // Configuration 1
 // const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
@@ -23,6 +24,10 @@ const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
 const CLIENT_SECRET = "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";
 const REDIRECT_URI = "http://localhost:5173/google/auth/callback/";
 const FACEBOOK_APP_ID = "827316916277859";
+const ENCRYPT_DECRYPT_KEY = "elephantTusk";
+
+
+const passkeySchema = initSheetSchema.find((schema) => schema.sheetName === "Passkeys");
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,11 +37,12 @@ export default function AuthPage() {
   const { facebook_authenticate, passkey_authenticate } = useAuthStore();
   const { gapi } = useGoogleAuthContext();
   const { loadSettings, settingsSchema } = useSettingsStore();
+  const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey } = usePasskeyStore();
   const navigate = useNavigate();
 
   const handleFacebookLogin = (response) => {
     setIsLoading(true);
-    console.log({response})
+    console.log({ response })
     if (!acceptedTerms) {
       toast.error("You must accept the terms to continue");
       setIsLoading(false);
@@ -50,138 +56,110 @@ export default function AuthPage() {
     window.location.href = "/facebook/auth/callback/";
   };
 
-  const [googleIsLoading, setGoogleIsLoading] = useState(false);
-  useEffect(() => {
-    return () => {
-      setGoogleIsLoading(false);
-    }
-  }, []);
-  // const handleGoogleLogin = () => {
-  //   setGoogleIsLoading(true);
-  //   gapi.auth2.getAuthInstance().signIn()
-  //     .then(async (googleUser) => {
-  //       // Access basic profile information
-  //       const profile = googleUser.getBasicProfile();
-  //       console.log("ID: " + profile.getId());
-  //       console.log("Name: " + profile.getName());
-  //       console.log("Image URL: " + profile.getImageUrl());
-  //       console.log("Email: " + profile.getEmail());
-  //       console.log("gapi.auth.getToken()=", gapi.auth.getToken());
-
-  //       // You can also access the auth response, which includes the access token.
-  //       const authResponse = googleUser.getAuthResponse();
-  //       console.log("Access Token: ", authResponse.access_token);
-  //       try {
-  //         const storedToken = localStorage.getItem("googleAuthToken");
-  //         if (storedToken) {
-  //           gapi.auth.setToken(JSON.parse(storedToken));
-  //           gapi.client.setToken(JSON.parse(storedToken));
-  //         }
-
-  //         const authInstance = gapi.auth2.getAuthInstance();
-  //         const isSignedIn = await authInstance.isSignedIn.get();
-  //         const title = "EcommerceSpreadSheet";
-
-  //         console.log("Before if (isSignedIn) { This is supposed to house the authData");
-  //         if (isSignedIn) {
-  //           // console.log({initSheetSchema})
-  //           const googleDrive = new GoogleDriveAPI(gapi);
-  //           const googleSheet = new GoogleSheetsAPI(gapi);
-  //           const driveRes = await googleDrive.createFolderIfNotExists("EcommerceWebsite");
-  //           initSheetSchema.push(settingsSchema())
-  //           const sheetRes = await googleSheet.createSpreadsheetWithSheetsAndHeaders(title, initSheetSchema);
-  //           const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
-  //           console.log("After if (isSignedIn) { This is supposed to house the authData");
-
-  //           // Check google spreadsheet if google refresh token exist
-  //           console.log("This is supposed to house the authData");
-  //           if (authData) {
-  //             console.log({ authData })
-  //             if (authData.googleRefreshToken) {
-  //               // console.log("This is authData:",{authData});
-  //               const id_token = gapi.auth.getToken().id_token;
-  //               const googleUserId = authData.googleUserId;
-  //               const userId = getUserIdFromIdToken(id_token);
-  //               // console.log("googleUserId === userId",(googleUserId === userId))
-  //               // Check if google userId matches spreadsheet userId
-  //               if (googleUserId !== userId) {
-  //                 gapi.auth2.getAuthInstance().signOut();
-  //                 localStorage.clear();
-  //                 localStorage.setItem('logged-in', 'false');
-  //                 navigate("/auth");
-  //               } else if (googleUserId === userId) {
-  //                 // Check if logged in meta tokens is equal to spreadsheet meta tokens
-  //                 // if false update Auth sheet with new meta tokens
-  //                 // clear userIds and meta auth tokens from localstorage (do same with google drive)
-  //               }
-  //             }
-  //           } else if (!authData) {
-  //             console.log("else if (!authData) {")
-  //             // Means the user is a new user
-  //             // If so we need to create a refresh token for the new user
-  //             // logoutuser
-  //             gapi.auth2.getAuthInstance().signOut()
-  //             localStorage.clear();
-  //             const { cancel, promise } = cancellableWaiting(3000);
-  //             await promise;
-  //             // redirect to authenticate page by getting code
-  //             const url = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=https://www.googleapis.com/auth/drive%20https://www.googleapis.com/auth/spreadsheets%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile&access_type=offline&prompt=consent
-  //               `;
-  //             const link = document.createElement("a");
-  //             link.href = url;
-  //             document.body.appendChild(link);
-  //             cancel();
-  //             link.click();
-  //             document.body.removeChild(link);
-  //           }
-
-  //           await googleSheet.updateHeadersByName(title, initSheetSchema);
-  //           // console.log({ driveRes, sheetRes })
-  //           await loadSettings(gapi);
-  //           if (isSignedIn) {
-  //             localStorage.setItem('logged-in', 'true');
-  //           } else if (!isSignedIn) {
-  //             localStorage.setItem("logged-in", "false");
-  //           }
-
-  //           console.log("Navigate to home page");
-  //           window.location.href = "/";
-  //         }
-  //       } catch (e) {
-  //         console.log(e);
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error during sign-in:", error);
-  //     });
-  // }
-
   const handlePasskeyLogin = async (e) => {
     e.preventDefault();
+    setPasskeyLoading(true);
     try {
       if (!acceptedTerms) {
         toast.error("You must accept the terms to continue");
         return;
       }
 
-      setPasskeyLoading(true);
-
       if (!passkey.trim()) {
         toast.error("Please enter a valid passkey");
         return;
       }
-
-      // Call your authentication endpoint
-      const response = await passkey_authenticate(passkey);
-
-      if (response.success) {
-        toast.success("Access granted!");
-        // Handle successful login (redirect, etc.)
-      } else {
+      
+      // 1. Validate passkey
+      const encryptedRefreshToken = (passkey.split("<_0_0_>"))[1];
+      if(!encryptedRefreshToken){
         toast.error("Invalid passkey");
+        return;
       }
+      // Get decrypted refresh token 2. Decrypt passkey 3. Get encrypted google refresh token 4. Decrypt refresh token
+      const REFRESH_TOKEN = await decryptData(encryptedRefreshToken, ENCRYPT_DECRYPT_KEY);
+      const data = new URLSearchParams();
+      data.append("client_id", CLIENT_ID);
+      data.append("client_secret", CLIENT_SECRET);
+      data.append("refresh_token", REFRESH_TOKEN);
+      data.append("grant_type", "refresh_token");
+
+      // 5. Exchange refresh token for access token
+      const response = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: data.toString()
+      })
+      if(!response.status){
+        toast.error("Passkey invalid");
+        throw new Error("Error refreshing token");
+      }
+      const result = await response.json();
+      const resultData = await result;
+      const gapi2 = {
+        auth: {
+          getToken(){
+            return resultData;
+          }
+        }
+      }
+
+      const googleSheet = new GoogleSheetsAPI(gapi2);
+      const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
+      const passkeyFromSheet = passkeys.find((pk) => pk.passkey == passkey);
+
+      const passkeyExist = Boolean(passkeyFromSheet);
+      if(!passkeyExist){
+        toast.error("Passkey invalid");
+        gapi.auth2.getAuthInstance().signOut()
+        throw new Error("Passkey invalid");
+      }
+      passkeyFromSheet.id = passkeyFromSheet.id + 2;  // Add 2 to the id to make it start from 2 instead of 1 (id is 1 based)
+      passkeyFromSheet.isOnline = "true";
+      console.log({passkeyFromSheet});
+      const passkeyToLocalStorage = JSON.stringify(passkeyFromSheet);
+      passkeyFromSheet.accessiblePages = JSON.stringify(passkeyFromSheet.accessiblePages);
+      passkeyFromSheet.privileges = JSON.stringify(passkeyFromSheet.privileges);
+      setPasskeyStoreData(passkeyFromSheet);
+      await updatePasskey(gapi2, passkeyFromSheet.id);
+      
+
+      const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
+      gapi.auth.setToken(resultData);
+      gapi.client.setToken(resultData);
+      localStorage.setItem("googleAuthToken", JSON.stringify(resultData));
+      localStorage.setItem("auth", JSON.stringify(authData));
+      localStorage.setItem("logged-in", "true");
+      localStorage.setItem("passkey", passkeyToLocalStorage);
+
+      const pages = JSON.parse(passkeyToLocalStorage).accessiblePages;
+      console.log({pages});
+      let url = "";
+      switch(pages){
+        case pages.includes("products"):
+          url = "/";
+          break;
+        case pages.includes("orders"):
+          url = "/orders";
+          break;
+        case pages.includes("settings"):
+          url = "/settings";
+          break;
+        case pages.includes("passkeys"):
+          url = "/passkey";
+          break;
+        case pages.includes("passkey-logs"):
+          url = "/passkey/logs";
+          break;
+        default:
+          url = "/";
+      }
+      window.location.href = url;
     } catch (error) {
       toast.error("Authentication failed");
+      console.error({error});
     } finally {
       setPasskeyLoading(false);
     }
@@ -230,7 +208,8 @@ export default function AuthPage() {
           {/* Login Options */}
           <div className="w-full space-y-3 sm:space-y-4">
             {/* Facebook Button */}
-            <LoginSocialFacebook appId={FACEBOOK_APP_ID} fields="name,email,picture" onResolve={handleFacebookLogin} onReject={()=>{
+            <LoginSocialFacebook appId={FACEBOOK_APP_ID} fields="name,email,picture" onResolve={handleFacebookLogin} onReject={(e) => {
+              console.log({e});
               toast.error("Facebook Login failed");
             }}>
               <button
@@ -248,44 +227,6 @@ export default function AuthPage() {
                 )}
               </button>
             </LoginSocialFacebook>
-            {/* <LoginSocialGoogle client_id={CLIENT_ID} onResolve={(response) => {
-              alert("Google login successful!");
-              // handleGoogleLogin(response); // Call your handler if needed.
-            }}
-            onReject={(error)=>{
-              alert("Google login failed!");
-            }}
-            > */}
-            {/* <button
-              onClick={handleGoogleLogin}
-              disabled={googleIsLoading || !acceptedTerms}
-              className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
-            >
-              {googleIsLoading ? (
-                <span className="loading loading-spinner"></span>
-              ) : (
-                <>
-                  <FacebookIcon className="w-4 h-4 sm:w-6 sm:h-6" />
-                  <span className="text-xs sm:text-base">Continue with Google</span>
-                </>
-              )}
-            </button> */}
-            {/* </LoginSocialGoogle> */}
-            {/* <a
-              disabled={isLoading || !acceptedTerms}
-              className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
-              href={`https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=https://www.googleapis.com/auth/drive%20https://www.googleapis.com/auth/spreadsheets%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile&access_type=offline&prompt=consent
-              `}
-            >
-              {isLoading ? (
-                <span className="loading loading-spinner"></span>
-              ) : (
-                <>
-                  <FacebookIcon className="w-4 h-4 sm:w-6 sm:h-6" />
-                  <span className="text-xs sm:text-base">Continue with Google</span>
-                </>
-              )}
-            </a> */}
 
             {/* Divider */}
             <div className="flex items-center gap-2 sm:gap-4 text-base-content/50 text-xs">

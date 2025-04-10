@@ -14,9 +14,9 @@ const REDIRECT_URI = "http://localhost:5173/google/auth/callback/";
 
 function FacebookCallback() {
     const googleButtonRef = useRef(null);
-      const { gapi } = useGoogleAuthContext();
-      const { loadSettings, settingsSchema } = useSettingsStore();
-      const navigate = useNavigate();
+    const { gapi } = useGoogleAuthContext();
+    const { loadSettings, settingsSchema } = useSettingsStore();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (googleButtonRef.current) {
@@ -33,7 +33,7 @@ function FacebookCallback() {
     }, []);
     const handleGoogleLogin = async () => {
         setGoogleIsLoading(true);
-        const {cancel, promise} = cancellableWaiting(3000);
+        const { cancel, promise } = cancellableWaiting(3000);
         await promise;
         gapi.auth2.getAuthInstance().signIn()
             .then(async (googleUser) => {
@@ -80,6 +80,7 @@ function FacebookCallback() {
                                 const id_token = gapi.auth.getToken().id_token;
                                 const googleUserId = authData.googleUserId;
                                 const userId = getUserIdFromIdToken(id_token);
+                                localStorage.setItem("auth", JSON.stringify(authData));
                                 // console.log("googleUserId === userId",(googleUserId === userId))
                                 // Check if google userId matches spreadsheet userId
                                 if (googleUserId !== userId) {
@@ -124,7 +125,7 @@ function FacebookCallback() {
                         } else if (!isSignedIn) {
                             localStorage.setItem("logged-in", "false");
                         }
-                        
+
                         console.log("Navigate to home page");
                         window.location.href = "/";
                     }

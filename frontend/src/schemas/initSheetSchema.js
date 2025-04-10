@@ -13,7 +13,8 @@ export const schemas = [
         "privileges", // privileges: admin, editor, viewer, billing  an array of strings
         "accessiblePages", // page privileges an array of strings
         "dateCreated", 
-        "dateModified"
+        "dateModified",
+        "isOnline"
     ]},
     // { sheetName: "Settings", shape: ["address", "autoPost"] },
 ];

@@ -114,11 +114,11 @@ function GoogleAuthCallback() {
                             longLivedFBTokenData["facebookUserId"] = facebookAuthData.userID;
                             console.log({longLivedTokenData, facebookAccessToken})
                         }
-
-                        await googleSheet.appendRowInPage("EcommerceSpreadSheet", AuthSchema.sheetName, {
+                        
+                        const authObj = {
                             googleUserId: userId,
                             googleRefreshToken: googleRefreshToken, // encrypted
-                            googleRefreshTokenExpires: result.expires_in,
+                            googleRefreshTokenExpires: result.refresh_token_expires_in,
                             facebookUserId: longLivedFBTokenData.facebookUserId,
                             facebookLongLivedAccessToken: longLivedFBTokenData.facebookLongLivedAccessToken, // encrypted
                             facebookLongLivedAccessTokenExpires: longLivedFBTokenData.facebookLongLivedAccessTokenExpires,
@@ -129,13 +129,16 @@ function GoogleAuthCallback() {
                             instagramLongLivedAccessToken: null,
                             instagramLongLivedAccessTokenExpires: null,
                             businessProfileId: null
-                        }, AuthSchema.shape);
+                        }
+
+                        await googleSheet.appendRowInPage("EcommerceSpreadSheet", AuthSchema.sheetName, authObj, AuthSchema.shape);
                         console.log({ result })
                         // Authenticate user and redirect to homepage (if given the right privilege)
                         // localStorage.clear();
                         localStorage.setItem("googleAuthToken", JSON.stringify(result));
                         localStorage.removeItem("facebookAuthToken");
                         localStorage.setItem("logged-in", JSON.stringify(true));
+                        localStorage.setItem("auth", JSON.stringify(authObj));
                         await loadSettings(gapi2);
                         window.location.href = "/";
                     } catch (e) {

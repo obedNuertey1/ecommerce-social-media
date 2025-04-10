@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProductStore } from '../store/useProductStore';
 import { createPortal } from 'react-dom';
+import { usePasskeyStore } from '../store/usePasskeyStore';
+import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 
 const PasskeyPage = () => {
     const [passkeys, setPasskeys] = useState([]);
@@ -18,6 +20,8 @@ const PasskeyPage = () => {
         privileges: [],
         accessiblePages: [],
     });
+    const { passkeys: passkeysData, setPasskey, passkey: passkey2, addPasskey, fetchPasskeys, updatePasskey, deletePasskey, updateAddLoading, loading } = usePasskeyStore();
+    const { gapi } = useGoogleAuthContext();
 
     const navigate = useNavigate();
     const { resetFormData } = useProductStore();
@@ -28,6 +32,10 @@ const PasskeyPage = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [])
+
+    useEffect(() => {
+        fetchPasskeys(gapi);
+    }, [fetchPasskeys]);
 
     const shortenHash = (hash) => {
         if (hash.length <= 16) return hash;
@@ -48,13 +56,15 @@ const PasskeyPage = () => {
         { label: 'Analytics', value: 'analytics' },
         { label: 'Passkeys', value: 'passkeys' },
         { label: 'Passkey Logs', value: 'passkey-logs' },
-        { label: "Chat", value: "chat"}
+        { label: "Chat", value: "chat" }
     ];
 
     const generateRandomHash = () => {
+        const auth = JSON.parse(localStorage.getItem("auth"));
+        const googleRefreshToken = auth.googleRefreshToken;
         const array = new Uint32Array(10);
         window.crypto.getRandomValues(array);
-        return Array.from(array, dec => dec.toString(16).padStart(8, '0')).join('');
+        return (Array.from(array, dec => dec.toString(16).padStart(8, '0')).join('')).concat("<_0_0_>").concat(googleRefreshToken.toString());
     };
 
     const handleGenerateHash = () => {
@@ -73,36 +83,44 @@ const PasskeyPage = () => {
     };
 
     const togglePage = (page) => {
-        setSelectedPages(prev => 
+        setSelectedPages(prev =>
             prev.includes(page) ? prev.filter(p => p !== page) :
-            [...prev, page]
+                [...prev, page]
         );
     }
 
-    const handleSavePasskey = () => {
-        if (!passkeyData.name || !passkeyData.passkey) {
-            toast.error('Please fill all required fields');
-            return;
+    const handleSavePasskey = async () => {
+        try {
+            if (!passkeyData.name || !passkeyData.passkey) {
+                toast.error('Please fill all required fields');
+                return;
+            }
+
+            const newPasskey = {
+                ...passkeyData,
+                privileges: JSON.stringify(selectedRoles),
+                accessiblePages: JSON.stringify(selectedPages),
+                dateCreated: new Date().toISOString(),
+                dateModified: new Date().toISOString(),
+                isOnline: "false"
+            };
+
+            if (isEditing) {
+                setPasskey({ ...passkeyData, privileges: JSON.stringify(selectedRoles), accessiblePages: JSON.stringify(selectedPages), dateModified: new Date().toISOString() });
+                await updatePasskey(gapi, passkeyData.id);
+            } else {
+                // set the zustand passkey object to the new passkey
+                setPasskey({ ...passkey2, ...newPasskey });
+                // call the addPasskey zustand function
+                await addPasskey(gapi);
+            }
+
+            resetModal();
+            toast.success(`Passkey ${isEditing ? 'updated' : 'created'} successfully`);
+
+        } catch (e) {
+            toast.error(`Passkey ${isEditing ? 'updated' : 'created'} unsuccessfully`)
         }
-
-        const newPasskey = {
-            ...passkeyData,
-            privileges: selectedRoles,
-            accessiblePages: selectedPages,
-            dateCreated: new Date().toISOString(),
-            dateModified: new Date().toISOString(),
-        };
-
-        if (isEditing) {
-            setPasskeys(prev =>
-                prev.map(pk => pk.passkey === passkeyData.passkey ? newPasskey : pk)
-            );
-        } else {
-            setPasskeys(prev => [...prev, newPasskey]);
-        }
-
-        resetModal();
-        toast.success(`Passkey ${isEditing ? 'updated' : 'created'} successfully`);
     };
 
     const resetModal = () => {
@@ -110,19 +128,22 @@ const PasskeyPage = () => {
         setIsEditing(false);
         setSelectedRoles([]);
         setSelectedPages([]);
-        setPasskeyData({ name: '', passkey: '', privileges: [] });
+        setPasskeyData({ name: '', passkey: '', privileges: [], accessiblePages: [] });
     };
 
     const handleEdit = (passkey) => {
         setPasskeyData(passkey);
+        // get the passkey using the passkey id
         setSelectedRoles(passkey.privileges);
         setSelectedPages(passkey.accessiblePages);
         setIsEditing(true);
         setIsModalOpen(true);
     };
 
-    const handleDelete = (passkeyId) => {
-        setPasskeys(prev => prev.filter(pk => pk.passkey !== passkeyId));
+    const handleDelete = async (passkey) => {
+
+        await deletePasskey(passkey.id, gapi);
+        // setPasskeys(prev => prev.filter(pk => pk.passkey !== passkeyId));
         toast.success('Passkey deleted successfully');
     };
 
@@ -172,7 +193,7 @@ const PasskeyPage = () => {
                     <ArrowRightIcon className="absolute -right-1.5 top-0 h-4 w-4 text-primary/30 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-0" />
                 </div>
             </Link>
-            {passkeys.length > 0 ? (
+            {passkeysData.length > 0 ? (
                 <div className="overflow-x-auto rounded-lg border border-base-200">
                     <table className="table table-zebra table-xs lg:table-md">
                         <thead className="bg-base-200">
@@ -181,11 +202,12 @@ const PasskeyPage = () => {
                                 <th>Passkey</th>
                                 <th>Created</th>
                                 <th>Modified</th>
+                                <th>isOnline</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {passkeys.map(pk => (
+                            {passkeysData.map(pk => (
                                 <tr key={pk.passkey}>
                                     <td className="whitespace-nowrap">{pk.name}</td>
                                     <td>
@@ -210,6 +232,25 @@ const PasskeyPage = () => {
                                     <td className="whitespace-nowrap">
                                         {new Date(pk.dateModified).toLocaleDateString()}
                                     </td>
+                                    <td className='whitespace-nowrap'>
+                                        <div className="flex items-center gap-1" text="online">
+                                            {JSON.parse((pk.isOnline)?.toLowerCase()) ?
+                                                <>
+                                                    <div className='blur-[0.75px] animate-pulse'>
+                                                        <span className='size-3 font-sans bg-success rounded-full inline-block shadow-inner shadow-success' />
+                                                    </div>
+                                                    true
+                                                </>
+                                                :
+                                                <>
+                                                    <div className=''>
+                                                        <span text="online" className='size-3 font-sans bg-error rounded-full inline-block shadow-inner shadow-error' />
+                                                    </div>
+                                                    false
+                                                </>
+                                            }
+                                        </div>
+                                    </td>
                                     <td>
                                         <div className="flex gap-1">
                                             <button
@@ -220,7 +261,7 @@ const PasskeyPage = () => {
                                                 <Edit className="w-3 h-3 lg:w-4 lg:h-4" />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(pk.passkey)}
+                                                onClick={() => handleDelete(pk)}
                                                 className="btn btn-ghost btn-xs text-error"
                                                 aria-label="Delete"
                                             >
@@ -245,21 +286,25 @@ const PasskeyPage = () => {
                     </table>
                 </div>
             ) : (
-                <div className="text-center p-12 border-2 border-dashed rounded-xl">
-                    <div className="max-w-md mx-auto">
-                        <div className="text-6xl mb-4">🔑</div>
-                        <h2 className="text-xl font-semibold mb-2">No Passkeys Found</h2>
-                        <p className="text-sm text-base-content/70 mb-6">
-                            Get started by creating a new passkey to manage access privileges
-                        </p>
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="btn btn-primary btn-sm"
-                        >
-                            <Plus className="mr-2" /> Create Passkey
-                        </button>
-                    </div>
-                </div>
+                <>
+                    {loading ? <div className="flex h-64 flex-col items-center justify-center">
+                        <div className="loading loading-spinner loading-lg"></div>
+                    </div> : <div className="text-center p-12 border-2 border-dashed rounded-xl">
+                        <div className="max-w-md mx-auto">
+                            <div className="text-6xl mb-4">🔑</div>
+                            <h2 className="text-xl font-semibold mb-2">No Passkeys Found</h2>
+                            <p className="text-sm text-base-content/70 mb-6">
+                                Get started by creating a new passkey to manage access privileges
+                            </p>
+                            <button
+                                onClick={() => setIsModalOpen(true)}
+                                className="btn btn-primary btn-sm"
+                            >
+                                <Plus className="mr-2" /> Create Passkey
+                            </button>
+                        </div>
+                    </div>}
+                </>
             )}
 
 
@@ -333,8 +378,17 @@ const PasskeyPage = () => {
 
                     <div className="modal-action">
                         <button onClick={resetModal} className="btn">Cancel</button>
-                        <button onClick={handleSavePasskey} className="btn btn-primary">
-                            {isEditing ? 'Update' : 'Create'}
+                        <button disabled={updateAddLoading} onClick={handleSavePasskey} className="btn btn-primary">
+                            {updateAddLoading ?
+                                <>
+                                    {isEditing ? "Updating..." : "Creating..."}
+                                    <span className='loading loading-spinner loading-sm' />
+                                </>
+                                :
+                                <>
+                                    {isEditing ? 'Update' : 'Create'}
+                                </>
+                            }
                         </button>
                     </div>
                 </div>

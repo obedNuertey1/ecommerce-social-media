@@ -11,13 +11,14 @@ import { useSettingsStore } from '../store/useSettingsStore';
 const AuthSchema = schemas.find((elem) => elem.sheetName === "Auth");
 
 // Configuration temporary
-const CLIENT_ID = "735897969269-0nhfejn5pre40a511kvcprm6551bon5n.apps.googleusercontent.com";
-const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
-const CLIENT_SECRET = "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";
-const REDIRECT_URI = "http://localhost:5173/google/auth/callback/";
-const ENCRYPT_DECRYPT_KEY = "elephantTusk";
-const FACEBOOK_APP_ID = "827316916277859";
-const FACEBOOK_APP_SECRET = "c8dbc0605397eccf104d6a0081029614";
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
+const REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
+const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
+const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
+const FACEBOOK_APP_SECRET = import.meta.env.VITE_FACEBOOK_APP_SECRET;
+const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 
 
 async function exchangeFacebookToken(appId, appSecret, shortLivedToken) {
@@ -83,7 +84,7 @@ function GoogleAuthCallback() {
                     try {
                         // const {promise, cancel} = cancellableWaiting(2000);
                         console.log({ result });
-                        const spreadsheetName = "EcommerceSpreadSheet";
+                        const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
                         const userId = getUserIdFromIdToken(result.id_token);
                         // this.gapi.auth.getToken().access_token
                         const gapi2 = {
@@ -131,7 +132,7 @@ function GoogleAuthCallback() {
                             businessProfileId: null
                         }
 
-                        await googleSheet.appendRowInPage("EcommerceSpreadSheet", AuthSchema.sheetName, authObj, AuthSchema.shape);
+                        await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, AuthSchema.sheetName, authObj, AuthSchema.shape);
                         console.log({ result })
                         // Authenticate user and redirect to homepage (if given the right privilege)
                         // localStorage.clear();

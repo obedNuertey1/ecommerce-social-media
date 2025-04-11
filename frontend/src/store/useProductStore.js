@@ -6,6 +6,8 @@ import {schemas} from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 
 const productSchema = schemas.find((schema)=>schema.sheetName==="Products");
+const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
+const GOOGLE_DRIVE_NAME = import.meta.env.VITE_GOOGLE_DRIVE_NAME;
 
 const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "";
 
@@ -20,7 +22,7 @@ export const useProductStore = create((set, get)=>({
     updateProduct: async (id, gapi, imagesToDelete)=>{
         set({loading: true});
         try{
-            const spreadsheetName = "EcommerceSpreadSheet";
+            const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const sheetName = "Products";
             const {formData, product} = get();
             const newImagesToAdd = formData.media.filter((blob)=>blob?.operation === "add");
@@ -88,7 +90,7 @@ export const useProductStore = create((set, get)=>({
         const {promise, cancel} = cancellableWaiting(1000);
         try{
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const product = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Products", id);
+            const product = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id);
             set({formData: {name: product.name, price: product.price, description: product.description, image: product.image, media: product.media}, error: null, product: product, loading: false});
             return;
         }catch(e){
@@ -107,14 +109,14 @@ export const useProductStore = create((set, get)=>({
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
             const mediaToDrive = formData.media.map((media)=>media.file);
-            const mediaUploadRes = await googleDrive.uploadFilesToDrive("EcommerceWebsite", formData.name, mediaToDrive);
+            const mediaUploadRes = await googleDrive.uploadFilesToDrive(GOOGLE_DRIVE_NAME, formData.name, mediaToDrive);
             const data = {
                 name: formData.name,
                 price: formData.price,
                 description: formData.description,
                 ...mediaUploadRes
             }
-            await googleSheet.appendRowInPage("EcommerceSpreadSheet", productSchema.sheetName, data, productSchema.shape);
+            await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, productSchema.sheetName, data, productSchema.shape);
             set({formData: {name: "", price: "", description: "", image: "", media: []}, error: null});
             document.getElementById("my_modal_2").close();
             toast.success("Product added successfully");
@@ -136,7 +138,7 @@ export const useProductStore = create((set, get)=>({
             const driveResult = await googleDrive.deleteFolderAndContents(mediaFolderId);
             // Delete row from google sheet using the spreadSheetName, sheetName, and rowIndex
             // console.log({index: id})
-            const sheetResult = await googleSheet.deleteRowAtIndexByName("EcommerceSpreadSheet", "Products", id-1);
+            const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id-1);
             // console.log({driveResult, sheetResult});
             set((prev)=>(
                 {products: prev.products.filter((product)=>product.id !== id)}
@@ -160,7 +162,7 @@ export const useProductStore = create((set, get)=>({
         const {promise, cancel} = cancellableWaiting(1000);
         try{
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const products = await googleSheet.getSpreadsheetValuesByName("EcommerceSpreadSheet", "Products");
+            const products = await googleSheet.getSpreadsheetValuesByName(GOOGLE_SPREADSHEET_NAME, "Products");
             set({products: products.reverse(), error: null, loading: false});
             return;
         }catch(e){

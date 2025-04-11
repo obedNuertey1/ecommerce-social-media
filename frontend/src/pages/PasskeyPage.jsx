@@ -7,6 +7,8 @@ import { createPortal } from 'react-dom';
 import { usePasskeyStore } from '../store/usePasskeyStore';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 
+const HASH_SPLIT_POINT = import.meta.env.VITE_HASH_SPLIT_POINT;
+
 const PasskeyPage = () => {
     const [passkeys, setPasskeys] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,7 +66,7 @@ const PasskeyPage = () => {
         const googleRefreshToken = auth.googleRefreshToken;
         const array = new Uint32Array(10);
         window.crypto.getRandomValues(array);
-        return (Array.from(array, dec => dec.toString(16).padStart(8, '0')).join('')).concat("<_0_0_>").concat(googleRefreshToken.toString());
+        return (Array.from(array, dec => dec.toString(16).padStart(8, '0')).join('')).concat(HASH_SPLIT_POINT).concat(googleRefreshToken.toString());
     };
 
     const handleGenerateHash = () => {

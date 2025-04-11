@@ -7,6 +7,7 @@ import {objectDifference} from "../funcs/essentialFuncs";
 
 const orderSchema = schemas.find((schema)=>schema.sheetName === "Orders");
 const newOrderSchema = schemas.find((schema)=>schema.sheetName === "NewOrders");
+const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 
 export const useOrderStore = create((set, get)=>({
     orders: [],
@@ -30,7 +31,7 @@ export const useOrderStore = create((set, get)=>({
         const {promise, cancel} = cancellableWaiting(1000);
         try{
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const orders = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", orderSchema.sheetName);
+            const orders = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName);
             const allOrders = orders.map((elem, idx)=>{
                 if(Array.isArray(elem.phone)){
                     elem.phone = elem.phone[0];
@@ -61,8 +62,8 @@ export const useOrderStore = create((set, get)=>({
         const {promise, cancel} = cancellableWaiting(1000);
         try{
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const orders = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", orderSchema.sheetName);
-            const newOrdersNotif = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", newOrderSchema.sheetName);
+            const orders = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName);
+            const newOrdersNotif = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, newOrderSchema.sheetName);
             const allOrders = orders.map((elem, idx)=>{
                 if(Array.isArray(elem.phone)){
                     elem.phone = elem.phone[0];
@@ -83,7 +84,7 @@ export const useOrderStore = create((set, get)=>({
             set({orders: allOrders , error: null, loading: false});
             
             if(notifyOrders.length > 0){
-                await googleSheet.deleteAllRowsByName("EcommerceSpreadSheet", newOrderSchema.sheetName, [1, notifyOrders.length]);
+                await googleSheet.deleteAllRowsByName(GOOGLE_SPREADSHEET_NAME, newOrderSchema.sheetName, [1, notifyOrders.length]);
             }
             return notifyOrders || [];
         }catch(e){
@@ -100,8 +101,8 @@ export const useOrderStore = create((set, get)=>({
             const {orderData, orders} = get();
             // orderData.total = (Number(orderData.total)).toFixed(2);
             const googleSheet = new GoogleSheetsAPI(gapi);
-            await googleSheet.appendRowInPage("EcommerceSpreadSheet", orderSchema.sheetName, orderData, orderSchema.shape);
-            await googleSheet.appendRowInPage("EcommerceSpreadSheet", newOrderSchema.sheetName, orderData, newOrderSchema.shape);
+            await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName, orderData, orderSchema.shape);
+            await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, newOrderSchema.sheetName, orderData, newOrderSchema.shape);
             set({orderData: {orderId: null, phone: null, items: null, total: null, status: "New"}, error: null});
             toast.success("Order added successfully");
 
@@ -120,7 +121,7 @@ export const useOrderStore = create((set, get)=>({
         // set({loading: true});
         try{
            const googleSheet = new GoogleSheetsAPI(gapi);
-           const sheetResult = await googleSheet.deleteRowAtIndexByName("EcommerceSpreadSheet", orderSchema.sheetName, id-1);
+           const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName, id-1);
            set((prev)=>({
             orders: prev.orders.filter((order)=>order.id !== id)
            })) 
@@ -136,7 +137,7 @@ export const useOrderStore = create((set, get)=>({
     updateOrder: async (gapi, id)=>{
         // set({loading: true})
         try{
-            const spreadsheetName = "EcommerceSpreadSheet";
+            const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const googleSheet = new GoogleSheetsAPI(gapi);
             const {orders} = get();
             const order = orders.find((order)=>order.id===id)

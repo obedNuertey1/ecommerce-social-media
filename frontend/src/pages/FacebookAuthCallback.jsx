@@ -7,10 +7,12 @@ import { cancellableWaiting } from "../funcs/waiting";
 import { useSettingsStore } from "../store/useSettingsStore.js";
 import { schemas as initSheetSchema } from "../schemas/initSheetSchema";
 
-const CLIENT_ID = "735897969269-0nhfejn5pre40a511kvcprm6551bon5n.apps.googleusercontent.com";
-const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
-const CLIENT_SECRET = "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";
-const REDIRECT_URI = "http://localhost:5173/google/auth/callback/";
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
+const REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
+const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
+const GOOGLE_DRIVE_NAME = import.meta.env.VITE_GOOGLE_DRIVE_NAME;
 
 function FacebookCallback() {
     const googleButtonRef = useRef(null);
@@ -59,17 +61,17 @@ function FacebookCallback() {
 
                     const authInstance = gapi.auth2.getAuthInstance();
                     const isSignedIn = await authInstance.isSignedIn.get();
-                    const title = "EcommerceSpreadSheet";
+                    const title = GOOGLE_SPREADSHEET_NAME;
 
                     console.log("Before if (isSignedIn) { This is supposed to house the authData");
                     if (isSignedIn) {
                         // console.log({initSheetSchema})
                         const googleDrive = new GoogleDriveAPI(gapi);
                         const googleSheet = new GoogleSheetsAPI(gapi);
-                        const driveRes = await googleDrive.createFolderIfNotExists("EcommerceWebsite");
+                        const driveRes = await googleDrive.createFolderIfNotExists(GOOGLE_DRIVE_NAME);
                         initSheetSchema.push(settingsSchema())
                         const sheetRes = await googleSheet.createSpreadsheetWithSheetsAndHeaders(title, initSheetSchema);
-                        const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
+                        const authData = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Auth", 2);
                         console.log("After if (isSignedIn) { This is supposed to house the authData");
 
                         console.log("This is supposed to house the authData");

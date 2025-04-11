@@ -5,6 +5,7 @@ import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 
 const passkeySchema = schemas.find((schema) => schema.sheetName === "Passkeys");
+const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 
 export const usePasskeyStore = create((set, get) => ({
     passkeys: [],
@@ -25,7 +26,7 @@ export const usePasskeyStore = create((set, get) => ({
         const { promise, cancel } = cancellableWaiting(1000);
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
+            const passkeys = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName);
             const allPasskeys = passkeys.map((elem, idx) => {
                 elem["id"] = idx + 2;
                 return elem;
@@ -45,7 +46,7 @@ export const usePasskeyStore = create((set, get) => ({
         try {
             const { passkey, passkeys, fetchPasskeys } = get();
             const googleSheet = new GoogleSheetsAPI(gapi);
-            await googleSheet.appendRowInPage("EcommerceSpreadSheet", passkeySchema.sheetName, passkey, passkeySchema.shape);
+            await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName, passkey, passkeySchema.shape);
             set({ passkey: { name: '', passkey: '', privileges: [], accessiblePages: [] }, error: null });
             await fetchPasskeys(gapi);
         } catch (e) {
@@ -58,7 +59,7 @@ export const usePasskeyStore = create((set, get) => ({
     deletePasskey: async (id, gapi) => {
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const sheetResult = await googleSheet.deleteRowAtIndexByName("EcommerceSpreadSheet", passkeySchema.sheetName, id - 1);
+            const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName, id - 1);
             set((prev) => ({
                 passkeys: prev.passkeys.filter((passkey) => passkey.id !== id)
             }))
@@ -70,7 +71,7 @@ export const usePasskeyStore = create((set, get) => ({
     updatePasskey: async (gapi, id) => {
         set({updateAddLoading: true});
         try {
-            const spreadsheetName = "EcommerceSpreadSheet";
+            const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const googleSheet = new GoogleSheetsAPI(gapi);
             const { passkey, fetchPasskeys } = get();
             // const passkey = passkeys.find((passkey) => passkey.id === id);

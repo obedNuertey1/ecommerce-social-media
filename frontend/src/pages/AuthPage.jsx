@@ -19,12 +19,13 @@ import { usePasskeyStore } from "../store/usePasskeyStore.js";
 // const CLIENT_SECRET = "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";
 
 // Configuration temporary
-const CLIENT_ID = "735897969269-0nhfejn5pre40a511kvcprm6551bon5n.apps.googleusercontent.com";
-const API_KEY = "AIzaSyBkhdhK-GMELzebWxjVof_8iW8lUdfYza4";
-const CLIENT_SECRET = "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";
-const REDIRECT_URI = "http://localhost:5173/google/auth/callback/";
-const FACEBOOK_APP_ID = "827316916277859";
-const ENCRYPT_DECRYPT_KEY = "elephantTusk";
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
+const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
+const REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
+const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
+const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
+const HASH_SPLIT_POINT = import.meta.env.VITE_HASH_SPLIT_POINT;
 
 
 const passkeySchema = initSheetSchema.find((schema) => schema.sheetName === "Passkeys");
@@ -71,7 +72,7 @@ export default function AuthPage() {
       }
       
       // 1. Validate passkey
-      const encryptedRefreshToken = (passkey.split("<_0_0_>"))[1];
+      const encryptedRefreshToken = (passkey.split(HASH_SPLIT_POINT))[1];
       if(!encryptedRefreshToken){
         toast.error("Invalid passkey");
         return;
@@ -208,7 +209,10 @@ export default function AuthPage() {
           {/* Login Options */}
           <div className="w-full space-y-3 sm:space-y-4">
             {/* Facebook Button */}
-            <LoginSocialFacebook appId={FACEBOOK_APP_ID} fields="name,email,picture" onResolve={handleFacebookLogin} onReject={(e) => {
+            <LoginSocialFacebook 
+            appId={FACEBOOK_APP_ID} 
+            fields="name,email,picture" 
+            onResolve={handleFacebookLogin} onReject={(e) => {
               console.log({e});
               toast.error("Facebook Login failed");
             }}>

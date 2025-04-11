@@ -5,6 +5,8 @@ import axios from "axios";
 import {cancellableWaiting, waiting} from "../funcs/waiting";
 import { GoogleSheetsAPI } from "../lib/googleLibs";
 
+const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
+
 export const useSettingsStore = create((set, get)=>({
     loading: false,
     error: null,
@@ -181,7 +183,7 @@ export const useSettingsStore = create((set, get)=>({
     saveSettings: async (gapi)=>{
         set({loading: true});
         try{
-            const spreadsheetName = "EcommerceSpreadSheet";
+            const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const schema = get().settingsSchema().shape;
             const {settings} = get();
             const spreadsheet = new GoogleSheetsAPI(gapi);
@@ -199,7 +201,7 @@ export const useSettingsStore = create((set, get)=>({
     restoreDefaultSettings: async (gapi)=>{
         set({loading: true});
         try{
-            const spreadsheetName = "EcommerceSpreadSheet";
+            const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const schema = get().settingsSchema().shape;
             const {resetToDefault} = get();
             const spreadsheet = new GoogleSheetsAPI(gapi);
@@ -216,7 +218,7 @@ export const useSettingsStore = create((set, get)=>({
     loadSettings: async (gapi)=>{
         set({loading: true});
         try{
-            const spreadsheetName = "EcommerceSpreadSheet";
+            const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const spreadsheet = new GoogleSheetsAPI(gapi);
             const settings = await spreadsheet.getSettingsFronSpreadsheetByName(spreadsheetName);
             set({settings, error:null});

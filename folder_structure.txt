@@ -1,0 +1,25 @@
+.
+└── frontend
+    ├── dist
+    │   ├── assets
+    │   ├── pythonFiles
+    │   └── sounds
+    ├── public
+    │   ├── pythonFiles
+    │   └── sounds
+    └── src
+        ├── components
+        ├── constants
+        ├── contexts
+        ├── funcs
+        ├── hooks
+        ├── lib
+        │   ├── googleLibs
+        │   └── newFolder
+        ├── pages
+        ├── patterns
+        ├── schemas
+        ├── store
+        └── workers
+
+22 directories

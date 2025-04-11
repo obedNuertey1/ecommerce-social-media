@@ -19,7 +19,6 @@
     "lucide-react": "^0.475.0",
     "pyodide": "^0.27.3",
     "react": "^19.0.0",
-    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^19.0.0",
     "react-error-boundary": "^5.0.0",
     "react-google-login": "^5.2.2",

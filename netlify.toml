@@ -1,6 +1,6 @@
 [build]
   base = "frontend"          # Path to your project root (where package.json lives)
-  publish = "frontend/dist"  # Built output directory
+  publish = "dist"  # Built output directory
   command = "npm install --legacy-peer-deps && npm run build" # Build command
 
 [build.environment]

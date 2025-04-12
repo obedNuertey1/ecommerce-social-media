@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { Toaster, toast } from "react-hot-toast";
 import { useEffect, useCallback } from "react";
@@ -8,7 +8,7 @@ import PyodideWorker from "./workers/pyodideWorker?worker";
 import installDepsWorker from "./workers/installDepsWorker?worker";
 import * as Comlink from "comlink";
 import { useQuery } from "@tanstack/react-query";
-import {textToSpeech} from "./funcs/essentialFuncs"
+import { textToSpeech } from "./funcs/essentialFuncs"
 
 // Pages
 import ProductPage3 from "./pages/ProductPage3";
@@ -56,6 +56,7 @@ import SvgNight from "./patterns/SvgNight";
 import SvgDracula from "./patterns/SvgDracula";
 import GoogleAuthCallback from "./pages/GoogleAuthCallback";
 import FacebookCallback from "./pages/FacebookAuthCallback";
+import HomeRedirectToAuth from "./components/HomeRedirectToAuth";
 
 const BgPatterns = () => {
   switch (useSettingsStore.getState().settings.visualCustomization.themeSelection.theme) {
@@ -99,19 +100,19 @@ function App() {
   const { theme } = useSettingsStore().settings.visualCustomization.themeSelection;
   const { gapi } = useGoogleAuthContext()
   const { fetchNewOrders, newOrders, resetNewOrders, fetchOrders } = useOrderStore();
-  const {settings, loadSettings} = useSettingsStore();
+  const { settings, loadSettings } = useSettingsStore();
   const query = useQueryStore();
   const code = query.get("code");
 
   const { data, error, isLoading } = useQuery({
     queryKey: ['orders'],
-    queryFn: ()=>fetchNewOrders(gapi),
+    queryFn: () => fetchNewOrders(gapi),
     refetchInterval: 1000 * 30,
     refetchIntervalInBackground: true
   });
 
-  const {playNotification} = useNotifications("orders_notification_sound");
-  const {playNotification: playNewArrivlsNotification} = useNotifications("new_arrivals_sound");
+  const { playNotification } = useNotifications("orders_notification_sound");
+  const { playNotification: playNewArrivlsNotification } = useNotifications("new_arrivals_sound");
 
 
   const processOrders = async (data) => {
@@ -154,16 +155,16 @@ function App() {
       cancel();
       // Wait for 1 second delay before processing next order.
     }
-    if(data.length > 0){
-      const {promise, cancel} = cancellableWaiting(1000);
+    if (data.length > 0) {
+      const { promise, cancel } = cancellableWaiting(1000);
       await promise;
       playNewArrivlsNotification();
       cancel();
       await promise;
       console.log("settings.notifications.volume / 100=", settings.notifications.volume / 100)
-      if(data.length === 1){
+      if (data.length === 1) {
         textToSpeech(`You have a new order.`, "en-GB", 1, 1, 5, (settings.notifications.volume / 100));
-      }else{
+      } else {
         textToSpeech(`You have ${data.length} new orders.`, "en-GB", 1, 1, 5, (settings.notifications.volume / 100));
       }
       cancel();
@@ -178,9 +179,9 @@ function App() {
   }, [data]);
 
 
-  useEffect(()=>{
+  useEffect(() => {
     res();
-  },[data]);
+  }, [data]);
 
 
   useEffect(() => {
@@ -190,7 +191,7 @@ function App() {
   const isLoggedIn = JSON.parse(localStorage.getItem("logged-in"));
   const facebookAuthCallbackActivated = JSON.parse(localStorage.getItem("facebookAuthCallbackActivated"));
   const googleAuthCallbackActivated = JSON.parse(localStorage.getItem("googleAuthCallbackActivated"));
-  console.log({googleAuthCallbackActivated})
+  console.log({ googleAuthCallbackActivated })
   return (
     <div className="min-h-screen bg-base-200 transition-colors duration-300">
       <Navbar />
@@ -199,44 +200,43 @@ function App() {
       </div>
       <div className="min-h-screen mx-auto max-w-6xl backdrop-blur-sm">
         <Routes>
-          {
-            code &&
-            <Route element={<GoogleAuthCallback />} path="/google/auth/callback/" />
-          }
-          {
-            isLoggedIn && 
+          {code && <Route element={<GoogleAuthCallback />} path="/google/auth/callback/" />}
+          {isLoggedIn ? (
             <>
               <Route element={<HomePage />} path="/" />
               <Route element={<ProductPage3 />} path="/product/:id" />
               <Route element={<SettingsPage />} path="/settings" />
               <Route element={<AnalyticsPage />} path="/product/:id/analytics" />
-              <Route element={
-                <ErrorBoundary FallbackComponent={ErrorFallback}>
-                  <ProductComments />
-                </ErrorBoundary>
-              } path="/product/:id/comments" />
+              <Route
+                element={
+                  <ErrorBoundary FallbackComponent={ErrorFallback}>
+                    <ProductComments />
+                  </ErrorBoundary>
+                }
+                path="/product/:id/comments"
+              />
               <Route element={<OrdersPage />} path="/orders" />
               <Route element={<PasskeyPage />} path="/passkey" />
               <Route element={<PasskeyLogsPage />} path="/passkey/logs" />
               <Route element={<PasskeyLearnMorePage />} path="/passkeys/learn-more" />
               <Route element={<ConversionFunneBusinessInsight />} path="/info/charts-learn-more" />
             </>
-          }
-          {
-            facebookAuthCallbackActivated && 
+          ) : (
             <>
-              <Route element={<FacebookCallback/>} path="/facebook/auth/callback/" />
+              <Route element={<FacebookCallback />} path="/facebook/auth/callback/" />
+              <Route element={<AuthPage />} path="/auth" />
+              {/* Redirect root path to /auth when not logged in */}
+              <Route path="/" element={<Navigate to="/auth" replace />} />
+            </>
+          )}
+          {
+            facebookAuthCallbackActivated &&
+            <>
+              <Route element={<FacebookCallback />} path="/facebook/auth/callback/" />
             </>
           }
           <Route element={<TermsOfService />} path="/info/terms-of-service" />
           <Route element={<PrivacyPolicy />} path="/info/privacy-policy" />
-          {
-            !Boolean(isLoggedIn) && 
-            <>
-              <Route element={<FacebookCallback />} path="/facebook/auth/callback/" />
-              <Route element={<AuthPage />} path="/auth" />
-            </>
-          }
           <Route element={<NotFoundPage />} path="/404" />
           <Route element={<NavigateTo404 />} path="*" />
         </Routes>

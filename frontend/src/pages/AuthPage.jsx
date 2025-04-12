@@ -19,10 +19,11 @@ import { usePasskeyStore } from "../store/usePasskeyStore.js";
 // const CLIENT_SECRET = "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";
 
 // Configuration temporary
+const ORIGIN = window.location.origin;
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
-const REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
+const REDIRECT_URI = `${ORIGIN}${import.meta.env.VITE_GOOGLE_REDIRECT_URI}`;
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
 const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
 const HASH_SPLIT_POINT = import.meta.env.VITE_HASH_SPLIT_POINT;

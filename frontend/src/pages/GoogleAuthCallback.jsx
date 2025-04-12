@@ -11,10 +11,11 @@ import { useSettingsStore } from '../store/useSettingsStore';
 const AuthSchema = schemas.find((elem) => elem.sheetName === "Auth");
 
 // Configuration temporary
+const ORIGIN = window.location.origin;
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
-const REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
+const REDIRECT_URI = `${ORIGIN}${import.meta.env.VITE_GOOGLE_REDIRECT_URI}`;
 const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
 const FACEBOOK_APP_SECRET = import.meta.env.VITE_FACEBOOK_APP_SECRET;

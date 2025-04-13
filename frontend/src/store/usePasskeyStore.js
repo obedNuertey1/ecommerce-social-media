@@ -27,7 +27,7 @@ export const usePasskeyStore = create((set, get) => ({
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
             const passkeys = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName);
-            const allPasskeys = passkeys.map((elem, idx) => {
+            const allPasskeys = passkeys?.map((elem, idx) => {
                 elem["id"] = idx + 2;
                 return elem;
             });

@@ -40,7 +40,7 @@ const PasskeyPage = () => {
     }, [fetchPasskeys]);
 
     const shortenHash = (hash) => {
-        if (hash.length <= 16) return hash;
+        if (hash?.length <= 16) return hash;
         return `${hash.slice(0, 8)}...${hash.slice(-8)}`;
     };
 
@@ -195,7 +195,7 @@ const PasskeyPage = () => {
                     <ArrowRightIcon className="absolute -right-1.5 top-0 h-4 w-4 text-primary/30 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-0" />
                 </div>
             </Link>
-            {passkeysData.length > 0 ? (
+            {passkeysData?.length > 0 ? (
                 <div className="overflow-x-auto rounded-lg border border-base-200">
                     <table className="table table-zebra table-xs lg:table-md">
                         <thead className="bg-base-200">

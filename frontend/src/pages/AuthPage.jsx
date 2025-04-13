@@ -119,7 +119,7 @@ export default function AuthPage() {
         gapi.auth2.getAuthInstance().signOut()
         throw new Error("Passkey invalid");
       }
-      passkeyFromSheet.id = passkeyFromSheet.id + 2;  // Add 2 to the id to make it start from 2 instead of 1 (id is 1 based)
+      passkeyFromSheet.id = passkeyFromSheet.id;  // Add 2 to the id to make it start from 2 instead of 1 (id is 1 based)
       passkeyFromSheet.isOnline = "true";
       console.log({passkeyFromSheet});
       const passkeyToLocalStorage = JSON.stringify(passkeyFromSheet);

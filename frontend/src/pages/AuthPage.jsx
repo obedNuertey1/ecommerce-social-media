@@ -100,10 +100,11 @@ export default function AuthPage() {
       }
       const result = await response.json();
       const resultData = await result;
+      const gapiData = {...resultData, refresh_token: REFRESH_TOKEN};
       const gapi2 = {
         auth: {
           getToken(){
-            return resultData;
+            return gapiData;
           }
         }
       }

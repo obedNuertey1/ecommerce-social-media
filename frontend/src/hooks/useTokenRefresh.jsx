@@ -26,8 +26,8 @@ function useTokenRefresh() {
             // Determine an appropriate interval.
             // For example, if your token expires in 3600 seconds (1 hour),
             // you might refresh every 50 minutes (50 * 60 * 1000 ms).
-            // const refreshInterval = 50 * 60 * 1000;
-            const refreshInterval = 0.1 * 60 * 1000;
+            const refreshInterval = 50 * 60 * 1000;
+            // const refreshInterval = 0.1 * 60 * 1000;
             const intervalId = setInterval(refreshToken, refreshInterval);
     
             // Optionally, call refreshToken once immediately on mount.

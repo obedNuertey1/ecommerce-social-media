@@ -140,24 +140,18 @@ export default function AuthPage() {
       const pages = JSON.parse(passkeyToLocalStorage).accessiblePages;
       console.log({pages});
       let url = "";
-      switch(pages){
-        case pages.includes("products"):
-          url = "/";
-          break;
-        case pages.includes("orders"):
-          url = "/orders";
-          break;
-        case pages.includes("settings"):
-          url = "/settings";
-          break;
-        case pages.includes("passkeys"):
-          url = "/passkey";
-          break;
-        case pages.includes("passkey-logs"):
-          url = "/passkey/logs";
-          break;
-        default:
-          url = "/";
+      if (pages.includes("products")) {
+        url = "/";
+      } else if (pages.includes("orders")) {
+        url = "/orders";
+      } else if (pages.includes("settings")) {
+        url = "/settings";
+      } else if (pages.includes("passkeys")) {
+        url = "/passkey";
+      } else if (pages.includes("passkey-logs")) {
+        url = "/passkey/logs";
+      } else {
+        url = "/";
       }
       window.location.href = url;
     } catch (error) {

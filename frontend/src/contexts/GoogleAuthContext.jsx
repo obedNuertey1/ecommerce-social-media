@@ -48,8 +48,12 @@ export function GoogleAuthProvider({ children }) {
     const navigate = useNavigate();
     // const query = useQuery();
     // const code = query.get("code");
-    const { settingsSchema, loadSettings} = useSettingsStore();
+    const { settingsSchema, loadSettings, loadSettingsOnStart} = useSettingsStore();
     useTokenRefresh();
+
+    useEffect(()=>{
+        loadSettingsOnStart(gapi);
+    }, [loadSettingsOnStart]);
 
 
     useEffect(() => {
@@ -140,7 +144,7 @@ export function GoogleAuthProvider({ children }) {
 
                     await googleSheet.updateHeadersByName(title, initSheetSchema);
                     // console.log({ driveRes, sheetRes })
-                    await loadSettings(gapi);
+                    // await loadSettings(gapi);
                 }
                 // await promise;
             } catch (err) {

@@ -229,5 +229,26 @@ export const useSettingsStore = create((set, get)=>({
         }finally{
             set({loading: false});
         }
+    },
+    loadSettingsOnStart: async (gapi, retries = 2, error = null)=>{
+        if(retries === 0){
+            if(error){
+                set(prev => ({settings: prev.settings, loading: false, error: error}))
+            }
+            return;
+        }
+        set({loading: true});
+        const {promise, cancel} = cancellableWaiting(1000);
+        try{
+            const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
+            const spreadsheet = new GoogleSheetsAPI(gapi);
+            const settings = await spreadsheet.getSettingsFronSpreadsheetByName(spreadsheetName);
+            set({settings, error: null});
+            localStorage.setItem("preferred-theme", settings.visualCustomization.themeSelection.theme)
+            return;
+        }catch(e){
+            console.log("Error loading settings:",e)
+            set({loading: false});
+        }
     }
 }))

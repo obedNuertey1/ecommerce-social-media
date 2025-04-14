@@ -122,7 +122,7 @@ export default function AuthPage() {
       passkeyFromSheet.id = passkeyFromSheet.id;  // Add 2 to the id to make it start from 2 instead of 1 (id is 1 based)
       passkeyFromSheet.isOnline = "true";
       console.log({passkeyFromSheet});
-      const passkeyToLocalStorage = encryptData(JSON.stringify(passkeyFromSheet), ENCRYPT_DECRYPT_KEY);
+      const passkeyToLocalStorage = await encryptData(JSON.stringify(passkeyFromSheet), ENCRYPT_DECRYPT_KEY);
       passkeyFromSheet.accessiblePages = JSON.stringify(passkeyFromSheet.accessiblePages);
       passkeyFromSheet.privileges = JSON.stringify(passkeyFromSheet.privileges);
       setPasskeyStoreData(passkeyFromSheet);

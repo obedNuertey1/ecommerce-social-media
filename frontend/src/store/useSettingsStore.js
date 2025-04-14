@@ -230,7 +230,7 @@ export const useSettingsStore = create((set, get)=>({
             set({loading: false});
         }
     },
-    loadSettingsOnStart: async (gapi, retries = 2, error = null)=>{
+    loadSettingsOnStart: async (gapi, retries = 10, error = null)=>{
         if(retries === 0){
             if(error){
                 set(prev => ({settings: prev.settings, loading: false, error: error}))
@@ -247,8 +247,11 @@ export const useSettingsStore = create((set, get)=>({
             localStorage.setItem("preferred-theme", settings.visualCustomization.themeSelection.theme)
             return;
         }catch(e){
-            console.log("Error loading settings:",e)
-            set({loading: false});
+            console.warn(`Attempts loading settings ${Math.abs(11 - retries)}: ,${e}`);
+            error = "Something went wrong";
+            await promise;
+            await get().loadSettingsOnStart(gapi, retries - 1, error);
+            cancel();
         }
     }
 }))

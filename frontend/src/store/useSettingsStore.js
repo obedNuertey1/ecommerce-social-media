@@ -244,7 +244,7 @@ export const useSettingsStore = create((set, get)=>({
             const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const spreadsheet = new GoogleSheetsAPI(gapi);
             const settings = await spreadsheet.getSettingsFronSpreadsheetByName(spreadsheetName);
-            set({settings, error: null});
+            set({settings, error: null, loading: false});
             localStorage.setItem("preferred-theme", settings.visualCustomization.themeSelection.theme)
             return;
         }catch(e){

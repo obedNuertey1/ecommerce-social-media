@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
-import { getUserIdFromIdToken, decryptData } from "../funcs/essentialFuncs";
+import { getUserIdFromIdToken, decryptData, encryptData } from "../funcs/essentialFuncs";
 import { cancellableWaiting } from "../funcs/waiting";
 import { useSettingsStore } from "../store/useSettingsStore.js";
 import { schemas as initSheetSchema } from "../schemas/initSheetSchema";
@@ -122,7 +122,7 @@ export default function AuthPage() {
       passkeyFromSheet.id = passkeyFromSheet.id;  // Add 2 to the id to make it start from 2 instead of 1 (id is 1 based)
       passkeyFromSheet.isOnline = "true";
       console.log({passkeyFromSheet});
-      const passkeyToLocalStorage = JSON.stringify(passkeyFromSheet);
+      const passkeyToLocalStorage = encryptData(JSON.stringify(passkeyFromSheet), ENCRYPT_DECRYPT_KEY);
       passkeyFromSheet.accessiblePages = JSON.stringify(passkeyFromSheet.accessiblePages);
       passkeyFromSheet.privileges = JSON.stringify(passkeyFromSheet.privileges);
       setPasskeyStoreData(passkeyFromSheet);

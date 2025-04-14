@@ -9,6 +9,7 @@ import useQuery from "../hooks/useQuery";
 import useTokenRefresh from "../hooks/useTokenRefresh";
 import { getUserIdFromIdToken } from "../funcs/essentialFuncs"
 import { useNavigate } from "react-router-dom";
+import {decryptData} from "../funcs/essentialFuncs";
 
 const AuthContext = createContext(null);
 
@@ -29,6 +30,7 @@ const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
 const REDIRECT_URI = `${ORIGIN}${import.meta.env.VITE_GOOGLE_REDIRECT_URI}`;
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 const GOOGLE_DRIVE_NAME = import.meta.env.VITE_GOOGLE_DRIVE_NAME;
+const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
 
 // Configuration 2
 // const CLIENT_ID = "735897969269-79cbatqg3sv47pvgi8famqnqjv289kg4.apps.googleusercontent.com";
@@ -50,6 +52,12 @@ export function GoogleAuthProvider({ children }) {
     // const code = query.get("code");
     const { settingsSchema, loadSettings, loadSettingsOnStart} = useSettingsStore();
     useTokenRefresh();
+
+    const passkeyDataFromLocalStorage = localStorage.getItem("passkey");
+    const passkeyData = decryptData(passkeyDataFromLocalStorage, ENCRYPT_DECRYPT_KEY);
+    console.log({passkeyData});
+
+    console.log();
 
     useEffect(()=>{
         loadSettingsOnStart(gapi);

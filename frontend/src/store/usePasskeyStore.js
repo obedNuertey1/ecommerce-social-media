@@ -18,9 +18,9 @@ export const usePasskeyStore = create((set, get) => ({
     fetchPasskeys: async (gapi, retries = 10, error = null) => {
         if (retries === 0) {
             if (error) {
-                set({ error: error, orders: [], loading: false });
+                set({ error: error, passkeys: [], loading: false });
             }
-            return;
+            return get().passkeys;
         }
         set({ loading: true });
         const { promise, cancel } = cancellableWaiting(1000);
@@ -32,7 +32,32 @@ export const usePasskeyStore = create((set, get) => ({
                 return elem;
             });
             set({ passkeys: allPasskeys, error: null, loading: false });
-            return;
+            return allPasskeys;
+        } catch (e) {
+            console.warn(`Attempts ${Math.abs(11 - retries)} failed:`, e);
+            error = "Something went wrong";
+            await promise;
+            await get().fetchPasskeys(gapi, retries - 1, error);
+            cancel();
+        }
+    },
+    fetchPasskeys2: async (gapi, retries = 2, error = null) => {
+        if (retries === 0) {
+            if (error) {
+                set({ passkeys: [] });
+            }
+            return get().passkeys;
+        }
+        const { promise, cancel } = cancellableWaiting(1000);
+        try {
+            const googleSheet = new GoogleSheetsAPI(gapi);
+            const passkeys = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName);
+            const allPasskeys = passkeys?.map((elem, idx) => {
+                elem["id"] = idx + 2;
+                return elem;
+            });
+            set({ passkeys: allPasskeys });
+            return allPasskeys;
         } catch (e) {
             console.warn(`Attempts ${Math.abs(11 - retries)} failed:`, e);
             error = "Something went wrong";

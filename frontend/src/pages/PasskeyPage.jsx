@@ -6,11 +6,11 @@ import { useProductStore } from '../store/useProductStore';
 import { createPortal } from 'react-dom';
 import { usePasskeyStore } from '../store/usePasskeyStore';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
+import { useQuery } from '@tanstack/react-query';
 
 const HASH_SPLIT_POINT = import.meta.env.VITE_HASH_SPLIT_POINT;
 
 const PasskeyPage = () => {
-    const [passkeys, setPasskeys] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [viewPrivilegesModal, setViewPrivilegesModal] = useState(false);
@@ -22,8 +22,18 @@ const PasskeyPage = () => {
         privileges: [],
         accessiblePages: [],
     });
-    const { passkeys: passkeysData, setPasskey, passkey: passkey2, addPasskey, fetchPasskeys, updatePasskey, deletePasskey, updateAddLoading, loading } = usePasskeyStore();
+    const { passkeys: passkeysData, setPasskey, passkey: passkey2, addPasskey, fetchPasskeys, updatePasskey, deletePasskey, updateAddLoading, loading, fetchPasskeys2 } = usePasskeyStore();
     const { gapi } = useGoogleAuthContext();
+    
+    const { data, error, isLoading } = useQuery({
+        queryKey: [],
+        queryFn: () => fetchPasskeys2(gapi),
+        refetchInterval: 1000 * 30,
+        refetchIntervalInBackground: true
+    });
+
+    useEffect(()=>{
+    },[data]);
 
     const navigate = useNavigate();
     const { resetFormData } = useProductStore();

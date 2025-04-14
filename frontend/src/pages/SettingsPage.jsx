@@ -15,7 +15,7 @@ import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 const SettingsPage = () => {
   const socialMediaAutomationRef = useRef(null);
   const repostingRulesRef = useRef(null);
-  const { settings, setSettings, saveSettings, loading, restoreDefaultSettings, location, handleGetLocation } = useSettingsStore();
+  const { settings, setSettings, saveSettings, loading, restoreDefaultSettings, location, handleGetLocation, restoreDefaultLoading } = useSettingsStore();
   const { auth_data, facebook_authenticate, instagram_authenticate, threads_authenticate } = useAuthStore();
   const { resetFormData } = useProductStore();
   const navigate = useNavigate();
@@ -893,9 +893,9 @@ const SettingsPage = () => {
                       }
                       Save Settings
                     </button>
-                    <button disabled={loading === true} onClick={handleRestoreDefaults} className="btn btn-secondary shadow-lg min-w-full md:min-w-0">
+                    <button disabled={restoreDefaultLoading === true} onClick={handleRestoreDefaults} className="btn btn-secondary shadow-lg min-w-full md:min-w-0">
                       {
-                        loading ? (<span className="loading loading-spinner loading-sm" />) : (
+                        restoreDefaultLoading ? (<span className="loading loading-spinner loading-sm" />) : (
                           <RefreshCwIcon className="mr-2 size-6" />
                         )
                       }

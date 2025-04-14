@@ -9,6 +9,7 @@ const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 
 export const useSettingsStore = create((set, get)=>({
     loading: false,
+    restoreDefaultLoading: false,
     error: null,
     location: {
         manualAddress: "",
@@ -199,7 +200,7 @@ export const useSettingsStore = create((set, get)=>({
         }
     },
     restoreDefaultSettings: async (gapi)=>{
-        set({loading: true});
+        set({restoreDefaultLoading: true});
         try{
             const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const schema = get().settingsSchema().shape;
@@ -212,7 +213,7 @@ export const useSettingsStore = create((set, get)=>({
             console.log(`Error restoring default settings: ${e}`);
             toast.error("Something went wrong");
         }finally{
-            set({loading: false});
+            set({restoreDefaultLoading: false});
         }
     },
     loadSettings: async (gapi)=>{

@@ -52,10 +52,14 @@ export function GoogleAuthProvider({ children }) {
     // const code = query.get("code");
     const { settingsSchema, loadSettings, loadSettingsOnStart} = useSettingsStore();
     useTokenRefresh();
-
-    const passkeyDataFromLocalStorage = localStorage.getItem("passkey");
-    const passkeyData = decryptData(passkeyDataFromLocalStorage, ENCRYPT_DECRYPT_KEY);
-    console.log({passkeyData});
+    
+    useEffect(()=>{
+        (async ()=>{
+            const passkeyDataFromLocalStorage = localStorage.getItem("passkey");
+            const passkeyData = await decryptData(passkeyDataFromLocalStorage, ENCRYPT_DECRYPT_KEY);
+            console.log({passkeyData});
+        })();
+    }, []);
 
     console.log();
 

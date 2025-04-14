@@ -233,7 +233,8 @@ export const useSettingsStore = create((set, get)=>({
     loadSettingsOnStart: async (gapi, retries = 10, error = null)=>{
         if(retries === 0){
             if(error){
-                set(prev => ({settings: prev.settings, loading: false, error: error}))
+                const {settings} = get();
+                set({settings, loading: false, error: error})
             }
             return;
         }

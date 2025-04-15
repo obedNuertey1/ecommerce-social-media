@@ -192,6 +192,7 @@ function App() {
 
   const isLoggedIn = JSON.parse(localStorage.getItem("logged-in"));
   const facebookAuthCallbackActivated = JSON.parse(localStorage.getItem("facebookAuthCallbackActivated"));
+  console.log({accessiblePages: getPasskey?.accessiblePages})
   return (
     <div className="min-h-screen bg-base-200 transition-colors duration-300">
       <Navbar />

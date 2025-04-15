@@ -176,7 +176,7 @@ const PasskeyPage = () => {
     
 Passkey   =   \`\`\`${text}\`\`\`
     
-LoginPage   =   \`\`\`${origin}/auth\`\`\`
+LoginPage   =   ${origin}/auth
     
 `;
         navigator.clipboard.writeText(clipText);

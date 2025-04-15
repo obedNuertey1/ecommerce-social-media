@@ -12,6 +12,7 @@ import { cancellableWaiting } from "../funcs/waiting";
 import { useSettingsStore } from "../store/useSettingsStore.js";
 import { schemas as initSheetSchema } from "../schemas/initSheetSchema";
 import { usePasskeyStore } from "../store/usePasskeyStore.js";
+import { waiting } from "../funcs/waiting";
 
 // Configuration 1
 // const CLIENT_ID = "384372585523-uckdjngronpg7it0m1udkvqget6d8a70.apps.googleusercontent.com";
@@ -156,9 +157,10 @@ export default function AuthPage() {
         url = "/";
       }
 
-      const {cancel, promise} = cancellableWaiting(2000);
-      await promise;
-      cancel();
+      // const {cancel, promise} = cancellableWaiting(2000);
+      // await promise;
+      // cancel();
+      await waiting(5000);
       window.location.href = url;
     } catch (error) {
       toast.error("Authentication failed");

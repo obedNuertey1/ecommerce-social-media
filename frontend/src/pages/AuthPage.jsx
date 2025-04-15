@@ -139,6 +139,11 @@ export default function AuthPage() {
       localStorage.setItem("logged-in", "true");
       localStorage.setItem("passkey", passkeyToLocalStorage2);
 
+      console.log(`      if(passkeyToLocalStorage2){
+          const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
+          setGetPasskey({...JSON.parse(passkeyData)});
+      }`)
+
       if(passkeyToLocalStorage2){
           const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
           setGetPasskey({...JSON.parse(passkeyData)});

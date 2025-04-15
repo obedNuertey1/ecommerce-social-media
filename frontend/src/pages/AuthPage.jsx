@@ -122,14 +122,9 @@ export default function AuthPage() {
       passkeyFromSheet.id = passkeyFromSheet.id;  // Add 2 to the id to make it start from 2 instead of 1 (id is 1 based)
       passkeyFromSheet.isOnline = "true";
       console.log({passkeyFromSheet});
-      let passkeyToLocalStorage;
-      try{
-        const passkeyToJson = JSON.stringify(passkeyFromSheet)
-        passkeyToLocalStorage = await encryptData(passkeyToJson, ENCRYPT_DECRYPT_KEY);
+      const passkeyToLocalStorage = JSON.stringify(passkeyFromSheet);
+      const passkeyToLocalStorage2 = await encryptData(passkeyToLocalStorage, ENCRYPT_DECRYPT_KEY);
 
-      }catch(e){
-        console.log("Error encrypting passkey:", e);
-      }
       passkeyFromSheet.accessiblePages = JSON.stringify(passkeyFromSheet.accessiblePages);
       passkeyFromSheet.privileges = JSON.stringify(passkeyFromSheet.privileges);
       setPasskeyStoreData(passkeyFromSheet);
@@ -142,7 +137,7 @@ export default function AuthPage() {
       localStorage.setItem("googleAuthToken", JSON.stringify(resultData));
       localStorage.setItem("auth", JSON.stringify(authData));
       localStorage.setItem("logged-in", "true");
-      localStorage.setItem("passkey", passkeyToLocalStorage);
+      localStorage.setItem("passkey", passkeyToLocalStorage2);
 
       const pages = JSON.parse(passkeyToLocalStorage).accessiblePages;
       console.log({pages});

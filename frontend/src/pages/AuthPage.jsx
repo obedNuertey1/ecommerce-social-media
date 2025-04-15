@@ -37,8 +37,7 @@ export default function AuthPage() {
   const [passkey, setPasskey] = useState("");
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const { facebook_authenticate, passkey_authenticate } = useAuthStore();
-  const { gapi } = useGoogleAuthContext();
+  const { gapi, setGetPasskey } = useGoogleAuthContext();
   const { loadSettings, settingsSchema } = useSettingsStore();
   const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey } = usePasskeyStore();
   const navigate = useNavigate();
@@ -140,6 +139,11 @@ export default function AuthPage() {
       localStorage.setItem("logged-in", "true");
       localStorage.setItem("passkey", passkeyToLocalStorage2);
 
+      if(passkeyToLocalStorage2){
+          const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
+          setGetPasskey({...JSON.parse(passkeyData)});
+      }
+
       const pages = JSON.parse(passkeyToLocalStorage).accessiblePages;
       console.log({pages});
       let url = "";
@@ -160,7 +164,7 @@ export default function AuthPage() {
       // const {cancel, promise} = cancellableWaiting(2000);
       // await promise;
       // cancel();
-      await waiting(5000);
+      // await waiting(5000);
       window.location.href = url;
     } catch (error) {
       toast.error("Authentication failed");

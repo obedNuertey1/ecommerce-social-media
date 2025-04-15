@@ -178,7 +178,8 @@ export function GoogleAuthProvider({ children }) {
 
     const value = {
         gapi,
-        getPasskey
+        getPasskey,
+        setGetPasskey
     }
 
     return (

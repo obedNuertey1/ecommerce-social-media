@@ -15,9 +15,13 @@ function Navbar() {
     const isSettingsPage = pathname === "/settings";
     const isOrdersPage = pathname === "/orders";
     const isPasskeyPage = pathname === "/passkey";
+    const isPasskeyLogsPage = pathname === "/passkey/logs";
+    const isPasskeyLearnMorePage = pathname === "/passkeys/learn-more";
+    const isConversionFunnelBusinessInsightPage = pathname === "/info/charts-learn-more";
+    const isProductCommentsPage = /^\/product\/\d+\/comments\/?$/.test(pathname);
+    const isInfoPage = /^\/info\/?.*$/.test(pathname);
     const isProductPage = /^\/product\/\d+\/?$/.test(pathname);
     const isAnalyticsPage = /^\/product\/\d+\/analytics\/?$/.test(pathname);
-    const isInfoPage = /^\/info\/?.*$/.test(pathname);
     const isAuth = pathname === "/auth";
     const { products, resetFormData } = useProductStore();
     const { orders } = useOrderStore();
@@ -148,7 +152,7 @@ function Navbar() {
 
                     {/* Desktop Navigation */}
                     <div className="flex-none hidden md:flex gap-2">
-                        {(isOrdersPage || isSettingsPage || isPasskeyPage || isAnalyticsPage || isProductPage) && (
+                        {(isOrdersPage || isSettingsPage || isPasskeyPage || isAnalyticsPage || isProductPage || isPasskeyLogsPage || isProductCommentsPage) && (
                             <>
                                 <div className="indicator">
                                     <Link to="/orders" className="btn btn-ghost btn-circle">
@@ -162,6 +166,13 @@ function Navbar() {
                                 <Link to="/settings" className="btn btn-ghost btn-circle">
                                     <SettingsIcon className="size-5" />
                                 </Link>
+                                <button 
+                                    onClick={handleLogout}
+                                    className="btn btn-error btn-outline btn-circle"
+                                    title="Logout"
+                                >
+                                    <LogOutIcon className="size-5" />
+                                </button>
                             </>
                         )}
 
@@ -195,6 +206,15 @@ function Navbar() {
                                     <LogOutIcon className="size-5" />
                                 </button>
                             </>
+                        )}
+                        {(isPasskeyLearnMorePage || isConversionFunnelBusinessInsightPage) && (
+                            <button 
+                            onClick={handleLogout}
+                            className="btn btn-error btn-outline btn-circle"
+                            title="Logout"
+                        >
+                            <LogOutIcon className="size-5" />
+                        </button>
                         )}
                     </div>
                     {/* Mobile Menu */}

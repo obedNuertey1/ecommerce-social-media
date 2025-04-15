@@ -201,7 +201,7 @@ function App() {
       <div className="min-h-screen mx-auto max-w-6xl backdrop-blur-sm">
         <Routes>
           {code && <Route element={<GoogleAuthCallback />} path="/google/auth/callback/" />}
-          {isLoggedIn ? (!localStorage.hasOwnPropoerty("passkey") ?
+          {isLoggedIn ? (!localStorage.hasOwnProperty("passkey") ?
             <>
               <Route element={<HomePage />} path="/" />
               <Route element={<ProductPage3 />} path="/product/:id" />

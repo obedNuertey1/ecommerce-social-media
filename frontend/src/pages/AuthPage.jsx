@@ -155,6 +155,10 @@ export default function AuthPage() {
       } else {
         url = "/";
       }
+
+      const {cancel, promise} = cancellableWaiting(2000);
+      await promise;
+      cancel();
       window.location.href = url;
     } catch (error) {
       toast.error("Authentication failed");

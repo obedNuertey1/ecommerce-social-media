@@ -183,7 +183,7 @@ function App() {
     res();
   }, [data]);
 
-  console.log({getPasskeyApp: getPasskey});
+  console.log({ getPasskeyApp: getPasskey });
 
 
   useEffect(() => {
@@ -192,8 +192,6 @@ function App() {
 
   const isLoggedIn = JSON.parse(localStorage.getItem("logged-in"));
   const facebookAuthCallbackActivated = JSON.parse(localStorage.getItem("facebookAuthCallbackActivated"));
-  const googleAuthCallbackActivated = JSON.parse(localStorage.getItem("googleAuthCallbackActivated"));
-  console.log({ googleAuthCallbackActivated })
   return (
     <div className="min-h-screen bg-base-200 transition-colors duration-300">
       <Navbar />
@@ -203,7 +201,7 @@ function App() {
       <div className="min-h-screen mx-auto max-w-6xl backdrop-blur-sm">
         <Routes>
           {code && <Route element={<GoogleAuthCallback />} path="/google/auth/callback/" />}
-          {isLoggedIn ? (
+          {isLoggedIn ? (!localStorage.hasOwnPropoerty("passkey") ?
             <>
               <Route element={<HomePage />} path="/" />
               <Route element={<ProductPage3 />} path="/product/:id" />
@@ -220,6 +218,89 @@ function App() {
               <Route element={<OrdersPage />} path="/orders" />
               <Route element={<PasskeyPage />} path="/passkey" />
               <Route element={<PasskeyLogsPage />} path="/passkey/logs" />
+              <Route element={<PasskeyLearnMorePage />} path="/passkeys/learn-more" />
+              <Route element={<ConversionFunneBusinessInsight />} path="/info/charts-learn-more" />
+            </> :
+            <>
+              {
+                getPasskey?.accessiblePages?.includes("products") ?
+                <>
+                  <Route element={<HomePage />} path="/" />
+                  <Route element={<ProductPage3 />} path="/product/:id" />
+                </>
+                :
+                <>
+                  <Route element={<Navigate to="/404" replace />} path="/" />
+                  <Route element={<Navigate to="/404" replace />} path="/product/:id" />
+                </>
+              }
+              {
+                getPasskey?.accessiblePages?.includes("settings") ?
+                <>
+                  <Route element={<SettingsPage />} path="/settings" />
+                </>
+                :
+                <>
+                  <Route element={<Navigate to="/404" replace />} path="/settings" />
+                </>
+              }
+              {
+                getPasskey?.accessiblePages?.includes("analytics") ?
+                <>
+                  <Route element={<AnalyticsPage />} path="/product/:id/analytics" />
+                </>
+                :
+                <>
+                  <Route element={<Navigate to="/404" replace />} path="/product/:id/analytics" />
+                </>
+              }
+              {
+                getPasskey?.accessiblePages?.includes("chat") ?
+                <>
+                  <Route
+                    element={
+                      <ErrorBoundary FallbackComponent={ErrorFallback}>
+                        <ProductComments />
+                      </ErrorBoundary>
+                    }
+                    path="/product/:id/comments"
+                  />
+                </>
+                :
+                <>
+                  <Route element={<Navigate to="/404" replace />} path="/product/:id/comments" />
+                </>
+              }
+              {
+                getPasskey?.accessiblePages?.includes("orders") ?
+                <>
+                  <Route element={<OrdersPage />} path="/orders" />
+                </>
+                :
+                <>
+                  <Route element={<Navigate to="/404" replace />} path="/orders" />
+                </>
+              }
+              {
+                getPasskey?.accessiblePages?.includes("passkeys") ?
+                <>
+                  <Route element={<PasskeyPage />} path="/passkey" />
+                </>
+                :
+                <>
+                  <Route element={<Navigate to="/404" replace />} path="/passkey" />
+                </>
+              }
+              {
+                getPasskey?.accessiblePages?.includes("passkey-logs") ?
+                <>
+                  <Route element={<PasskeyLogsPage />} path="/passkey/logs" />
+                </>
+                :
+                <>
+                  <Route element={<Navigate to="/404" replace />} path="/passkey/logs" />
+                </>
+              }
               <Route element={<PasskeyLearnMorePage />} path="/passkeys/learn-more" />
               <Route element={<ConversionFunneBusinessInsight />} path="/info/charts-learn-more" />
             </>

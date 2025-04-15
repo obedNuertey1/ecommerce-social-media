@@ -110,7 +110,7 @@ export const usePasskeyStore = create((set, get) => ({
             console.log(`Error updating passkey: ${e}`);
             toast.error("Status update error");
             set({updateAddLoading: false});
-            return null;
+            throw new Error("Passkey could not update");
         }
     }
 }));

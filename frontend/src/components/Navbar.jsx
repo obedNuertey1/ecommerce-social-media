@@ -5,6 +5,9 @@ import { useOrderStore } from "../store/useOrderStore";
 import { usePasskeyStore } from "../store/usePasskeyStore";
 import { useState, useRef, useEffect } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
+import { decryptData } from "../funcs/essentialFuncs";
+
+const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
 
 function Navbar() {
     const { pathname } = useResolvedPath();
@@ -28,8 +31,10 @@ function Navbar() {
 
     const handleLogout = async () => {
         try{
-            let passkey = JSON.parse(localStorage.getItem("passkey"));
-            if(passkey){
+            let passkeyEncrypted = localStorage.getItem("passkey");
+            if(passkeyEncrypted){
+                let passkeyDecrypted = await decryptData(passkeyEncrypted, ENCRYPT_DECRYPT_KEY);
+                let passkey = JSON.parse(passkeyDecrypted);
                 passkey.isOnline = "false";
                 passkey.accessiblePages = JSON.stringify(passkey.accessiblePages);
                 passkey.privileges = JSON.stringify(passkey.privileges);

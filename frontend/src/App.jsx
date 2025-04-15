@@ -224,7 +224,7 @@ function App() {
             </> :
             <>
               {
-                getPasskey?.accessiblePages?.includes("products") ?
+                JSON?.parse(localStorage.accessiblePages)?.includes("products") ?
                 <>
                   <Route element={<HomePage />} path="/" />
                   <Route element={<ProductPage3 />} path="/product/:id" />
@@ -236,7 +236,7 @@ function App() {
                 </>
               }
               {
-                getPasskey?.accessiblePages?.includes("settings") ?
+                JSON?.parse(localStorage.accessiblePages)?.includes("settings") ?
                 <>
                   <Route element={<SettingsPage />} path="/settings" />
                 </>
@@ -246,7 +246,7 @@ function App() {
                 </>
               }
               {
-                getPasskey?.accessiblePages?.includes("analytics") ?
+                JSON?.parse(localStorage.accessiblePages)?.includes("analytics") ?
                 <>
                   <Route element={<AnalyticsPage />} path="/product/:id/analytics" />
                 </>
@@ -256,7 +256,7 @@ function App() {
                 </>
               }
               {
-                getPasskey?.accessiblePages?.includes("chat") ?
+                JSON?.parse(localStorage.accessiblePages)?.includes("chat") ?
                 <>
                   <Route
                     element={
@@ -273,7 +273,7 @@ function App() {
                 </>
               }
               {
-                getPasskey?.accessiblePages?.includes("orders") ?
+                JSON?.parse(localStorage.accessiblePages)?.includes("orders") ?
                 <>
                   <Route element={<OrdersPage />} path="/orders" />
                 </>
@@ -283,7 +283,7 @@ function App() {
                 </>
               }
               {
-                getPasskey?.accessiblePages?.includes("passkeys") ?
+                JSON?.parse(localStorage.accessiblePages)?.includes("passkeys") ?
                 <>
                   <Route element={<PasskeyPage />} path="/passkey" />
                 </>
@@ -293,7 +293,7 @@ function App() {
                 </>
               }
               {
-                getPasskey?.accessiblePages?.includes("passkey-logs") ?
+                JSON?.parse(localStorage.accessiblePages)?.includes("passkey-logs") ?
                 <>
                   <Route element={<PasskeyLogsPage />} path="/passkey/logs" />
                 </>

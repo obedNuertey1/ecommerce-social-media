@@ -99,12 +99,12 @@ const truncateText = (text, maxLength) => {
 function App() {
   const { theme } = useSettingsStore().settings.visualCustomization.themeSelection;
   const { gapi } = useGoogleAuthContext()
-  const { fetchNewOrders, newOrders, resetNewOrders, fetchOrders } = useOrderStore();
-  const { settings, loadSettings } = useSettingsStore();
+  const { fetchNewOrders } = useOrderStore();
+  const { settings } = useSettingsStore();
   const query = useQueryStore();
   const code = query.get("code");
 
-  const { data, error, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ['orders'],
     queryFn: () => fetchNewOrders(gapi),
     refetchInterval: 1000 * 30,
@@ -117,8 +117,8 @@ function App() {
 
   const processOrders = async (data) => {
     for (let i = 0; i < data.length; i++) {
-      // It's unclear if cancel should be called in every iteration.
-      // Typically, you might call cancel() if you need to abort the waiting promise.
+      // I don't know if cancel should be called in every iteration.
+      // Typically, I might call cancel() if I need to abort the waiting promise.
       const { promise, cancel } = cancellableWaiting(1000);
       await promise;
       let newOrder = data[i];

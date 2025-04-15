@@ -4,6 +4,7 @@ import { gapi } from "gapi-script";
 import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas as initSheetSchema } from "../schemas/initSheetSchema";
 import { useSettingsStore } from "../store/useSettingsStore";
+import { useOrderStore } from "../store/useOrderStore";
 import { cancellableWaiting } from "../funcs/waiting";
 import useQuery from "../hooks/useQuery";
 import useTokenRefresh from "../hooks/useTokenRefresh";
@@ -51,6 +52,7 @@ export function GoogleAuthProvider({ children }) {
     // const query = useQuery();
     // const code = query.get("code");
     const { settingsSchema, loadSettings, loadSettingsOnStart} = useSettingsStore();
+    const {fetchOrders} = useOrderStore();
     useTokenRefresh();
     
     useEffect(()=>{
@@ -66,6 +68,10 @@ export function GoogleAuthProvider({ children }) {
     useEffect(()=>{
         loadSettingsOnStart(gapi);
     }, [loadSettingsOnStart]);
+
+    useEffect(()=>{
+        fetchOrders(gapi);
+    },[]);
 
 
     useEffect(() => {

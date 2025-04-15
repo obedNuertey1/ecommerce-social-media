@@ -139,16 +139,6 @@ export default function AuthPage() {
       localStorage.setItem("logged-in", "true");
       localStorage.setItem("passkey", passkeyToLocalStorage2);
 
-      console.log(`      if(passkeyToLocalStorage2){
-          const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
-          setGetPasskey({...JSON.parse(passkeyData)});
-      }`)
-
-      if(passkeyToLocalStorage2){
-          const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
-          setGetPasskey({...JSON.parse(passkeyData)});
-      }
-
       const pages = JSON.parse(passkeyToLocalStorage).accessiblePages;
       console.log({pages});
       let url = "";
@@ -166,11 +156,16 @@ export default function AuthPage() {
         url = "/";
       }
 
+      window.location.href = "/auth";
+      if(passkeyToLocalStorage2){
+        const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
+        setGetPasskey({...JSON.parse(passkeyData)});
+    }
       // const {cancel, promise} = cancellableWaiting(2000);
       // await promise;
       // cancel();
       // await waiting(5000);
-      window.location.href = url;
+      navigate(url);
     } catch (error) {
       toast.error("Authentication failed");
       console.error({error});

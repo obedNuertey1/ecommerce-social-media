@@ -46,12 +46,11 @@ const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
 export function GoogleAuthProvider({ children }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [error, setError] = useState("");
-    const [files, setFiles] = useState(null);
     const initializationStarted = useRef(false);
-    const navigate = useNavigate();
     // const query = useQuery();
     // const code = query.get("code");
-    const { settingsSchema, loadSettings, loadSettingsOnStart} = useSettingsStore();
+    const [getPasskey, setGetPasskey] = useState(null);
+    const { settingsSchema, loadSettingsOnStart} = useSettingsStore();
     const {fetchOrders} = useOrderStore();
     useTokenRefresh();
     
@@ -59,11 +58,11 @@ export function GoogleAuthProvider({ children }) {
         (async ()=>{
             const passkeyDataFromLocalStorage = localStorage.getItem("passkey");
             const passkeyData = await decryptData(passkeyDataFromLocalStorage, ENCRYPT_DECRYPT_KEY);
-            console.log({passkeyData});
+            setGetPasskey({...JSON.parse(passkeyData)});
         })();
     }, []);
 
-    console.log();
+    console.log({getPasskey});
 
     useEffect(()=>{
         loadSettingsOnStart(gapi);

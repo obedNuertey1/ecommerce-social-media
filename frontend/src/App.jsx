@@ -98,7 +98,7 @@ const truncateText = (text, maxLength) => {
 
 function App() {
   const { theme } = useSettingsStore().settings.visualCustomization.themeSelection;
-  const { gapi } = useGoogleAuthContext()
+  const { gapi, getPasskey } = useGoogleAuthContext()
   const { fetchNewOrders } = useOrderStore();
   const { settings } = useSettingsStore();
   const query = useQueryStore();
@@ -182,6 +182,8 @@ function App() {
   useEffect(() => {
     res();
   }, [data]);
+
+  console.log({getPasskeyApp: getPasskey});
 
 
   useEffect(() => {

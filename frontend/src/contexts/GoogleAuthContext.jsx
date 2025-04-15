@@ -57,12 +57,12 @@ export function GoogleAuthProvider({ children }) {
     useLayoutEffect(()=>{
         (async ()=>{
             const passkeyDataFromLocalStorage = localStorage.getItem("passkey");
-            const passkeyData = await decryptData(passkeyDataFromLocalStorage, ENCRYPT_DECRYPT_KEY);
-            setGetPasskey({...JSON.parse(passkeyData)});
+            if(passkeyDataFromLocalStorage){
+                const passkeyData = await decryptData(passkeyDataFromLocalStorage, ENCRYPT_DECRYPT_KEY);
+                setGetPasskey({...JSON.parse(passkeyData)});
+            }
         })();
     }, []);
-
-    console.log({getPasskey});
 
     useEffect(()=>{
         loadSettingsOnStart(gapi);
@@ -176,22 +176,9 @@ export function GoogleAuthProvider({ children }) {
         // return () => { }
     }, [])
 
-    const handleLoginSuccess = (response) => {
-        localStorage.setItem("logged-in", 'true');
-        setIsAuthenticated(true);
-        gapi.auth2.getAuthInstance().signIn()
-        // Do something like list files or something
-        // console.log("Logged in successfully:", response);
-        localStorage.setItem("logged-in", 'true');
-        // console.log(response);
-    }
-
-    const handleLoginFailure = (response) => {
-        setError("Failed to authenticate. Please try again.");
-    }
-
     const value = {
         gapi,
+        getPasskey
     }
 
     return (

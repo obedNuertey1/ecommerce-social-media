@@ -54,7 +54,7 @@ export function GoogleAuthProvider({ children }) {
     const {fetchOrders} = useOrderStore();
     useTokenRefresh();
     
-    useEffect(()=>{
+    useLayoutEffect(()=>{
         (async ()=>{
             const passkeyDataFromLocalStorage = localStorage.getItem("passkey");
             const passkeyData = await decryptData(passkeyDataFromLocalStorage, ENCRYPT_DECRYPT_KEY);

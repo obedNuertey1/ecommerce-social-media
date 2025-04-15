@@ -162,9 +162,10 @@ const PasskeyPage = () => {
     const copyToClipboard = (text) => {
         const origin = window.location.origin;
         const clipText = `Copy and paste the passkey below in the the field provided in the Login Page to login;
-            
-            Passkey: ${text}
-            LoginPage: ${origin}/auth
+
+            Passkey   =   ${text}
+
+            LoginPage   =   ${origin}/auth
         `;
         navigator.clipboard.writeText(clipText);
         toast.success('Copied to clipboard');

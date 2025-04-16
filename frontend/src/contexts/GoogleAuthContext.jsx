@@ -66,8 +66,12 @@ export function GoogleAuthProvider({ children }) {
                     <button
                         className="btn btn-sm btn-primary"
                         onClick={() => {
-                            toast.dismiss(toastIdRef.current);
+                            // Clear existing auth state
+                            gapi.auth2.getAuthInstance().signOut();
+                            localStorage.clear();
+                            localStorage.setItem('logged-in', 'false');
                             navigate('/auth');
+                            toast.dismiss(toastIdRef.current);
                             toastIdRef.current = null;
                         }}
                     >
@@ -80,11 +84,6 @@ export function GoogleAuthProvider({ children }) {
                 }
             );
         }
-
-        // Clear existing auth state
-        gapi.auth2.getAuthInstance().signOut();
-        localStorage.clear();
-        localStorage.setItem('logged-in', 'false');
     };
 
     // Modified useQuery with error handling

@@ -118,12 +118,12 @@ export function GoogleAuthProvider({ children }) {
 
         gapi.client.request = async (args) => {
             try {
-                console.log(`${originalRequest}`);
                 return await originalRequest(args);
             } catch (error) {
                 if (error.status === 401) {
                     handleUnauthorizedError();
                 }
+                console.log(`error is working`);
                 throw error;
             }
         };

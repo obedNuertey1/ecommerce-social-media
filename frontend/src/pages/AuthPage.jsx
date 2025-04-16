@@ -109,14 +109,11 @@ export default function AuthPage() {
         }
       }
 
-      const googleSheet = new GoogleSheetsAPI(gapi2);
-      const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
+      // const googleSheet = new GoogleSheetsAPI(gapi2);
+      // const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
+      const passkeys = await fetchPasskeys2(gapi2);
       const passkeyFromSheet = passkeys.find((pk) => pk.passkey == passkey);
-      
-      localStorage.setItem("passkeyFromSheetSomething", JSON.stringify(passkeyFromSheet));
 
-      const passkeyDataFromPasskeyStore = await fetchPasskeys2(gapi2);
-      localStorage.setItem("passkeyDataFromPasskeyStoreSomething", JSON.stringify(passkeyDataFromPasskeyStore));
 
       const passkeyExist = Boolean(passkeyFromSheet);
       if(!passkeyExist){

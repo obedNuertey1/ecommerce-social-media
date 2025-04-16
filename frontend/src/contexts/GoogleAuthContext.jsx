@@ -55,6 +55,7 @@ export function GoogleAuthProvider({ children }) {
     const toastIdRef = useRef();
     useTokenRefresh();
 
+    // ======> Start
     // Add this error handler function
     const handleUnauthorizedError = () => {
         if (!toastIdRef.current) {
@@ -114,25 +115,26 @@ export function GoogleAuthProvider({ children }) {
         refetchOnWindowFocus: true,
     });
     // Add interceptor for all API calls
-    useEffect(() => {
-        const originalRequest = gapi.client.request;
+    // useEffect(() => {
+    //     const originalRequest = gapi.client.request;
 
-        gapi.client.request = async (args) => {
-            try {
-                return await originalRequest(args);
-            } catch (error) {
-                if (error.status === 401) {
-                    handleUnauthorizedError();
-                }
-                console.log(`error is working`);
-                throw error;
-            }
-        };
+    //     gapi.client.request = async (args) => {
+    //         try {
+    //             return await originalRequest(args);
+    //         } catch (error) {
+    //             if (error.status === 401) {
+    //                 handleUnauthorizedError();
+    //             }
+    //             console.log(`error is working`);
+    //             throw error;
+    //         }
+    //     };
 
-        return () => {
-            gapi.client.request = originalRequest;
-        };
-    }, []);
+    //     return () => {
+    //         gapi.client.request = originalRequest;
+    //     };
+    // }, []);
+    // ======> End
 
     useEffect(() => {
         loadSettingsOnStart(gapi);

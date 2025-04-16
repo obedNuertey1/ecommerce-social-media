@@ -6,11 +6,10 @@ import { schemas as initSheetSchema } from "../schemas/initSheetSchema";
 import { useSettingsStore } from "../store/useSettingsStore";
 import { useOrderStore } from "../store/useOrderStore";
 import { cancellableWaiting } from "../funcs/waiting";
-import useQuery from "../hooks/useQuery";
 import useTokenRefresh from "../hooks/useTokenRefresh";
-import { getUserIdFromIdToken } from "../funcs/essentialFuncs"
 import { useNavigate } from "react-router-dom";
-import {decryptData} from "../funcs/essentialFuncs";
+import { LogIn } from "lucide-react";
+import { toast } from 'react-hot-toast';
 
 const AuthContext = createContext(null);
 
@@ -49,17 +48,97 @@ export function GoogleAuthProvider({ children }) {
     const initializationStarted = useRef(false);
     // const query = useQuery();
     // const code = query.get("code");
-    const { settingsSchema, loadSettingsOnStart} = useSettingsStore();
-    const {fetchOrders} = useOrderStore();
+    const { settingsSchema, loadSettingsOnStart } = useSettingsStore();
+    const { fetchOrders } = useOrderStore();
+    const navigate = useNavigate();
+    const toastIdRef = useRef();
     useTokenRefresh();
 
-    useEffect(()=>{
+    // Add this error handler function
+    const handleUnauthorizedError = () => {
+        if (!toastIdRef.current) {
+            toastIdRef.current = toast.error(
+                <div className="flex items-center gap-3">
+                    <LogIn size={20} />
+                    <span>Session expired. Please login again</span>
+                    <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => {
+                            toast.dismiss(toastIdRef.current);
+                            navigate('/auth');
+                            toastIdRef.current = null;
+                        }}
+                    >
+                        Re-login
+                    </button>
+                </div>,
+                {
+                    duration: Infinity,
+                    id: 'session-expired',
+                }
+            );
+        }
+
+        // Clear existing auth state
+        gapi.auth2.getAuthInstance().signOut();
+        localStorage.clear();
+        localStorage.setItem('logged-in', 'false');
+    };
+
+    // Modified useQuery with error handling
+    const { data } = useQuery({
+        queryKey: ['auth-check'],
+        queryFn: async () => {
+            // if (!localStorage.getItem("passkey")) return null;
+
+            try {
+                // Test API call to validate token
+                await gapi.client.drive.files.list({
+                    pageSize: 1,
+                    fields: 'files(id, name)',
+                });
+                // const getAuth = await gapi.auth2.getAuthInstance().isSignedIn.get();
+                // if (!getAuth) throw new Error("Not signed in");
+                return true;
+            } catch (error) {
+                if (error.status === 401) {
+                    handleUnauthorizedError();
+                }
+                throw error;
+            }
+        },
+        refetchInterval: 1000 * 30,
+        retry: false,
+        refetchOnWindowFocus: true,
+    });
+
+    // Add interceptor for all API calls
+    useEffect(() => {
+        const originalRequest = gapi.client.request;
+
+        gapi.client.request = async (args) => {
+            try {
+                return await originalRequest(args);
+            } catch (error) {
+                if (error.status === 401) {
+                    handleUnauthorizedError();
+                }
+                throw error;
+            }
+        };
+
+        return () => {
+            gapi.client.request = originalRequest;
+        };
+    }, []);
+
+    useEffect(() => {
         loadSettingsOnStart(gapi);
     }, [loadSettingsOnStart]);
 
-    useEffect(()=>{
+    useEffect(() => {
         fetchOrders(gapi);
-    },[]);
+    }, []);
 
 
     useEffect(() => {

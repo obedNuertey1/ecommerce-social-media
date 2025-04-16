@@ -2,9 +2,11 @@ import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotifications';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const NotFoundPage = () => {
   const {playNotification: playNotFoundSound} = useNotifications("not_found_sound");
+  const navigate = useNavigate();
   useEffect(()=>{
     playNotFoundSound();
     return ()=>{};
@@ -27,10 +29,10 @@ const NotFoundPage = () => {
               </p>
             </div>
 
-            <Link to="/" className="btn btn-primary gap-2">
+            <button onClick={()=>navigate(-1)} className="btn btn-primary gap-2">
               <ArrowLeft size={20} />
-              Back to Home
-            </Link>
+              Go Back
+            </button>
           </div>
         </div>
       </div>

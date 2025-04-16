@@ -111,6 +111,7 @@ export default function AuthPage() {
 
       const googleSheet = new GoogleSheetsAPI(gapi2);
       const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
+      localStorage.setItem("passkeyFromSheet4", JSON.stringify(passkeys));
       const passkeyFromSheet = passkeys.find((pk) => pk.passkey == passkey);
 
       localStorage.setItem("passkeyFromSheet3", JSON.stringify(passkeyFromSheet));

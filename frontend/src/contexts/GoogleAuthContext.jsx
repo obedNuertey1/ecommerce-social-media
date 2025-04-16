@@ -112,13 +112,13 @@ export function GoogleAuthProvider({ children }) {
         retry: false,
         refetchOnWindowFocus: true,
     });
-
     // Add interceptor for all API calls
     useEffect(() => {
         const originalRequest = gapi.client.request;
 
         gapi.client.request = async (args) => {
             try {
+                console.log(`${originalRequest}`);
                 return await originalRequest(args);
             } catch (error) {
                 if (error.status === 401) {

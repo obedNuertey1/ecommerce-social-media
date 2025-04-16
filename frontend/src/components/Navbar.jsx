@@ -36,14 +36,18 @@ function Navbar() {
     const handleLogout = async () => {
         try{
             let passkeyEncrypted = localStorage.getItem("passkey");
-            if(passkeyEncrypted){
-                let passkeyDecrypted = await decryptData(passkeyEncrypted, ENCRYPT_DECRYPT_KEY);
-                let passkey = JSON.parse(passkeyDecrypted);
-                passkey.isOnline = "false";
-                passkey.accessiblePages = JSON.stringify(passkey.accessiblePages);
-                passkey.privileges = JSON.stringify(passkey.privileges);
-                setPasskey(passkey);
-                await updatePasskey(gapi, passkey.id);
+            try{
+                if(passkeyEncrypted){
+                    let passkeyDecrypted = await decryptData(passkeyEncrypted, ENCRYPT_DECRYPT_KEY);
+                    let passkey = JSON.parse(passkeyDecrypted);
+                    passkey.isOnline = "false";
+                    passkey.accessiblePages = JSON.stringify(passkey.accessiblePages);
+                    passkey.privileges = JSON.stringify(passkey.privileges);
+                    setPasskey(passkey);
+                    await updatePasskey(gapi, passkey.id);
+                }
+            }catch(e){
+                console.log(e);
             }
             // authService.logout();
             // Clear any relevant store data if needed

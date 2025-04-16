@@ -134,8 +134,8 @@ export default function AuthPage() {
 
       const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
 
-      const passkeyDataFromPasskeyStore = await fetchPasskeys2(gapi2);
-      localStorage.setItem("passkeyDataFromPasskeyStoreSomething", JSON.stringify(passkeyDataFromPasskeyStore));
+      // const passkeyDataFromPasskeyStore = await fetchPasskeys2(gapi2);
+      // localStorage.setItem("passkeyDataFromPasskeyStoreSomething", JSON.stringify(passkeyDataFromPasskeyStore));
       gapi.auth.setToken(resultData);
       gapi.client.setToken(resultData);
       localStorage.setItem("googleAuthToken", JSON.stringify(resultData));

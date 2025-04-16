@@ -37,7 +37,7 @@ export default function AuthPage() {
   const [passkey, setPasskey] = useState("");
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const { gapi, setGetPasskey } = useGoogleAuthContext();
+  const { gapi } = useGoogleAuthContext();
   const { loadSettings, settingsSchema } = useSettingsStore();
   const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
   const navigate = useNavigate();

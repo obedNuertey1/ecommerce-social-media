@@ -49,20 +49,9 @@ export function GoogleAuthProvider({ children }) {
     const initializationStarted = useRef(false);
     // const query = useQuery();
     // const code = query.get("code");
-    const [getPasskey, setGetPasskey] = useState(null);
     const { settingsSchema, loadSettingsOnStart} = useSettingsStore();
     const {fetchOrders} = useOrderStore();
     useTokenRefresh();
-    
-    useLayoutEffect(()=>{
-        (async ()=>{
-            const passkeyDataFromLocalStorage = localStorage.getItem("passkey");
-            if(passkeyDataFromLocalStorage){
-                const passkeyData = await decryptData(passkeyDataFromLocalStorage, ENCRYPT_DECRYPT_KEY);
-                setGetPasskey({...JSON.parse(passkeyData)});
-            }
-        })();
-    }, []);
 
     useEffect(()=>{
         loadSettingsOnStart(gapi);
@@ -177,9 +166,7 @@ export function GoogleAuthProvider({ children }) {
     }, [])
 
     const value = {
-        gapi,
-        getPasskey,
-        setGetPasskey
+        gapi
     }
 
     return (

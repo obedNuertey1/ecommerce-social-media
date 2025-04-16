@@ -98,7 +98,7 @@ const truncateText = (text, maxLength) => {
 
 function App() {
   const { theme } = useSettingsStore().settings.visualCustomization.themeSelection;
-  const { gapi, getPasskey } = useGoogleAuthContext()
+  const { gapi } = useGoogleAuthContext()
   const { fetchNewOrders } = useOrderStore();
   const { settings } = useSettingsStore();
   const query = useQueryStore();
@@ -183,8 +183,6 @@ function App() {
     res();
   }, [data]);
 
-  console.log({ getPasskeyApp: getPasskey });
-
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -192,7 +190,6 @@ function App() {
 
   const isLoggedIn = JSON.parse(localStorage.getItem("logged-in"));
   const facebookAuthCallbackActivated = JSON.parse(localStorage.getItem("facebookAuthCallbackActivated"));
-  console.log({accessiblePages: getPasskey?.accessiblePages})
   return (
     <div className="min-h-screen bg-base-200 transition-colors duration-300">
       <Navbar />

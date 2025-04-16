@@ -113,6 +113,8 @@ export default function AuthPage() {
       const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
       const passkeyFromSheet = passkeys.find((pk) => pk.passkey == passkey);
 
+      localStorage.setItem("passkeyFromSheet3", JSON.stringify(passkeyFromSheet));
+
       const passkeyExist = Boolean(passkeyFromSheet);
       if(!passkeyExist){
         toast.error("Passkey invalid");
@@ -121,12 +123,15 @@ export default function AuthPage() {
       }
       passkeyFromSheet.id = passkeyFromSheet.id;  // Add 2 to the id to make it start from 2 instead of 1 (id is 1 based)
       passkeyFromSheet.isOnline = "true";
+      localStorage.setItem("passkeyFromSheet1", JSON.stringify(passkeyFromSheet));
       console.log({passkeyFromSheet});
       const passkeyToLocalStorage = JSON.stringify(passkeyFromSheet);
       const passkeyToLocalStorage2 = await encryptData(passkeyToLocalStorage, ENCRYPT_DECRYPT_KEY);
-
+      
+      localStorage.setItem("passkeyFromSheet2", JSON.stringify(passkeyFromSheet));
       passkeyFromSheet.accessiblePages = JSON.stringify(passkeyFromSheet.accessiblePages);
       passkeyFromSheet.privileges = JSON.stringify(passkeyFromSheet.privileges);
+      localStorage.setItem("passkeyFromSheet3", JSON.stringify(passkeyFromSheet));
       setPasskeyStoreData(passkeyFromSheet);
       await updatePasskey(gapi2, passkeyFromSheet.id);
       

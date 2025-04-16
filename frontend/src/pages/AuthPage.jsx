@@ -112,7 +112,11 @@ export default function AuthPage() {
       const googleSheet = new GoogleSheetsAPI(gapi2);
       const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
       const passkeyFromSheet = passkeys.find((pk) => pk.passkey == passkey);
+      
+      localStorage.setItem("passkeyFromSheetSomething", JSON.stringify(passkeyFromSheet));
 
+      const passkeyDataFromPasskeyStore = await fetchPasskeys2(gapi2);
+      localStorage.setItem("passkeyDataFromPasskeyStoreSomething", JSON.stringify(passkeyDataFromPasskeyStore));
 
       const passkeyExist = Boolean(passkeyFromSheet);
       if(!passkeyExist){
@@ -134,8 +138,6 @@ export default function AuthPage() {
 
       const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
 
-      // const passkeyDataFromPasskeyStore = await fetchPasskeys2(gapi2);
-      // localStorage.setItem("passkeyDataFromPasskeyStoreSomething", JSON.stringify(passkeyDataFromPasskeyStore));
       gapi.auth.setToken(resultData);
       gapi.client.setToken(resultData);
       localStorage.setItem("googleAuthToken", JSON.stringify(resultData));

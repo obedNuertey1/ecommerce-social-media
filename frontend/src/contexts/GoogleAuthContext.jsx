@@ -105,6 +105,7 @@ export function GoogleAuthProvider({ children }) {
                 if (error.status === 401) {
                     handleUnauthorizedError();
                 }
+                console.log("error is working")
                 throw error;
             }
         },

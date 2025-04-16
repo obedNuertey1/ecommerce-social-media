@@ -39,7 +39,7 @@ export default function AuthPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { gapi, setGetPasskey } = useGoogleAuthContext();
   const { loadSettings, settingsSchema } = useSettingsStore();
-  const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey } = usePasskeyStore();
+  const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
   const navigate = useNavigate();
 
   const handleFacebookLogin = (response) => {
@@ -111,10 +111,8 @@ export default function AuthPage() {
 
       const googleSheet = new GoogleSheetsAPI(gapi2);
       const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
-      localStorage.setItem("passkeyFromSheet4", JSON.stringify(passkeys));
       const passkeyFromSheet = passkeys.find((pk) => pk.passkey == passkey);
 
-      localStorage.setItem("passkeyFromSheet3", JSON.stringify(passkeyFromSheet));
 
       const passkeyExist = Boolean(passkeyFromSheet);
       if(!passkeyExist){
@@ -124,20 +122,20 @@ export default function AuthPage() {
       }
       passkeyFromSheet.id = passkeyFromSheet.id;  // Add 2 to the id to make it start from 2 instead of 1 (id is 1 based)
       passkeyFromSheet.isOnline = "true";
-      localStorage.setItem("passkeyFromSheet1", JSON.stringify(passkeyFromSheet));
       console.log({passkeyFromSheet});
       const passkeyToLocalStorage = JSON.stringify(passkeyFromSheet);
       const passkeyToLocalStorage2 = await encryptData(passkeyToLocalStorage, ENCRYPT_DECRYPT_KEY);
       
-      localStorage.setItem("passkeyFromSheet2", JSON.stringify(passkeyFromSheet));
       passkeyFromSheet.accessiblePages = JSON.stringify(passkeyFromSheet.accessiblePages);
       passkeyFromSheet.privileges = JSON.stringify(passkeyFromSheet.privileges);
-      localStorage.setItem("passkeyFromSheet3", JSON.stringify(passkeyFromSheet));
       setPasskeyStoreData(passkeyFromSheet);
       await updatePasskey(gapi2, passkeyFromSheet.id);
       
 
       const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
+
+      const passkeyDataFromPasskeyStore = await fetchPasskeys2(gapi2);
+      localStorage.setItem("passkeyDataFromPasskeyStoreSomething", JSON.stringify(passkeyDataFromPasskeyStore));
       gapi.auth.setToken(resultData);
       gapi.client.setToken(resultData);
       localStorage.setItem("googleAuthToken", JSON.stringify(resultData));

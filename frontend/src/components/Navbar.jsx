@@ -101,7 +101,7 @@ function Navbar() {
                         e.stopPropagation();
                     }
                     setIsOpen(false)
-                }} className={`flex ${ordersIsActive && "disabled"} justify-between`} tabIndex={ordersIsActive ? -1 : 0}>
+                }} className={`flex ${ordersIsActive && "disabled"} justify-between`} tabIndex={ordersIsActive ? -1 : 0} aria-disabled={passkeyIsActive}>
                     <div className="flex items-center gap-2">
                         <PackageIcon className="size-5" />
                         Orders
@@ -118,6 +118,7 @@ function Navbar() {
                     setIsOpen(false)
                 }} className={`flex items-center ${passkeyIsActive && "disabled"} gap-2`}
                     tabIndex={passkeyIsActive ? -1 : 0}
+                    aria-disabled={passkeyIsActive}
                 >
                     <KeyIcon className="size-5" />
                     Generate Passkey

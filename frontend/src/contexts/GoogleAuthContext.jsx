@@ -116,7 +116,7 @@ export function GoogleAuthProvider({ children }) {
         retry: false,
         refetchOnWindowFocus: true,
         refetchIntervalInBackground: true,
-        enabled: !!gapi.auth?.getToken()?.access_token,
+        enabled: (!gapi.auth?.getToken()?.access_token && localStorage.hasOwnProperty('logged-in') && localStorage.getItem('logged-in') === 'true'),
     });
     
     // Add interceptor for all API calls

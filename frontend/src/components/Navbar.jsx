@@ -107,14 +107,22 @@ function Navbar() {
                 </Link>
             </li>
             <li>
-                <Link to="/settings" aria-disabled={settingsIsActive} onClick={() => setIsOpen(false)} className={`flex ${settingsIsActive && "disabled"} items-center gap-2`}>
+                <Link to="/settings" aria-disabled={settingsIsActive} onClick={(e) => {
+                    if(settingsIsActive){
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    setIsOpen(false)
+                    }} className={`flex ${settingsIsActive && "disabled"} items-center gap-2`}
+                    tabIndex={settingsIsActive ? -1 : 0}
+                    >
                     <SettingsIcon className="size-5" />
                     Settings
                 </Link>
             </li>
             {isHomePage && (
                 <li>
-                    <Link to="/products" onClick={() => setIsOpen(false)} className="flex justify-between">
+                    <Link to="/" onClick={() => setIsOpen(false)} className="flex justify-between">
                         <div className="flex items-center gap-2">
                             <ShoppingBagIcon className="size-5" />
                             Products

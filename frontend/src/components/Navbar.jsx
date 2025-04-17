@@ -29,6 +29,7 @@ function Navbar() {
     const {gapi} = useGoogleAuthContext();
     
     const settingsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("settings")) ? false : true;
+    const passkeyIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("passkeys")) ? false : true;
 
     const [isOpen, setIsOpen] = useState(false);
     const [logoutLoading, setLogoutLoading] = useState(false);
@@ -101,7 +102,15 @@ function Navbar() {
                 </Link>
             </li>
             <li>
-                <Link to="/passkey" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
+                <Link to="/passkey" onClick={(e) => {
+                    if(passkeyIsActive){
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    setIsOpen(false)
+                    }} className={`flex items-center ${passkeyIsActive && "disabled"} gap-2`}
+                    tabIndex={passkeyIsActive ? -1 : 0}
+                    >
                     <KeyIcon className="size-5" />
                     Generate Passkey
                 </Link>
@@ -186,7 +195,7 @@ function Navbar() {
                                         <PackageIcon className="size-5" />
                                     </Link>
                                 </div>
-                                <Link to="/passkey" className="btn btn-ghost btn-circle">
+                                <Link to="/passkey" aria-disabled={passkeyIsActive} className={`btn ${passkeyIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                     <KeyIcon className="size-5" />
                                 </Link>
                                 <Link to="/settings" aria-disabled={settingsIsActive}  className={`btn ${settingsIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
@@ -218,7 +227,7 @@ function Navbar() {
                                 <Link to="/settings" aria-disabled={settingsIsActive}  className={`btn ${settingsIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                     <SettingsIcon className="size-5" />
                                 </Link>
-                                <Link to="/passkey" className="btn btn-ghost btn-circle">
+                                <Link to="/passkey" aria-disabled={passkeyIsActive} className={`btn ${passkeyIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                     <KeyIcon className="size-5" />
                                 </Link>
                                 <div className="indicator">

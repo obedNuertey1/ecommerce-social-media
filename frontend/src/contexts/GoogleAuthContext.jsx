@@ -53,6 +53,8 @@ export function GoogleAuthProvider({ children }) {
     const { fetchOrders } = useOrderStore();
     const navigate = useNavigate();
     const toastIdRef = useRef();
+    
+    useTokenRefresh();
 
     // ======> Start
     // Add this error handler function
@@ -85,7 +87,6 @@ export function GoogleAuthProvider({ children }) {
         }
     };
 
-    const { refetch } = useTokenRefresh();
     // Modified useQuery with error handling
     const { data } = useQuery({
         queryKey: ['auth-check'],

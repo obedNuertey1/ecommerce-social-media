@@ -95,7 +95,6 @@ export const usePasskeyStore = create((set, get) => ({
     },
     updatePasskey: async (gapi, id) => {
         set({updateAddLoading: true});
-        const {promise, cancel} = cancellableWaiting(8000);
         try {
             const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const googleSheet = new GoogleSheetsAPI(gapi);
@@ -103,11 +102,10 @@ export const usePasskeyStore = create((set, get) => ({
             // const passkey = passkeys.find((passkey) => passkey.id === id);
             const sheetUpdates = await googleSheet.updateRowByRowId(spreadsheetName, passkeySchema.sheetName, passkeySchema.shape, passkey, id);
             set({ loading: false, error: null, passkey: { name: '', passkey: '', privileges: [], accessiblePages: [] }});
-            await promise;
             await fetchPasskeys(gapi);
             // toast.success("Passkey updated successfully");
-            cancel();
             set({updateAddLoading: false});
+            window.location.reload();
             return sheetUpdates;
         } catch (e) {
             console.log(`Error updating passkey: ${e}`);

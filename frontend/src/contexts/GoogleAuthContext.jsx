@@ -254,8 +254,7 @@ export function GoogleAuthProvider({ children }) {
     }, [])
 
     const value = {
-        gapi,
-        refetch
+        gapi
     }
 
     return (

@@ -189,7 +189,7 @@ function Navbar() {
                                     disabled={logoutLoading}
                                 >
                                     {logoutLoading ? 
-                                        <span className="loading loading-spinner"></span>
+                                        <span className="loading loading-spinner loading-sm"></span>
                                     : 
                                         <LogOutIcon className="size-5" />
                                     }
@@ -227,7 +227,7 @@ function Navbar() {
                                 >
                                     {
                                         logoutLoading ? 
-                                        <span className="loading loading-spinner"></span>
+                                        <span className="loading loading-spinner loading-sm"></span>
                                         :
                                         <LogOutIcon className="size-5" />
                                     }
@@ -242,7 +242,7 @@ function Navbar() {
                             disabled={logoutLoading}
                         >
                             {logoutLoading ? 
-                                <span className="loading loading-spinner"></span>
+                                <span className="loading loading-spinner loading-sm"></span>
                             : 
                                 <LogOutIcon className="size-5" />
                             }

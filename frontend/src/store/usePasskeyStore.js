@@ -95,7 +95,7 @@ export const usePasskeyStore = create((set, get) => ({
     },
     updatePasskey: async (gapi, id) => {
         set({updateAddLoading: true});
-        const {promise, cancel} = cancellableWaiting(3000);
+        const {promise, cancel} = cancellableWaiting(8000);
         try {
             const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const googleSheet = new GoogleSheetsAPI(gapi);

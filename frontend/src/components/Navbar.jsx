@@ -29,11 +29,13 @@ function Navbar() {
     const {gapi} = useGoogleAuthContext();
 
     const [isOpen, setIsOpen] = useState(false);
+    const [logoutLoading, setLogoutLoading] = useState(false);
 
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
 
     const handleLogout = async () => {
+        setLogoutLoading(true);
         try{
             let passkeyEncrypted = localStorage.getItem("passkey");
             try{
@@ -59,6 +61,8 @@ function Navbar() {
         }catch(e){
             console.log(e);
             toast.error("Something went wrong");
+        }finally{
+            setLogoutLoading(false);
         }
     };
 
@@ -74,7 +78,10 @@ function Navbar() {
         };
 
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            setLogoutLoading(false);
+        };
     }, [isOpen]);
 
     const navigate = useNavigate();
@@ -120,10 +127,15 @@ function Navbar() {
                         setIsOpen(false);
                         handleLogout();
                     }}
+                    disabled={logoutLoading}
                     className="flex text-error justify-between text-left hover:bg-base-200"
                 >
                     <div className="flex items-center gap-2">
-                        <LogOutIcon className="size-5" />
+                        {logoutLoading ? 
+                            <span className="loading loading-spinner loading-sm"></span>
+                        : 
+                            <LogOutIcon className="size-5" />
+                        }
                         Logout
                     </div>
                 </button>
@@ -174,8 +186,13 @@ function Navbar() {
                                     onClick={handleLogout}
                                     className="btn btn-error btn-outline btn-circle"
                                     title="Logout"
+                                    disabled={logoutLoading}
                                 >
-                                    <LogOutIcon className="size-5" />
+                                    {logoutLoading ? 
+                                        <span className="loading loading-spinner"></span>
+                                    : 
+                                        <LogOutIcon className="size-5" />
+                                    }
                                 </button>
                             </>
                         )}
@@ -206,8 +223,14 @@ function Navbar() {
                                     onClick={handleLogout}
                                     className="btn btn-error btn-outline btn-circle"
                                     title="Logout"
+                                    disabled={logoutLoading}
                                 >
-                                    <LogOutIcon className="size-5" />
+                                    {
+                                        logoutLoading ? 
+                                        <span className="loading loading-spinner"></span>
+                                        :
+                                        <LogOutIcon className="size-5" />
+                                    }
                                 </button>
                             </>
                         )}
@@ -216,8 +239,13 @@ function Navbar() {
                             onClick={handleLogout}
                             className="btn btn-error btn-outline btn-circle"
                             title="Logout"
+                            disabled={logoutLoading}
                         >
-                            <LogOutIcon className="size-5" />
+                            {logoutLoading ? 
+                                <span className="loading loading-spinner"></span>
+                            : 
+                                <LogOutIcon className="size-5" />
+                            }
                         </button>
                         )}
                     </div>

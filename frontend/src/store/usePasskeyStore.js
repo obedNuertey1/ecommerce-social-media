@@ -105,7 +105,11 @@ export const usePasskeyStore = create((set, get) => ({
             await fetchPasskeys(gapi);
             // toast.success("Passkey updated successfully");
             set({updateAddLoading: false});
-            window.location.reload();
+            let getIsLoggedIn = localStorage.getItem("logged-in") === "true";
+            if (getIsLoggedIn) {
+                window.location.reload();
+            }
+            console.log({sheetUpdates})
             return sheetUpdates;
         } catch (e) {
             console.log(`Error updating passkey: ${e}`);

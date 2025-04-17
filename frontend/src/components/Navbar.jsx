@@ -207,7 +207,7 @@ function Navbar() {
                                         <PackageIcon className="size-5" />
                                     </Link>
                                 </div>
-                                <Link to="/settings" aria-disabled={settingsIsActive}  className={`btn ${settingsIsActive ? "disabled" : "btn-ghost"} btn-circle`}>
+                                <Link to="/settings" aria-disabled={settingsIsActive}  className={`btn ${settingsIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                     <SettingsIcon className="size-5" />
                                 </Link>
                                 <Link to="/passkey" className="btn btn-ghost btn-circle">

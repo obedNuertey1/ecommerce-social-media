@@ -53,7 +53,6 @@ export function GoogleAuthProvider({ children }) {
     const { fetchOrders } = useOrderStore();
     const navigate = useNavigate();
     const toastIdRef = useRef();
-    useTokenRefresh();
 
     // ======> Start
     // Add this error handler function
@@ -86,6 +85,7 @@ export function GoogleAuthProvider({ children }) {
         }
     };
 
+    const { refetch } = useTokenRefresh();
     // Modified useQuery with error handling
     const { data } = useQuery({
         queryKey: ['auth-check'],
@@ -102,17 +102,22 @@ export function GoogleAuthProvider({ children }) {
                 // if (!getAuth) throw new Error("Not signed in");
                 return true;
             } catch (error) {
-                if (error.status === 401) {
-                    handleUnauthorizedError();
+                if ([401, 403].includes(error?.status)) {
+                    handleUnauthorizedError(error);
+                } else {
+                    console.error('Auth check failed:', error);
+                    // Consider partial error handling
                 }
-                console.log("error is working")
                 throw error;
             }
         },
         refetchInterval: 1000 * 30,
         retry: false,
         refetchOnWindowFocus: true,
+        refetchIntervalInBackground: true,
+        enabled: !gapi.auth?.getToken()?.access_token
     });
+    
     // Add interceptor for all API calls
     // useEffect(() => {
     //     const originalRequest = gapi.client.request;
@@ -248,7 +253,8 @@ export function GoogleAuthProvider({ children }) {
     }, [])
 
     const value = {
-        gapi
+        gapi,
+        refetch
     }
 
     return (

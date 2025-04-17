@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clipboard, ArrowRightIcon, ClipboardCheck, Plus, ArrowLeftIcon, Trash2, Edit, Eye, Hash } from 'lucide-react';
+import { Clipboard, ArrowRightIcon, ClipboardCheck, Plus, ArrowLeftIcon, Trash2, Edit, Eye, Hash, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProductStore } from '../store/useProductStore';
@@ -24,7 +24,7 @@ const PasskeyPage = () => {
     });
     const { passkeys: passkeysData, setPasskey, passkey: passkey2, addPasskey, fetchPasskeys, updatePasskey, deletePasskey, updateAddLoading, loading, fetchPasskeys2 } = usePasskeyStore();
     const { gapi } = useGoogleAuthContext();
-    
+
     const { data, error, isLoading } = useQuery({
         queryKey: [],
         queryFn: () => fetchPasskeys2(gapi),
@@ -32,8 +32,8 @@ const PasskeyPage = () => {
         refetchIntervalInBackground: true
     });
 
-    useEffect(()=>{
-    },[data]);
+    useEffect(() => {
+    }, [data]);
 
     const navigate = useNavigate();
     const { resetFormData } = useProductStore();
@@ -274,7 +274,25 @@ LoginPage   =   ${origin}/auth
                                     <td>
                                         <div className="flex gap-1">
                                             <button
-                                                onClick={() => handleEdit(pk)}
+                                                onClick={() => {
+                                                    if (JSON.parse((pk.isOnline)?.toLowerCase())) {
+                                                        toast.custom(() => (
+                                                            <div className="alert alert-error flex items-start shadow-lg">
+                                                                <div className="flex-1">
+                                                                    <AlertTriangle className="w-6 h-6 inline-block mr-2" />
+                                                                    <span>
+                                                                        <strong>Passkey is online!</strong>
+                                                                        <div className="text-xs">User must logout before editing</div>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        ), {
+                                                            duration: 4000,
+                                                        });
+                                                        return;
+                                                    }
+                                                    handleEdit(pk)
+                                                }}
                                                 className="btn btn-ghost btn-xs"
                                                 aria-label="Edit"
                                             >
@@ -284,6 +302,7 @@ LoginPage   =   ${origin}/auth
                                                 onClick={() => handleDelete(pk)}
                                                 className="btn btn-ghost btn-xs text-error"
                                                 aria-label="Delete"
+                                                disabled={JSON.parse((pk.isOnline)?.toLowerCase())}
                                             >
                                                 <Trash2 className="w-3 h-3 lg:w-4 lg:h-4" />
                                             </button>

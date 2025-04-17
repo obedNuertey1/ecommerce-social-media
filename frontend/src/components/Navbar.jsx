@@ -95,7 +95,7 @@ function Navbar() {
     const mobileMenuLinks = (
         <>
             <li>
-                <Link to="/orders" onClick={() => {
+                <Link to="/orders" onClick={(e) => {
                     if (ordersIsActive) {
                         e.preventDefault();
                         e.stopPropagation();

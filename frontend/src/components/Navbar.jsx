@@ -25,11 +25,13 @@ function Navbar() {
     const isAuth = pathname === "/auth";
     const { products, resetFormData } = useProductStore();
     const { orders } = useOrderStore();
-    const {setPasskey, updatePasskey} = usePasskeyStore();
-    const {gapi} = useGoogleAuthContext();
-    
+    const { setPasskey, updatePasskey } = usePasskeyStore();
+    const { gapi } = useGoogleAuthContext();
+
     const settingsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("settings")) ? false : true;
     const passkeyIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("passkeys")) ? false : true;
+    const ordersIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("orders")) ? false : true;
+    const productsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("products")) ? false : true;
 
     const [isOpen, setIsOpen] = useState(false);
     const [logoutLoading, setLogoutLoading] = useState(false);
@@ -39,10 +41,10 @@ function Navbar() {
 
     const handleLogout = async () => {
         setLogoutLoading(true);
-        try{
+        try {
             let passkeyEncrypted = localStorage.getItem("passkey");
-            try{
-                if(passkeyEncrypted){
+            try {
+                if (passkeyEncrypted) {
                     let passkeyDecrypted = await decryptData(passkeyEncrypted, ENCRYPT_DECRYPT_KEY);
                     let passkey = JSON.parse(passkeyDecrypted);
                     passkey.isOnline = "false";
@@ -51,7 +53,7 @@ function Navbar() {
                     setPasskey(passkey);
                     await updatePasskey(gapi, passkey.id);
                 }
-            }catch(e){
+            } catch (e) {
                 console.log(e);
             }
             // authService.logout();
@@ -61,10 +63,10 @@ function Navbar() {
             localStorage.clear();
             // navigate("/auth");
             window.location.href = "/auth";
-        }catch(e){
+        } catch (e) {
             console.log(e);
             toast.error("Something went wrong");
-        }finally{
+        } finally {
             setLogoutLoading(false);
         }
     };
@@ -93,7 +95,13 @@ function Navbar() {
     const mobileMenuLinks = (
         <>
             <li>
-                <Link to="/orders" onClick={() => setIsOpen(false)} className="flex justify-between">
+                <Link to="/orders" onClick={() => {
+                    if (ordersIsActive) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    setIsOpen(false)
+                }} className={`flex ${ordersIsActive && "disabled"} justify-between`} tabIndex={ordersIsActive ? -1 : 0}>
                     <div className="flex items-center gap-2">
                         <PackageIcon className="size-5" />
                         Orders
@@ -103,35 +111,41 @@ function Navbar() {
             </li>
             <li>
                 <Link to="/passkey" onClick={(e) => {
-                    if(passkeyIsActive){
+                    if (passkeyIsActive) {
                         e.preventDefault();
                         e.stopPropagation();
                     }
                     setIsOpen(false)
-                    }} className={`flex items-center ${passkeyIsActive && "disabled"} gap-2`}
+                }} className={`flex items-center ${passkeyIsActive && "disabled"} gap-2`}
                     tabIndex={passkeyIsActive ? -1 : 0}
-                    >
+                >
                     <KeyIcon className="size-5" />
                     Generate Passkey
                 </Link>
             </li>
             <li>
                 <Link to="/settings" aria-disabled={settingsIsActive} onClick={(e) => {
-                    if(settingsIsActive){
+                    if (settingsIsActive) {
                         e.preventDefault();
                         e.stopPropagation();
                     }
                     setIsOpen(false)
-                    }} className={`flex ${settingsIsActive && "disabled"} items-center gap-2`}
+                }} className={`flex ${settingsIsActive && "disabled"} items-center gap-2`}
                     tabIndex={settingsIsActive ? -1 : 0}
-                    >
+                >
                     <SettingsIcon className="size-5" />
                     Settings
                 </Link>
             </li>
             {isHomePage && (
                 <li>
-                    <Link to="/" onClick={() => setIsOpen(false)} className="flex justify-between">
+                    <Link to="/" onClick={(e) => {
+                        if (productsIsActive) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                        setIsOpen(false)
+                    }} className={`flex ${productsIsActive && "disabled"} justify-between`} aria-disabled={productsIsActive} tabIndex={productsIsActive ? -1 : 0} >
                         <div className="flex items-center gap-2">
                             <ShoppingBagIcon className="size-5" />
                             Products
@@ -150,9 +164,9 @@ function Navbar() {
                     className="flex text-error justify-between text-left hover:bg-base-200"
                 >
                     <div className="flex items-center gap-2">
-                        {logoutLoading ? 
+                        {logoutLoading ?
                             <span className="loading loading-spinner loading-sm"></span>
-                        : 
+                            :
                             <LogOutIcon className="size-5" />
                         }
                         Logout
@@ -174,7 +188,9 @@ function Navbar() {
                             onClick={(e) => {
                                 e.preventDefault();
                                 resetFormData();
-                                navigate("/");
+                                if(!productsIsActive){
+                                    navigate("/");
+                                }
                             }}
                             className="flex items-center gap-2 ml-2"
                         >
@@ -190,7 +206,7 @@ function Navbar() {
                         {(isOrdersPage || isSettingsPage || isPasskeyPage || isAnalyticsPage || isProductPage || isPasskeyLogsPage || isProductCommentsPage) && (
                             <>
                                 <div className="indicator">
-                                    <Link to="/orders" className="btn btn-ghost btn-circle">
+                                    <Link to="/orders" aria-disabled={ordersIsActive} className={`btn btn-ghost ${ordersIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                         <span className="indicator-item badge badge-primary badge-sm top-2 right-2">{orders.length}</span>
                                         <PackageIcon className="size-5" />
                                     </Link>
@@ -198,18 +214,18 @@ function Navbar() {
                                 <Link to="/passkey" aria-disabled={passkeyIsActive} className={`btn ${passkeyIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                     <KeyIcon className="size-5" />
                                 </Link>
-                                <Link to="/settings" aria-disabled={settingsIsActive}  className={`btn ${settingsIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
+                                <Link to="/settings" aria-disabled={settingsIsActive} className={`btn ${settingsIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                     <SettingsIcon className="size-5" />
                                 </Link>
-                                <button 
+                                <button
                                     onClick={handleLogout}
                                     className="btn btn-error btn-outline btn-circle"
                                     title="Logout"
                                     disabled={logoutLoading}
                                 >
-                                    {logoutLoading ? 
+                                    {logoutLoading ?
                                         <span className="loading loading-spinner loading-sm"></span>
-                                    : 
+                                        :
                                         <LogOutIcon className="size-5" />
                                     }
                                 </button>
@@ -219,12 +235,12 @@ function Navbar() {
                         {isHomePage && (
                             <>
                                 <div className="indicator">
-                                    <Link to="/orders" className="btn btn-ghost btn-circle">
+                                    <Link to="/orders" aria-disabled={ordersIsActive} className={`btn ${ordersIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                         <span className="indicator-item badge badge-primary badge-sm top-2 right-2">{orders.length}</span>
                                         <PackageIcon className="size-5" />
                                     </Link>
                                 </div>
-                                <Link to="/settings" aria-disabled={settingsIsActive}  className={`btn ${settingsIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
+                                <Link to="/settings" aria-disabled={settingsIsActive} className={`btn ${settingsIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                     <SettingsIcon className="size-5" />
                                 </Link>
                                 <Link to="/passkey" aria-disabled={passkeyIsActive} className={`btn ${passkeyIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
@@ -238,34 +254,34 @@ function Navbar() {
                                         <ShoppingBagIcon className="size-5" />
                                     </div>
                                 </div>
-                                <button 
+                                <button
                                     onClick={handleLogout}
                                     className="btn btn-error btn-outline btn-circle"
                                     title="Logout"
                                     disabled={logoutLoading}
                                 >
                                     {
-                                        logoutLoading ? 
-                                        <span className="loading loading-spinner loading-sm"></span>
-                                        :
-                                        <LogOutIcon className="size-5" />
+                                        logoutLoading ?
+                                            <span className="loading loading-spinner loading-sm"></span>
+                                            :
+                                            <LogOutIcon className="size-5" />
                                     }
                                 </button>
                             </>
                         )}
                         {(isPasskeyLearnMorePage || isConversionFunnelBusinessInsightPage) && (
-                            <button 
-                            onClick={handleLogout}
-                            className="btn btn-error btn-outline btn-circle"
-                            title="Logout"
-                            disabled={logoutLoading}
-                        >
-                            {logoutLoading ? 
-                                <span className="loading loading-spinner loading-sm"></span>
-                            : 
-                                <LogOutIcon className="size-5" />
-                            }
-                        </button>
+                            <button
+                                onClick={handleLogout}
+                                className="btn btn-error btn-outline btn-circle"
+                                title="Logout"
+                                disabled={logoutLoading}
+                            >
+                                {logoutLoading ?
+                                    <span className="loading loading-spinner loading-sm"></span>
+                                    :
+                                    <LogOutIcon className="size-5" />
+                                }
+                            </button>
                         )}
                     </div>
                     {/* Mobile Menu */}

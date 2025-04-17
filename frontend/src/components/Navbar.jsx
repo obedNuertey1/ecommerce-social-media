@@ -27,6 +27,8 @@ function Navbar() {
     const { orders } = useOrderStore();
     const {setPasskey, updatePasskey} = usePasskeyStore();
     const {gapi} = useGoogleAuthContext();
+    
+    const settingsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("settings")) ? false : true;
 
     const [isOpen, setIsOpen] = useState(false);
     const [logoutLoading, setLogoutLoading] = useState(false);
@@ -105,7 +107,7 @@ function Navbar() {
                 </Link>
             </li>
             <li>
-                <Link to="/settings" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
+                <Link to="/settings" aria-disabled={settingsIsActive} onClick={() => setIsOpen(false)} className={`flex ${settingsIsActive && "disabled"} items-center gap-2`}>
                     <SettingsIcon className="size-5" />
                     Settings
                 </Link>
@@ -179,7 +181,7 @@ function Navbar() {
                                 <Link to="/passkey" className="btn btn-ghost btn-circle">
                                     <KeyIcon className="size-5" />
                                 </Link>
-                                <Link to="/settings" className="btn btn-ghost btn-circle">
+                                <Link to="/settings" aria-disabled={settingsIsActive}  className={`btn ${settingsIsActive ? "btn-disabled" : "btn-ghost"} btn-circle`}>
                                     <SettingsIcon className="size-5" />
                                 </Link>
                                 <button 
@@ -205,7 +207,7 @@ function Navbar() {
                                         <PackageIcon className="size-5" />
                                     </Link>
                                 </div>
-                                <Link to="/settings" className="btn btn-ghost btn-circle">
+                                <Link to="/settings" aria-disabled={settingsIsActive}  className={`btn ${settingsIsActive ? "disabled" : "btn-ghost"} btn-circle`}>
                                     <SettingsIcon className="size-5" />
                                 </Link>
                                 <Link to="/passkey" className="btn btn-ghost btn-circle">

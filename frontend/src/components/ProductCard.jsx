@@ -15,6 +15,8 @@ function ProductCard({ product }) {
     const analyticsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("analytics")) ? false : true;
     const chatIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("chat")) ? false : true;
 
+    console.log({creatableAccess, deletableAccess, updatableAccess, readableAccess});
+
     useEffect(() => {
         if (randNumRef.current) {
             const randomValue = Math.floor(Math.random() * 11);

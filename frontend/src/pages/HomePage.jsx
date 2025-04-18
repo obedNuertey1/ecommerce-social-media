@@ -6,6 +6,7 @@ import { useProductStore } from "../store/useProductStore";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 import {useNotifications} from "../hooks/useNotifications";
+import {privilegeAccess}  from "../funcs/essentialFuncs";
 
 function HomePage() {
     const { fetchProducts, loading, error, products, resetFormData } = useProductStore();
@@ -13,6 +14,7 @@ function HomePage() {
     const playNotifRef = useRef(false);
     const {gapi} = useGoogleAuthContext();
     const {playNotification: playEmptyProductSound} = useNotifications("empty_list_sound");
+    const {creatableAccess} = privilegeAccess();
     
     const emptyProductSound = useCallback(()=>{
         if(products.length === 0 && !error){
@@ -44,6 +46,7 @@ function HomePage() {
             <main className="max-w-6xl mx-auto px-4 py-8">
                 <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
                     <button
+                        disabled={creatableAccess}
                         onClick={() => document.getElementById('my_modal_2').showModal()}
                         className="btn btn-primary"
                     >

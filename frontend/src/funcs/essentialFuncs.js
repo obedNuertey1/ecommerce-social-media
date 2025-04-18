@@ -140,6 +140,8 @@ export const getUserIdFromIdToken = (idToken) => {
 export const privilegeAccess = () => {
     const normalLogin = !localStorage.hasOwnProperty("passkey");
 
+    console.log({normalLogin});
+
     const creatableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin")) ? true : false;
 
     const deletableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor")) ? true : false;

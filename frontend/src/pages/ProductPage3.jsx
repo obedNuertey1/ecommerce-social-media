@@ -4,6 +4,7 @@ import { useProductStore } from "../store/useProductStore";
 import { useEffect, useState, useRef } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 import {toast} from "react-hot-toast";
+import {privilegeAccess} from "../funcs/essentialFuncs";
 
 function ProductPage3() {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ function ProductPage3() {
     const timeoutRef = useRef(null);
     const delayRef = useRef(3000);
     const {gapi} = useGoogleAuthContext();
+    const {creatableAccess, deletableAccess, updatableAccess, readableAccess} = privilegeAccess();
 
     useEffect(() => {
         fetchProduct(id, gapi);
@@ -176,6 +178,7 @@ function ProductPage3() {
                                             </div>
                                             <div className="absolute top-4 right-4 flex gap-2">
                                                 <button
+                                                    disabled={updatableAccess}
                                                     onClick={() => handleChangeImage(index, blob.id)}
                                                     className="btn btn-sm btn-circle btn-primary"
                                                 >
@@ -183,6 +186,7 @@ function ProductPage3() {
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteImage(index, blob)}
+                                                    disabled={deletableAccess}
                                                     className="btn btn-sm btn-circle btn-error"
                                                 >
                                                     <Trash2Icon className="size-4" />
@@ -313,12 +317,13 @@ function ProductPage3() {
                                         <button
                                             className="btn btn-error min-w-full"
                                             onClick={handleDelete}
+                                            disabled={deletableAccess}
                                         >
                                             <Trash2Icon className="size-5" />
                                             Delete Product
                                         </button>
                                         <button
-                                            disabled={!formData?.name || !formData?.price || !formData?.description || formData.media?.length === 0}
+                                            disabled={updatableAccess &&  (!formData?.name || !formData?.price || !formData?.description || formData.media?.length === 0)}
                                             type="submit"
                                             className="btn btn-md btn-primary min-w-full"
                                         >

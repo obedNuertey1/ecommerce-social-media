@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 import { usePasskeyStore } from '../store/usePasskeyStore';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 import { useQuery } from '@tanstack/react-query';
+import { privilegeAccess } from '../funcs/essentialFuncs';
 
 const HASH_SPLIT_POINT = import.meta.env.VITE_HASH_SPLIT_POINT;
 
@@ -24,6 +25,7 @@ const PasskeyPage = () => {
     });
     const { passkeys: passkeysData, setPasskey, passkey: passkey2, addPasskey, fetchPasskeys, updatePasskey, deletePasskey, updateAddLoading, loading, fetchPasskeys2 } = usePasskeyStore();
     const { gapi } = useGoogleAuthContext();
+    const {deletableAccess, updatableAccess, creatableAccess} = privilegeAccess();
 
     const { data, error, isLoading } = useQuery({
         queryKey: [],
@@ -194,6 +196,7 @@ LoginPage   =   ${origin}/auth
                         View Logs
                     </Link>
                     <button
+                        disabled={creatableAccess}
                         onClick={() => setIsModalOpen(true)}
                         className="btn md:min-w-0 min-w-[calc(50%-0.5rem)] btn-primary btn-sm lg:btn-md"
                     >
@@ -274,6 +277,7 @@ LoginPage   =   ${origin}/auth
                                     <td>
                                         <div className="flex gap-1">
                                             <button
+                                                disabled={updatableAccess}
                                                 onClick={() => {
                                                     if (JSON.parse((pk.isOnline)?.toLowerCase())) {
                                                         toast.custom((t) => (
@@ -308,6 +312,7 @@ LoginPage   =   ${origin}/auth
                                                 <Edit className="w-3 h-3 lg:w-4 lg:h-4" />
                                             </button>
                                             <button
+                                                disabled={updatableAccess}
                                                 onClick={() => {
                                                     if (JSON.parse((pk.isOnline)?.toLowerCase())) {
                                                         toast.custom((t) => (
@@ -371,6 +376,7 @@ LoginPage   =   ${origin}/auth
                                 Get started by creating a new passkey to manage access privileges
                             </p>
                             <button
+                                disabled={creatableAccess}
                                 onClick={() => setIsModalOpen(true)}
                                 className="btn btn-primary btn-sm"
                             >
@@ -393,6 +399,7 @@ LoginPage   =   ${origin}/auth
                         <div>
                             <label className="label">Name</label>
                             <input
+                                disabled={updatableAccess}
                                 type="text"
                                 className="input input-bordered w-full"
                                 value={passkeyData.name}
@@ -410,6 +417,7 @@ LoginPage   =   ${origin}/auth
                                     readOnly
                                 />
                                 <button
+                                    disabled={updatableAccess}
                                     onClick={handleGenerateHash}
                                     className="btn btn-outline"
                                 >
@@ -423,6 +431,7 @@ LoginPage   =   ${origin}/auth
                             <div className="flex flex-wrap gap-2">
                                 {roles.map(role => (
                                     <button
+                                        disabled={updatableAccess || creatableAccess}
                                         key={role.value}
                                         onClick={() => toggleRole(role.value)}
                                         className={`btn btn-sm ${selectedRoles.includes(role.value) ? 'btn-primary' : 'btn-ghost'
@@ -438,6 +447,7 @@ LoginPage   =   ${origin}/auth
                             <div className="flex flex-wrap gap-2">
                                 {pages.map(page => (
                                     <button
+                                        disabled={updatableAccess || creatableAccess}
                                         key={page.value}
                                         onClick={() => togglePage(page.value)}
                                         className={`btn btn-sm ${selectedPages.includes(page.value) ? 'btn-primary' : 'btn-ghost'
@@ -452,7 +462,7 @@ LoginPage   =   ${origin}/auth
 
                     <div className="modal-action">
                         <button onClick={resetModal} className="btn">Cancel</button>
-                        <button disabled={updateAddLoading} onClick={handleSavePasskey} className="btn btn-primary">
+                        <button disabled={updateAddLoading || (updatableAccess || creatableAccess)} onClick={handleSavePasskey} className="btn btn-primary">
                             {updateAddLoading ?
                                 <>
                                     {isEditing ? "Updating..." : "Creating..."}

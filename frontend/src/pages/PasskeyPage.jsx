@@ -283,7 +283,7 @@ LoginPage   =   ${origin}/auth
                                                                     <div className="flex-none">
                                                                         <div className="avatar placeholder">
                                                                             <div className="bg-warning-content rounded-full w-8">
-                                                                                <AlertTriangle className="size-6 mr-2 text-warning" />
+                                                                                <AlertTriangle className="size-3 text-warning" />
                                                                             </div>
                                                                         </div>
                                                                     </div>

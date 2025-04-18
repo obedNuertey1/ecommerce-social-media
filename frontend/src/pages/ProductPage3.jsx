@@ -323,7 +323,7 @@ function ProductPage3() {
                                             Delete Product
                                         </button>
                                         <button
-                                            disabled={updatableAccess &&  (!formData?.name || !formData?.price || !formData?.description || formData.media?.length === 0)}
+                                            disabled={updatableAccess ||(!formData?.name || !formData?.price || !formData?.description || formData.media?.length === 0)}
                                             type="submit"
                                             className="btn btn-md btn-primary min-w-full"
                                         >

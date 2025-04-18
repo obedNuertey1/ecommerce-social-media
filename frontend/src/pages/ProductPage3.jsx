@@ -278,6 +278,7 @@ function ProductPage3() {
                                             <TextIcon className="size-5" />
                                         </div>
                                         <textarea
+                                            disabled={updatableAccess}
                                             value={formData?.description}
                                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                             placeholder="Enter product description"
@@ -307,7 +308,6 @@ function ProductPage3() {
                                         />
                                         <label
                                             htmlFor="file-upload"
-                                            // className="btn btn-primary w-full flex items-center justify-center gap-2"
                                             className={`btn btn-primary w-full flex items-center justify-center gap-2 ${
                                                 creatableAccess ? 'btn-disabled pointer-events-none opacity-75' : ''
                                             }`}

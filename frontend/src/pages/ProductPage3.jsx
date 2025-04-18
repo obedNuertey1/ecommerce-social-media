@@ -291,6 +291,7 @@ function ProductPage3() {
                                     </label>
                                     <div className="flex gap-2">
                                         <input
+                                            disabled={creatableAccess}
                                             type="file"
                                             accept="image/*"
                                             onChange={(e) => {

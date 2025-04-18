@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
 import {useOrderStore} from "../store/useOrderStore";
 import {useGoogleAuthContext} from "../contexts/GoogleAuthContext"
+import { privilegeAccess } from '../funcs/essentialFuncs';
 // Mock data - replace with actual data from your backend
 const initialOrders = [
     {
@@ -43,6 +44,7 @@ export default function OrdersPage() {
     const {gapi} = useGoogleAuthContext();
     const {setOrderData, orderData, fetchOrders, addOrder, orders:orders2, setOrders:setOrders2, updateOrder, deleteOrder} = useOrderStore();
     const navigate = useNavigate();
+    const {creatableAccess, updatableAccess, deletableAccess} = privilegeAccess();
 
     const handleDelete = (orderId, idx) => {
         // setOrders(orders.filter(order => order.orderId !== orderId));
@@ -104,40 +106,7 @@ export default function OrdersPage() {
 
         setOrderData({orderId: newOrder.orderId, phone: JSON.stringify([newOrder.phone]), items: JSON.stringify(newOrder.items), total: newOrder.total, status: newOrder.status })
 
-        // Play sound and show notification
-        // playNotification();
-        // toast.custom((t) => (
-        //     <>
-        //     <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
-        //     bg-base-100 border border-base-300 rounded-box p-4 shadow-lg`}>
-        //         <div className="flex items-center gap-3">
-        //             <div className="flex-none">
-        //                 <div className="avatar placeholder">
-        //                     <div className="bg-neutral text-neutral-content rounded-full w-8">
-        //                         <span className="text-xs">🛒</span>
-        //                     </div>
-        //                 </div>
-        //             </div>
-        //             <div className="flex-1">
-        //                 <h3 className="font-semibold">New Order!</h3>
-        //                 <p className="text-sm">
-        //                     {newOrder.phone} ordered{' '}
-        //                     {newOrder.items.map((item, idx) => (
-        //                         <span key={idx}>
-        //                             {truncateText(`${item.name} (x${item.quantity})`, 30)}
-        //                             {idx < newOrder.items.length - 1 ? ', ' : ''}
-        //                         </span>
-        //                     ))}
-        //                 </p>
-        //             </div>
-        //         </div>
-        //     </div>
-        //     </>
-        // ), { duration: 5000 });
-
         addOrder(gapi);
-        // Add to orders list
-        // setOrders(prev => [newOrder, ...prev]);
     };
 
     const truncateText = (text, maxLength) => {
@@ -184,6 +153,7 @@ export default function OrdersPage() {
             </button>
             <h1 className="text-3xl font-bold mb-8 text-primary">Order Management</h1>
             <button
+                disabled={creatableAccess}
                 onClick={simulateNewOrder}
                 className="btn btn-primary"
             >
@@ -220,6 +190,7 @@ export default function OrdersPage() {
                                     <td>{order.orderId}</td>
                                     <td>
                                         <button
+                                            disabled={updatableAccess}
                                             onClick={() => cycleStatus(order.orderId, order.id)}
                                             className={`btn btn-xs gap-2 flex-nowrap text-nowrap ${color}`}
                                         >
@@ -237,6 +208,7 @@ export default function OrdersPage() {
                                                 <Copy className="h-4 w-4" />
                                             </button>
                                             <button
+                                                disabled={deletableAccess}
                                                 onClick={() => handleDelete(order.orderId, order.id)}
                                                 className="btn btn-ghost btn-xs text-error"
                                                 title="Delete order"

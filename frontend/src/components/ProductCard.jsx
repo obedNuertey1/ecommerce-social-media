@@ -10,6 +10,9 @@ function ProductCard({product}){
     const randNum = useState(Math.floor(Math.random() * 11))
     const {gapi} = useGoogleAuthContext();
 
+    const analyticsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("analytics")) ? false : true;
+    const chatIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("analytics")) ? false : true;
+
     useEffect(() => {
       if (randNumRef.current) {
         const randomValue = Math.floor(Math.random() * 11);
@@ -36,11 +39,13 @@ function ProductCard({product}){
                 <p className="text-2xl font-bold text-primary">${Number(product.price).toFixed(2)}</p>
                 <div className="card-actions justify-between">
                     <div className="flex flex-row justify-start items-center gap-2">
-                        <Link to={`/product/${product.id}/analytics/`} className="btn btn-primary btn-sm btn-outline">
+                        <Link aria-disabled={analyticsIsActive} to={`/product/${product.id}/analytics/`} className={`btn ${analyticsIsActive ? "btn-disabled" : "btn-primary"} btn-sm btn-outline`}>
                             <BarChart2Icon className="size-5" />
                         </Link>
                         <div className="indicator">
-                            <Link to={`/product/${product.id}/comments/`} className=" btn btn-primary btn-sm btn-outline">
+                            <Link to={`/product/${product.id}/comments/`}
+                            aria-disabled={chatIsActive}
+                            className={`btn btn-sm btn-outline ${chatIsActive ? "btn-disabled" : "btn-primary"}`}>
                             <span className="indicator-item badge badge-accent badge-sm top-0 right-0">{ randNum[0] }</span>
                                 <MessageCircle className="size-5" />
                             </Link>

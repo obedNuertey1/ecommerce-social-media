@@ -140,13 +140,13 @@ export const getUserIdFromIdToken = (idToken) => {
 export const privilegeAccess = () => {
     const normalLogin = !localStorage.hasOwnProperty("passkey");
 
-    const creatableAccess = normalLogin || (JSON.parse(localStorage.getItem("privileges")).includes("admin"));
+    const creatableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin")) ? true : false;
 
-    const deletableAccess = normalLogin || (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor"));
+    const deletableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor")) ? true : false;
 
-    const updatableAccess = normalLogin || (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor"));
+    const updatableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor")) ? true : false;
 
-    const readableAccess = normalLogin || (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("viewer") || JSON.parse(localStorage.getItem("privileges")).includes("editor") || JSON.parse(localStorage.getItem("privileges")).includes("billing"));
+    const readableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("viewer") || JSON.parse(localStorage.getItem("privileges")).includes("editor") || JSON.parse(localStorage.getItem("privileges")).includes("billing")) ? true : false;
 
     return {
         creatableAccess,

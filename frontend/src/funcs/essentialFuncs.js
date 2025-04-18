@@ -136,3 +136,22 @@ export const getUserIdFromIdToken = (idToken) => {
     const payload = JSON.parse(jsonPayload);
     return payload.sub;
 }
+
+export const privilegeAccess = () => {
+    const normalLogin = !localStorage.hasOwnProperty("passkey");
+
+    const creatableAccess = normalLogin || (JSON.parse(localStorage.getItem("privileges")).includes("admin"));
+
+    const deletableAccess = normalLogin || (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor"));
+
+    const updatableAccess = normalLogin || (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor"));
+
+    const readableAccess = normalLogin || (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("viewer") || JSON.parse(localStorage.getItem("privileges")).includes("editor") || JSON.parse(localStorage.getItem("privileges")).includes("billing"));
+
+    return {
+        creatableAccess,
+        deletableAccess,
+        updatableAccess,
+        readableAccess
+    };
+}

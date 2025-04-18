@@ -242,6 +242,7 @@ function ProductPage3() {
                                             <Package2Icon className="size-5" />
                                         </div>
                                         <input
+                                            disabled={updatableAccess}
                                             value={formData?.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             type="text"
@@ -259,6 +260,7 @@ function ProductPage3() {
                                             <DollarSignIcon className="size-5" />
                                         </div>
                                         <input
+                                            disabled={updatableAccess}
                                             value={formData?.price}
                                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                             type="number"

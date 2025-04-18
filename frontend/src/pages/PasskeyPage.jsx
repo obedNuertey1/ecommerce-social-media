@@ -283,7 +283,7 @@ LoginPage   =   ${origin}/auth
                                                                     <div className="flex-none">
                                                                         <div className="avatar placeholder">
                                                                             <div className="bg-warning-content rounded-full w-8">
-                                                                                <AlertTriangle className="size-6 text-warning" />
+                                                                                <AlertTriangle className="size-5 text-warning" />
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -310,13 +310,24 @@ LoginPage   =   ${origin}/auth
                                             <button
                                                 onClick={() => {
                                                     if (JSON.parse((pk.isOnline)?.toLowerCase())) {
-                                                        toast.custom(() => (
-                                                            <div className="flex items-center gap-3 bg-warning/60 p-4 rounded-lg shadow-lg">
-                                                                <AlertTriangle className="size-6 mr-2 text-warning-content" />
-                                                                <span className='text-warning-content'>
-                                                                    <strong>{pk.name} is online!</strong>
-                                                                    <div className="text-xs">Let {pk.name} logout in order to delete</div>
-                                                                </span>
+                                                        toast.custom((t) => (
+                                                            <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
+                                                            bg-warning/60 border border-warning-content/70 rounded-box p-4 shadow-lg`}>
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="flex-none">
+                                                                        <div className="avatar placeholder">
+                                                                            <div className="bg-warning-content rounded-full w-8">
+                                                                                <AlertTriangle className="size-5 text-warning" />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <h3 className="font-semibold">{pk.name} is online!</h3>
+                                                                        <p className="text-sm">
+                                                                            Let {pk.name} logout before deleting
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         ), {
                                                             duration: 4000,

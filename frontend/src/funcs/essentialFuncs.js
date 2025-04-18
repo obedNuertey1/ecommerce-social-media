@@ -140,17 +140,13 @@ export const getUserIdFromIdToken = (idToken) => {
 export const privilegeAccess = () => {
     const normalLogin = !localStorage.hasOwnProperty("passkey");
 
-    console.log({normalLogin});
+    const creatableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin")) ? false : true;
 
-    const creatableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin")) ? true : false;
+    const deletableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor")) ? false : true;
 
-    console.log({deletableAccessLogic : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor"))})
-    
-    const deletableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor")) ? true : false;
+    const updatableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor")) ? false : true;
 
-    const updatableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor")) ? true : false;
-
-    const readableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("viewer") || JSON.parse(localStorage.getItem("privileges")).includes("editor") || JSON.parse(localStorage.getItem("privileges")).includes("billing")) ? true : false;
+    const readableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("viewer") || JSON.parse(localStorage.getItem("privileges")).includes("editor") || JSON.parse(localStorage.getItem("privileges")).includes("billing")) ? false : true;
 
     return {
         creatableAccess,

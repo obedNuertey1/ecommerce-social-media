@@ -277,12 +277,12 @@ LoginPage   =   ${origin}/auth
                                                 onClick={() => {
                                                     if (JSON.parse((pk.isOnline)?.toLowerCase())) {
                                                         toast.custom(() => (
-                                                            <div className="alert alert-error flex items-start shadow-lg">
+                                                            <div className="flex items-center gap-3 alert-warning alert">
                                                                 <div className="flex-1">
-                                                                    <AlertTriangle className="w-6 h-6 inline-block mr-2" />
-                                                                    <span>
+                                                                    <AlertTriangle className="size-6 mr-2 text-warning-content" />
+                                                                    <span className='text-warning-content'>
                                                                         <strong>Passkey is online!</strong>
-                                                                        <div className="text-xs">User must logout before editing</div>
+                                                                        <div className="text-xs">Let {pk.name} logout before editing</div>
                                                                     </span>
                                                                 </div>
                                                             </div>

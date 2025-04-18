@@ -144,6 +144,8 @@ export const privilegeAccess = () => {
 
     const creatableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin")) ? true : false;
 
+    console.log({deletableAccessLogic : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor"))})
+    
     const deletableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor")) ? true : false;
 
     const updatableAccess = normalLogin ? false : (JSON.parse(localStorage.getItem("privileges")).includes("admin") || JSON.parse(localStorage.getItem("privileges")).includes("editor")) ? true : false;

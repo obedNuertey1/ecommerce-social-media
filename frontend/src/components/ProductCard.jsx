@@ -11,7 +11,7 @@ function ProductCard({product}){
     const {gapi} = useGoogleAuthContext();
 
     const analyticsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("analytics")) ? false : true;
-    const chatIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("analytics")) ? false : true;
+    const chatIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("chat")) ? false : true;
 
     useEffect(() => {
       if (randNumRef.current) {

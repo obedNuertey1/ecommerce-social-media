@@ -291,10 +291,10 @@ function ProductPage3() {
                                     </label>
                                     <div className="flex gap-2">
                                         <input
-                                            disabled={creatableAccess}
                                             type="file"
                                             accept="image/*"
                                             onChange={(e) => {
+                                                if (creatableAccess) return;
                                                 const file = e.target.files?.[0];
                                                 if (file) {
                                                     handleFileUpload(file);
@@ -303,10 +303,15 @@ function ProductPage3() {
                                             }}
                                             className="hidden"
                                             id="file-upload"
+                                            disabled={creatableAccess}
                                         />
                                         <label
                                             htmlFor="file-upload"
-                                            className="btn btn-primary w-full flex items-center justify-center gap-2"
+                                            // className="btn btn-primary w-full flex items-center justify-center gap-2"
+                                            className={`btn btn-primary w-full flex items-center justify-center gap-2 ${
+                                                creatableAccess ? 'btn-disabled pointer-events-none opacity-75' : ''
+                                            }`}
+                                            aria-disabled={creatableAccess}
                                         >
                                             <PlusCircleIcon className="size-5" />
                                             Upload Image

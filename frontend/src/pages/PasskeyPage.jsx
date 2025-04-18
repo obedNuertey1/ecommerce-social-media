@@ -277,10 +277,10 @@ LoginPage   =   ${origin}/auth
                                                 onClick={() => {
                                                     if (JSON.parse((pk.isOnline)?.toLowerCase())) {
                                                         toast.custom(() => (
-                                                            <div className="flex items-center gap-3 bg-warning/50 p-4 rounded-lg shadow-lg">
+                                                            <div className="flex items-center gap-3 bg-warning/60 p-4 rounded-lg shadow-lg">
                                                                 <AlertTriangle className="size-6 mr-2 text-warning-content" />
                                                                 <span className='text-warning-content'>
-                                                                    <strong>Passkey is online!</strong>
+                                                                    <strong>{pk.name} is online!</strong>
                                                                     <div className="text-xs">Let {pk.name} logout before editing</div>
                                                                 </span>
                                                             </div>
@@ -297,10 +297,25 @@ LoginPage   =   ${origin}/auth
                                                 <Edit className="w-3 h-3 lg:w-4 lg:h-4" />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(pk)}
+                                                onClick={() => {
+                                                    if (JSON.parse((pk.isOnline)?.toLowerCase())) {
+                                                        toast.custom(() => (
+                                                            <div className="flex items-center gap-3 bg-warning/60 p-4 rounded-lg shadow-lg">
+                                                                <AlertTriangle className="size-6 mr-2 text-warning-content" />
+                                                                <span className='text-warning-content'>
+                                                                    <strong>{pk.name} is online!</strong>
+                                                                    <div className="text-xs">Let {pk.name} logout in order to delete</div>
+                                                                </span>
+                                                            </div>
+                                                        ), {
+                                                            duration: 4000,
+                                                        });
+                                                        return;
+                                                    }
+                                                    handleDelete(pk)
+                                                }}
                                                 className="btn btn-ghost btn-xs text-error"
                                                 aria-label="Delete"
-                                                disabled={JSON.parse((pk.isOnline)?.toLowerCase())}
                                             >
                                                 <Trash2 className="w-3 h-3 lg:w-4 lg:h-4" />
                                             </button>

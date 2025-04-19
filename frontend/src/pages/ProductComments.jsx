@@ -371,7 +371,7 @@ export default function ProductComments() {
             <h1 className="text-2xl font-bold mb-8">{productName} Comments</h1>
             <div role="tablist" className="tabs tabs-lifted">
                 {/* Facebook Tab */}
-                <input type="radio" defaultChecked name="my_tabs_2" role="tab" className="tab" aria-label="Facebook" />
+                <input disabled={creatableAccess} type="radio" defaultChecked name="my_tabs_2" role="tab" className="tab" aria-label="Facebook" />
                 <div role="tabpanel" className="tab-content bg-base-100 max-h-[calc(100vh-20rem)] overflow-y-scroll border-base-300 rounded-box p-2 md:p-6">
                     {comments.facebook.map((comment, id, arr) => (
                         <>
@@ -393,7 +393,7 @@ export default function ProductComments() {
                 </div>
 
                 {/* Instagram Tab */}
-                <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="Instagram" />
+                <input type="radio" disabled={creatableAccess} name="my_tabs_2" role="tab" className="tab" aria-label="Instagram" />
                 <div role="tabpanel" className="tab-content bg-base-100 border-base-300 max-h-[calc(100vh-20rem)] overflow-y-scroll rounded-box p-2 md:p-6">
                     {comments.instagram.map((comment, id, arr) => (
                         <>
@@ -415,7 +415,7 @@ export default function ProductComments() {
                 </div>
 
                 {/* Threads Tab */}
-                <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="Threads" />
+                <input type="radio" disabled={creatableAccess} name="my_tabs_2" role="tab" className="tab" aria-label="Threads" />
                 <div role="tabpanel" className="tab-content bg-base-100 border-base-300 max-h-[calc(100vh-20rem)] overflow-y-scroll rounded-box p-2 md:p-6">
                     {comments.threads.map((comment, id, arr) => (
                         <>

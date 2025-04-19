@@ -27,7 +27,7 @@ const PasskeyPage = () => {
     const { gapi } = useGoogleAuthContext();
     const {deletableAccess, updatableAccess, creatableAccess} = privilegeAccess();
 
-    const productsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("products")) ? false : true;
+    const passkeyLogsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("passkey-logs")) ? false : true;
 
     const { data, error, isLoading } = useQuery({
         queryKey: [],
@@ -192,8 +192,9 @@ LoginPage   =   ${origin}/auth
                 <h1 className="text-2xl lg:text-3xl font-bold">Passkeys Management</h1>
                 <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
                     <Link
+                        aria-disabled={passkeyLogsIsActive}
                         to="/passkey/logs"
-                        className="btn md:min-w-0 min-w-[calc(50%-0.5rem)] btn-outline btn-sm lg:btn-md"
+                        className={`btn md:min-w-0 min-w-[calc(50%-0.5rem)] btn-outline ${passkeyLogsIsActive && "btn-disabled"} btn-sm lg:btn-md`}
                     >
                         View Logs
                     </Link>

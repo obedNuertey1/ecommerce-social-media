@@ -17,6 +17,7 @@ import {
 import { RefreshCw, ArrowLeftIcon, InfoIcon, ArrowRightIcon } from 'lucide-react';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
+import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 
 // Simplified dummy data generator
 const generateData = (platforms = ['Facebook', 'Instagram', 'Threads']) =>
@@ -106,6 +107,7 @@ const AnalyticsDashboard = () => {
     );
 
     const navigate = useNavigate();
+    const {gapi} = useGoogleAuthContext();
 
 
     const { fetchProduct, product, loading, error, resetFormData } = useProductStore();
@@ -113,7 +115,7 @@ const AnalyticsDashboard = () => {
     console.log({productId: id});
 
     useEffect(() => {
-        fetchProduct(id);
+        fetchProduct(id, gapi);
     }, [fetchProduct, id]);
 
 

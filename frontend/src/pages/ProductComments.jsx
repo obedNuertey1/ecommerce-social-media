@@ -7,6 +7,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { createPortal } from 'react-dom';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
+import { privilegeAccess } from '../funcs/essentialFuncs';
 
 const CommentItem = memo(({
     comment,
@@ -20,6 +21,9 @@ const CommentItem = memo(({
     onSetReplyText
 }) => {
     const { theme } = useSettingsStore().settings.visualCustomization.themeSelection;
+
+    const {creatableAccess, deletableAccess} = privilegeAccess();
+
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
       }, [theme]);
@@ -89,12 +93,14 @@ const CommentItem = memo(({
                         {platform !== 'threads' && (
                             <div className="mt-3 flex gap-2">
                                 <button
+                                    disabled={creatableAccess}
                                     onClick={() => onSetReplyingTo(replyingTo === comment.id ? null : comment.id)}
                                     className="btn btn-xs btn-ghost"
                                 >
                                     <Reply size={14} className="mr-1" /> Reply
                                 </button>
                                 <button
+                                    disabled={deletableAccess}
                                     onClick={() => onDeleteComment(platform, comment.id)}
                                     className="btn btn-xs btn-ghost text-error"
                                 >
@@ -178,6 +184,7 @@ export default function ProductComments() {
     const [showNewCommentEmojiPicker, setShowNewCommentEmojiPicker] = useState(false);
     const { fetchProduct, product, loading, error, resetFormData } = useProductStore();
     const {gapi} = useGoogleAuthContext();
+    const {creatableAccess, deletableAccess} = privilegeAccess();
     const { id } = useParams();
 
     useEffect(() => {
@@ -473,6 +480,7 @@ export default function ProductComments() {
                 {/* Modification ends */}
                 <button
                     className="btn btn-primary min-w-full"
+                    disabled={creatableAccess}
                     onClick={() => {
                         // Implement API call to post comment
                         toast.success('Comment posted successfully');

@@ -129,7 +129,7 @@ export const usePasskeyStore = create((set, get) => ({
         const { promise, cancel } = cancellableWaiting(1000);
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const passkey = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName, id - 1);
+            const passkey = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName, id);
             set({ error: null });
             return passkey;
         } catch (e) {

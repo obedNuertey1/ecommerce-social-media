@@ -49,7 +49,8 @@ function Navbar() {
                     let passkey = JSON.parse(passkeyDecrypted);
                     const res = await fetchPasskey(passkey.id, gapi);
                     console.log({responseFromNavbar: res});
-                    if(!res?.error){
+                    console.log({"res?.name === passkey.name": (res?.name === passkey.name)});
+                    if(res?.name === passkey.name){
                         passkey.isOnline = "false";
                         passkey.accessiblePages = JSON.stringify(passkey.accessiblePages);
                         passkey.privileges = JSON.stringify(passkey.privileges);

@@ -431,6 +431,7 @@ const SettingsPage = () => {
                             <span className="label-text">Check Frequency</span>
                           </label>
                           <select
+                            disabled={updatableAccess}
                             className="select select-bordered"
                             value={settings.repostingRules.checkFrequency}
                             onChange={(e) => setSettings({ ...settings, repostingRules: { ...settings.repostingRules, checkFrequency: e.target.value } })}
@@ -622,6 +623,7 @@ const SettingsPage = () => {
                         <select
                           className="select select-bordered w-full"
                           value={settings.aiConfigurations.aiModelSelection.model}
+                          disabled={updatableAccess}
                           onChange={(e) => setSettings({
                             ...settings,
                             aiConfigurations: {
@@ -682,6 +684,7 @@ const SettingsPage = () => {
                           <label className="label">Report Frequency</label>
                           <select
                             className="select select-bordered w-full"
+                            disabled={updatableAccess}
                             value={settings.aiConfigurations.reportsGeneration.reportFrequency}
                             onChange={(e) => setSettings({
                               ...settings,
@@ -804,6 +807,7 @@ const SettingsPage = () => {
                           <label className="label">Product Type</label>
                           <select
                             className="select select-bordered w-full"
+                            disabled={updatableAccess}
                             value={settings.visualCustomization.productAiSettings.productType}
                             onChange={(e) => setSettings({
                               ...settings,
@@ -830,6 +834,7 @@ const SettingsPage = () => {
                               <label className="label">Model Diversity</label>
                               <select
                                 className="select select-bordered w-full"
+                                disabled={updatableAccess}
                                 value={settings.visualCustomization.productAiSettings.modelDiversity}
                                 onChange={(e) => setSettings({
                                   ...settings,

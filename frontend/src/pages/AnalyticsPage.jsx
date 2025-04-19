@@ -110,6 +110,7 @@ const AnalyticsDashboard = () => {
 
     const { fetchProduct, product, loading, error, resetFormData } = useProductStore();
     const { id } = useParams();
+    console.log({productId: id});
 
     useEffect(() => {
         fetchProduct(id);

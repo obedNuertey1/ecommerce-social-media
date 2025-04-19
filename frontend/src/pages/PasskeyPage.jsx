@@ -27,6 +27,8 @@ const PasskeyPage = () => {
     const { gapi } = useGoogleAuthContext();
     const {deletableAccess, updatableAccess, creatableAccess} = privilegeAccess();
 
+    const productsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("products")) ? false : true;
+
     const { data, error, isLoading } = useQuery({
         queryKey: [],
         queryFn: () => fetchPasskeys2(gapi),
@@ -312,7 +314,7 @@ LoginPage   =   ${origin}/auth
                                                 <Edit className="w-3 h-3 lg:w-4 lg:h-4" />
                                             </button>
                                             <button
-                                                disabled={updatableAccess}
+                                                disabled={deletableAccess}
                                                 onClick={() => {
                                                     if (JSON.parse((pk.isOnline)?.toLowerCase())) {
                                                         toast.custom((t) => (

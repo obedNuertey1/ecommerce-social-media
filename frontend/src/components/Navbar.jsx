@@ -25,7 +25,7 @@ function Navbar() {
     const isAuth = pathname === "/auth";
     const { products, resetFormData } = useProductStore();
     const { orders } = useOrderStore();
-    const { setPasskey, updatePasskey } = usePasskeyStore();
+    const { setPasskey, updatePasskey, fetchPasskey } = usePasskeyStore();
     const { gapi } = useGoogleAuthContext();
 
     const settingsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("settings")) ? false : true;
@@ -47,11 +47,15 @@ function Navbar() {
                 if (passkeyEncrypted) {
                     let passkeyDecrypted = await decryptData(passkeyEncrypted, ENCRYPT_DECRYPT_KEY);
                     let passkey = JSON.parse(passkeyDecrypted);
-                    passkey.isOnline = "false";
-                    passkey.accessiblePages = JSON.stringify(passkey.accessiblePages);
-                    passkey.privileges = JSON.stringify(passkey.privileges);
-                    setPasskey(passkey);
-                    await updatePasskey(gapi, passkey.id);
+                    const res = await fetchPasskey(passkey.id, gapi);
+                    console.log({responseFromNavbar: res});
+                    if(!res?.error){
+                        passkey.isOnline = "false";
+                        passkey.accessiblePages = JSON.stringify(passkey.accessiblePages);
+                        passkey.privileges = JSON.stringify(passkey.privileges);
+                        setPasskey(passkey);
+                        await updatePasskey(gapi, passkey.id);
+                    }
                 }
             } catch (e) {
                 console.log(e);

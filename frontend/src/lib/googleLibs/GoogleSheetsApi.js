@@ -1657,7 +1657,7 @@ class GoogleSheetsAPI {
             data.values.unshift(headers);
             const toObjArr = await convert2dArrToObjArr(data.values);
             console.log({toObjArr})
-            if(sheetName === "Auth"){
+            if(sheetName === "Auth" || sheetName === "Passkeys"){
                 return toObjArr ? toObjArr[0] : null;
             }
             const getMediaUrlsResult = await getMediaUrls(toObjArr);

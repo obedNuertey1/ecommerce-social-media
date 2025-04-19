@@ -117,5 +117,27 @@ export const usePasskeyStore = create((set, get) => ({
             set({updateAddLoading: false});
             throw new Error("Passkey could not update");
         }
+    },
+    fetchPasskey: async (id, gapi, retries = 10, error = null) => {
+        if (retries === 0) {
+            if (error) {
+                set({ error: null, passkeys: [], loading: false });
+                return {error: new Error(error)};
+            }
+            return {error: new Error("Passkey could not fetch")};
+        }
+        const { promise, cancel } = cancellableWaiting(1000);
+        try {
+            const googleSheet = new GoogleSheetsAPI(gapi);
+            const passkey = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName, id - 1);
+            set({ error: null });
+            return passkey;
+        } catch (e) {
+            console.warn(`Attempts ${Math.abs(11 - retries)} failed:`, e);
+            error = e;
+            await promise;
+            await get().fetchPasskey(id, gapi, retries - 1, error);
+            cancel();
+        }
     }
 }));

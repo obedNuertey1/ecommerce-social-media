@@ -50,6 +50,7 @@ function Navbar() {
                     const res = await fetchPasskey(passkey.id, gapi);
                     console.log({responseFromNavbar: res});
                     console.log({"res?.name === passkey.name": (res?.name === passkey.name)});
+                    window.alert(`res?.name === passkey.name ${res?.name === passkey.name}`)
                     if(res?.name === passkey.name){
                         passkey.isOnline = "false";
                         passkey.accessiblePages = JSON.stringify(passkey.accessiblePages);

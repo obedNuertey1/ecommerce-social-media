@@ -317,31 +317,31 @@ LoginPage   =   ${origin}/auth
                                             <button
                                                 disabled={deletableAccess}
                                                 onClick={() => {
-                                                    if (JSON.parse((pk.isOnline)?.toLowerCase())) {
-                                                        toast.custom((t) => (
-                                                            <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
-                                                            bg-warning/60 border border-warning-content/70 rounded-box p-4 shadow-lg`}>
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="flex-none">
-                                                                        <div className="avatar placeholder">
-                                                                            <div className="bg-warning-content rounded-full w-8">
-                                                                                <AlertTriangle className="size-5 text-warning" />
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="flex-1">
-                                                                        <h3 className="font-semibold">{pk.name} is online!</h3>
-                                                                        <p className="text-sm">
-                                                                            Let {pk.name} logout before deleting
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ), {
-                                                            duration: 4000,
-                                                        });
-                                                        return;
-                                                    }
+                                                    // if (JSON.parse((pk.isOnline)?.toLowerCase())) {
+                                                    //     toast.custom((t) => (
+                                                    //         <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
+                                                    //         bg-warning/60 border border-warning-content/70 rounded-box p-4 shadow-lg`}>
+                                                    //             <div className="flex items-center gap-3">
+                                                    //                 <div className="flex-none">
+                                                    //                     <div className="avatar placeholder">
+                                                    //                         <div className="bg-warning-content rounded-full w-8">
+                                                    //                             <AlertTriangle className="size-5 text-warning" />
+                                                    //                         </div>
+                                                    //                     </div>
+                                                    //                 </div>
+                                                    //                 <div className="flex-1">
+                                                    //                     <h3 className="font-semibold">{pk.name} is online!</h3>
+                                                    //                     <p className="text-sm">
+                                                    //                         Let {pk.name} logout before deleting
+                                                    //                     </p>
+                                                    //                 </div>
+                                                    //             </div>
+                                                    //         </div>
+                                                    //     ), {
+                                                    //         duration: 4000,
+                                                    //     });
+                                                    //     return;
+                                                    // }
                                                     handleDelete(pk)
                                                 }}
                                                 className="btn btn-ghost btn-xs text-error"

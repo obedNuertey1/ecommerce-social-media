@@ -393,7 +393,7 @@ export default function ProductComments() {
                 </div>
 
                 {/* Instagram Tab */}
-                <input type="radio" disabled={creatableAccess} name="my_tabs_2" role="tab" className="tab" aria-label="Instagram" />
+                <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="Instagram" />
                 <div role="tabpanel" className="tab-content bg-base-100 border-base-300 max-h-[calc(100vh-20rem)] overflow-y-scroll rounded-box p-2 md:p-6">
                     {comments.instagram.map((comment, id, arr) => (
                         <>

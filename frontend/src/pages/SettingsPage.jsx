@@ -231,6 +231,7 @@ const SettingsPage = () => {
                           <span className="label-text">Enter Location Manually</span>
                         </label>
                         <input
+                          disabled={updatableAccess}
                           type="text"
                           className="input input-bordered"
                           placeholder="Enter city or address"
@@ -258,6 +259,7 @@ const SettingsPage = () => {
                       <label className="label cursor-pointer">
                         <span className="label-text">Mute Notifications</span>
                         <input
+                          disabled={updatableAccess}
                           type="checkbox"
                           className="toggle"
                           checked={settings.notifications.mute}
@@ -291,7 +293,7 @@ const SettingsPage = () => {
                           }
                         })}
                         className="range range-primary"
-                        disabled={settings.notifications.mute}
+                        disabled={settings.notifications.mute || updatableAccess}
                       />
                       <div className="w-full flex justify-between text-xs px-2">
                         <span>0%</span>
@@ -317,6 +319,7 @@ const SettingsPage = () => {
                         <label className="cursor-pointer label flex items-center justify-between">
                           <span className="label-text">Instagram Auto-Post</span>
                           <input
+                            disabled={updatableAccess}
                             type="checkbox"
                             className="toggle"
                             checked={settings.autoPost.instagram}
@@ -351,6 +354,7 @@ const SettingsPage = () => {
                         <label className="cursor-pointer label flex items-center justify-between">
                           <span className="label-text">Facebook Auto-Post</span>
                           <input
+                            disabled={updatableAccess}
                             type="checkbox"
                             className="toggle"
                             checked={settings.autoPost.facebook}
@@ -382,6 +386,7 @@ const SettingsPage = () => {
                         <label className="cursor-pointer label flex items-center justify-between">
                           <span className="label-text">Threads Auto-Post</span>
                           <input
+                            disabled={updatableAccess}
                             type="checkbox"
                             className="toggle"
                             checked={settings.autoPost.threads}
@@ -412,6 +417,7 @@ const SettingsPage = () => {
                             <span className="label-text">Interaction Threshold</span>
                           </label>
                           <input
+                            disabled={updatableAccess}
                             type="number"
                             min="0"
                             value={settings.repostingRules.interactionThreshold}
@@ -451,6 +457,7 @@ const SettingsPage = () => {
                       <label className="cursor-pointer label flex items-center space-x-2">
                         <span className="label-text">Enable AI Descriptions</span>
                         <input
+                          disabled={updatableAccess}
                           type="checkbox"
                           className="toggle"
                           checked={settings.aiConfigurations.productDescriptions.enableAiDescriptions}
@@ -541,6 +548,7 @@ const SettingsPage = () => {
                         <label className="cursor-pointer label flex items-center space-x-2">
                           <span className="label-text">Manual Replies Only</span>
                           <input
+                            disabled={updatableAccess}
                             type="radio"
                             name="reply-mode"
                             className="radio"
@@ -561,6 +569,7 @@ const SettingsPage = () => {
                         <label className="cursor-pointer label flex items-center space-x-2">
                           <span className="label-text">AI Auto-Reply</span>
                           <input
+                            disabled={updatableAccess}
                             type="radio"
                             name="reply-mode"
                             className="radio"
@@ -581,6 +590,7 @@ const SettingsPage = () => {
                         <label className="cursor-pointer label flex items-center space-x-2">
                           <span className="label-text">AI Suggestions with Manual Approval</span>
                           <input
+                            disabled={updatableAccess}
                             type="radio"
                             name="reply-mode"
                             className="radio"
@@ -645,6 +655,7 @@ const SettingsPage = () => {
                       <label className="cursor-pointer label flex items-center space-x-2">
                         <span className="label-text">Automatic PDF Reports</span>
                         <input
+                          disabled={updatableAccess}
                           type="checkbox"
                           className="toggle"
                           checked={settings.aiConfigurations.reportsGeneration.automaticPdfReports}
@@ -693,6 +704,7 @@ const SettingsPage = () => {
                             <span className="label-text">Enter email</span>
                           </label>
                           <input
+                            disabled={updatableAccess}
                             type="email"
                             className="input input-bordered"
                             placeholder="Enter email to recieve pdf reports"
@@ -752,6 +764,7 @@ const SettingsPage = () => {
                       <label className="cursor-pointer label flex items-center space-x-2">
                         <span className="label-text">Enable Virtual Try-On Generation</span>
                         <input
+                          disabled={updatableAccess}
                           type="checkbox"
                           className="toggle"
                           checked={settings.visualCustomization.productAiSettings.enableVirtualTryOnGeneration}
@@ -840,6 +853,7 @@ const SettingsPage = () => {
                                 <span className="label-text">Number of Poses</span>
                               </label>
                               <input
+                                disabled={updatableAccess}
                                 type="number"
                                 min="1"
                                 max="6"
@@ -863,6 +877,7 @@ const SettingsPage = () => {
                                 <span className="label-text">Skin Tone Variation</span>
                               </label>
                               <input
+                                disabled={updatableAccess}
                                 type="range"
                                 min="1"
                                 max="5"

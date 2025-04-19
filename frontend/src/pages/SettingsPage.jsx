@@ -489,7 +489,7 @@ const SettingsPage = () => {
                       >
                         <label className="label">Description Style</label>
                         <div className="join join-vertical w-full md:join-horizontal">
-                          <input className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Creative" value="creative"
+                          <input disabled={updatableAccess} className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Creative" value="creative"
                             onChange={(e) => setSettings(
                               {
                                 ...settings, aiConfigurations: {
@@ -502,7 +502,7 @@ const SettingsPage = () => {
                               })}
                             checked={settings.aiConfigurations.productDescriptions.descriptionStyle === "creative"}
                           />
-                          <input className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Technical" value="technical"
+                          <input disabled={updatableAccess} className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Technical" value="technical"
                             // onChange={(e)=>setDescStyle(e.target.value)} checked={descStyle==="Technical"}
                             onChange={(e) => setSettings(
                               {
@@ -516,7 +516,7 @@ const SettingsPage = () => {
                               })}
                             checked={settings.aiConfigurations.productDescriptions.descriptionStyle === "technical"}
                           />
-                          <input className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Casual" value="casual"
+                          <input disabled={updatableAccess} className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Casual" value="casual"
                             // onChange={(e)=>setDescStyle(e.target.value)} checked={descStyle==="Casual"} 
                             onChange={(e) => setSettings(
                               {

@@ -11,6 +11,7 @@ import { LoginSocialInstagram, LoginSocialFacebook } from 'reactjs-social-login'
 import ThreadsSvgIcon from '../components/ThreadsSvgIcon';
 import { useProductStore } from '../store/useProductStore';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
+import { privilegeAccess } from '../funcs/essentialFuncs';
 
 const SettingsPage = () => {
   const socialMediaAutomationRef = useRef(null);
@@ -23,6 +24,7 @@ const SettingsPage = () => {
   const reportFrequencyRef = useRef(null);
   const descriptionStyleRef = useRef(null);
   const {gapi} = useGoogleAuthContext();
+  const {updatableAccess} = privilegeAccess();
 
 
 
@@ -179,7 +181,7 @@ const SettingsPage = () => {
                         <button
                           className="btn btn-primary"
                           onClick={handleGetLocation}
-                          disabled={location.loading}
+                          disabled={location.loading || updatableAccess}
                         >
                           {
                             location.loading
@@ -333,6 +335,7 @@ const SettingsPage = () => {
                             }}
                           >
                             <button
+                              disabled={updatableAccess}
                               className="btn bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white hover:opacity-90 flex-nowrap text-nowrap"
                               onClick={() => () => { }}
                             >
@@ -387,6 +390,7 @@ const SettingsPage = () => {
                         </label>
                         {(!auth_data.threads_user_id) && (
                           <button
+                            disabled={updatableAccess}
                             className="btn bg-black text-white hover:bg-gray-800"
                             onClick={threads_authenticate}
                           >
@@ -885,7 +889,7 @@ const SettingsPage = () => {
                 <div className="divider"></div>
                 <div className="card-actions">
                   <div className='flex items-center justify-center flex-wrap px-6 py-4 mb-6 mt-2 min-w-full gap-6'>
-                    <button disabled={loading === true} onClick={handleSave} className="btn btn-primary min-w-full md:min-w-0 shadow-lg">
+                    <button disabled={(loading === true) || updatableAccess} onClick={handleSave} className="btn btn-primary min-w-full md:min-w-0 shadow-lg">
                       {
                         loading ? (<span className="loading loading-spinner loading-sm" />) : (
                           <SaveIcon className="mr-2 size-6" />
@@ -893,7 +897,7 @@ const SettingsPage = () => {
                       }
                       Save Settings
                     </button>
-                    <button disabled={restoreDefaultLoading === true} onClick={handleRestoreDefaults} className="btn btn-secondary shadow-lg min-w-full md:min-w-0">
+                    <button disabled={(restoreDefaultLoading === true) || updatableAccess} onClick={handleRestoreDefaults} className="btn btn-secondary shadow-lg min-w-full md:min-w-0">
                       {
                         restoreDefaultLoading ? (<span className="loading loading-spinner loading-sm" />) : (
                           <RefreshCwIcon className="mr-2 size-6" />

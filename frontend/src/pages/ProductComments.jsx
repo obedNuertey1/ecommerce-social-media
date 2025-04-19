@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { createPortal } from 'react-dom';
+import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 
 const CommentItem = memo(({
     comment,
@@ -176,10 +177,11 @@ export default function ProductComments() {
     const newCommentButtonRef = useRef(null);
     const [showNewCommentEmojiPicker, setShowNewCommentEmojiPicker] = useState(false);
     const { fetchProduct, product, loading, error, resetFormData } = useProductStore();
+    const {gapi} = useGoogleAuthContext();
     const { id } = useParams();
 
     useEffect(() => {
-        fetchProduct(id);
+        fetchProduct(id, gapi);
     }, [fetchProduct, id]);
 
     useEffect(() => {

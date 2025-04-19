@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { PaletteIcon } from 'lucide-react';
+import { privilegeAccess } from '../funcs/essentialFuncs';
 
 const CustomThemeSelect = ({ themes, currentTheme, onThemeChange }) => {
   const [open, setOpen] = useState(false);
 
   const selectedTheme = themes.find(theme => theme.name === currentTheme);
+  const {updatableAccess} = privilegeAccess();
 
 
   return (
@@ -12,6 +14,7 @@ const CustomThemeSelect = ({ themes, currentTheme, onThemeChange }) => {
       {/* Dropdown trigger */}
       <button
         // type="button"
+        disabled={updatableAccess}
         className={`w-full px-4 py-3 rounded-xl flex items-center gap-3 transition-colors border select-none border-base-content/30 bg-base-300/50 btn btn-ghost`}
         // border-base-content/30 bg-base-300/50
         onClick={() => setOpen(!open)}

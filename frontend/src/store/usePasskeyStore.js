@@ -56,7 +56,9 @@ export const usePasskeyStore = create((set, get) => ({
                 elem["id"] = idx + 2;
                 return elem;
             });
-            set({ passkeys: allPasskeys });
+            if(allPasskeys.length > 0){
+                set({ passkeys: allPasskeys });
+            }
             return allPasskeys;
         } catch (e) {
             console.warn(`Attempts ${Math.abs(11 - retries)} failed:`, e);

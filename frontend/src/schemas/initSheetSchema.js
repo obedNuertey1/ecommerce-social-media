@@ -16,5 +16,13 @@ export const schemas = [
         "dateModified",
         "isOnline"
     ]},
+    { sheetName: "PasskeyLogs", shape: [
+        "passkeyName",
+        "privileges",
+        "accessiblePages",
+        "activity",
+        "activityDetails",
+        "date"
+    ]}
     // { sheetName: "Settings", shape: ["address", "autoPost"] },
 ];

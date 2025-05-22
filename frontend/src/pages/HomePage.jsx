@@ -23,7 +23,7 @@ function HomePage() {
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
                 // Create a log using localStorage
-                localStorage.setItem("passkey_logs", JSON.stringify([...JSON.parse(localStorage.getItem("passkey_logs")), {"passkeyName": "sami passkey", "privileges": JSON.parse(localStorage.getItem("privileges")), "accessiblePages": JSON.parse(localStorage.getItem('accessiblePages')), "activity": "Homepage", "activityDetails": "User entered Products Page", "date": new Date().toISOString()}]));
+                localStorage.setItem("passkey_logs", JSON.stringify([...JSON.parse(localStorage.getItem("passkey_logs")), {"passkeyName": localStorage.getItem("passkeyName"), "privileges": JSON.parse(localStorage.getItem("privileges")), "accessiblePages": JSON.parse(localStorage.getItem('accessiblePages')), "activity": "Homepage", "activityDetails": "User entered Products Page", "date": new Date().toISOString()}]));
                 pageLoadedRef.current = true;
             }
         }

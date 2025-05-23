@@ -22,16 +22,16 @@ const CommentItem = memo(({
 }) => {
     const { theme } = useSettingsStore().settings.visualCustomization.themeSelection;
 
-    const {creatableAccess, deletableAccess} = privilegeAccess();
+    const { creatableAccess, deletableAccess } = privilegeAccess();
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
-      }, [theme]);
+    }, [theme]);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const emojiPickerRef = useRef(null);
     const buttonRef = useRef(null);
     useEffect(() => {
-        
+
     }, [theme])
 
     const handleClickOutside = useCallback((e) => {
@@ -183,8 +183,8 @@ export default function ProductComments() {
     const newCommentButtonRef = useRef(null);
     const [showNewCommentEmojiPicker, setShowNewCommentEmojiPicker] = useState(false);
     const { fetchProduct, product, loading, error, resetFormData, formData } = useProductStore();
-    const {gapi} = useGoogleAuthContext();
-    const {creatableAccess, deletableAccess} = privilegeAccess();
+    const { gapi } = useGoogleAuthContext();
+    const { creatableAccess, deletableAccess } = privilegeAccess();
     const { id } = useParams();
     const pageLoadedRef = useRef(false);
 
@@ -192,24 +192,10 @@ export default function ProductComments() {
         fetchProduct(id, gapi);
     }, [fetchProduct, id]);
 
-    useEffect(() => {
-        window.scrollTo(0, 0)
-        const pageLoaded = ()=>{
-            if(localStorage.getItem("passkey")){
-                if(pageLoadedRef.current) return;
-                const passkeyName = localStorage.getItem("passkeyName");
-                createLogs("Accessed", `${passkeyName} entered the ${formData.name} Product with id ${id} Comments Page`)
-                pageLoadedRef.current = true;
-            }
-        }
-
-        pageLoaded();
-        return ()=>{}
-    }, [])
 
     const handleNewCommentClickOutside = useCallback((e) => {
-        if (emojiPickerRef.current && 
-            !emojiPickerRef.current.contains(e.target) && 
+        if (emojiPickerRef.current &&
+            !emojiPickerRef.current.contains(e.target) &&
             !newCommentButtonRef.current.contains(e.target)
         ) {
             setShowNewCommentEmojiPicker(false);
@@ -241,6 +227,21 @@ export default function ProductComments() {
 
     const navigate = useNavigate();
     const productName = product?.name;
+
+    useEffect(() => {
+        window.scrollTo(0, 0)
+        const pageLoaded = () => {
+            if (localStorage.getItem("passkey")) {
+                if (pageLoadedRef.current) return;
+                const passkeyName = localStorage.getItem("passkeyName");
+                createLogs("Accessed", `${passkeyName} entered the ${productName} Product with id ${id} Comments Page`)
+                pageLoadedRef.current = true;
+            }
+        }
+
+        pageLoaded();
+        return () => { }
+    }, [])
 
 
     const [comments, setComments] = useState({
@@ -452,7 +453,7 @@ export default function ProductComments() {
             <div className="mt-8 flex gap-2 flex-wrap">
                 {/* Modification starts */}
                 <div className="bg-base-300/50 min-w-full relative">
-                <textarea
+                    <textarea
                         disabled={creatableAccess}
                         className="textarea textarea-ghost textarea-bordered min-w-full pr-10"
                         value={newComment}
@@ -468,7 +469,7 @@ export default function ProductComments() {
                         😀
                     </button>
                     {showNewCommentEmojiPicker && createPortal(
-                        <div 
+                        <div
                             ref={emojiPickerRef}
                             className="fixed z-50 transition-all duration-200"
                             style={getNewCommentPickerPosition()}

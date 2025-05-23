@@ -18,6 +18,7 @@ import { RefreshCw, ArrowLeftIcon, InfoIcon, ArrowRightIcon } from 'lucide-react
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
+import { waiting } from '../funcs/waiting';
 
 // Simplified dummy data generator
 const generateData = (platforms = ['Facebook', 'Instagram', 'Threads']) =>
@@ -119,17 +120,18 @@ const AnalyticsDashboard = () => {
     }, [fetchProduct, id]);
 
     useEffect(()=>{
-        const pageLoaded = ()=>{
+        const pageLoaded = async ()=>{
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
                 const passkeyName = localStorage.getItem("passkeyName");
+                await waiting(2000);
                 createLogs("Accessed", `${passkeyName} entered the ${product.name} Product with id ${id} Analytics's Page`)
                 pageLoadedRef.current = true;
             }
         }
         pageLoaded();
         return ()=>{}
-    }, []);
+    }, [product]);
 
 
     const refreshData = () => {

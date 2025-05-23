@@ -7,7 +7,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { createPortal } from 'react-dom';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
-import { privilegeAccess } from '../funcs/essentialFuncs';
+import { privilegeAccess, createLogs } from '../funcs/essentialFuncs';
 
 const CommentItem = memo(({
     comment,
@@ -186,6 +186,7 @@ export default function ProductComments() {
     const {gapi} = useGoogleAuthContext();
     const {creatableAccess, deletableAccess} = privilegeAccess();
     const { id } = useParams();
+    const pageLoadedRef = useRef(false);
 
     useEffect(() => {
         fetchProduct(id, gapi);
@@ -193,6 +194,17 @@ export default function ProductComments() {
 
     useEffect(() => {
         window.scrollTo(0, 0)
+        const pageLoaded = ()=>{
+            if(localStorage.getItem("passkey")){
+                if(pageLoadedRef.current) return;
+                const passkeyName = localStorage.getItem("passkeyName");
+                createLogs("Accessed", `${passkeyName} entered the ${product.name} Product with id ${id} Comments Page`)
+                pageLoadedRef.current = true;
+            }
+        }
+
+        pageLoaded();
+        return ()=>{}
     }, [])
 
     const handleNewCommentClickOutside = useCallback((e) => {

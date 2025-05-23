@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     BarChart,
     LineChart,
@@ -112,11 +112,24 @@ const AnalyticsDashboard = () => {
 
     const { fetchProduct, product, loading, error, resetFormData } = useProductStore();
     const { id } = useParams();
-    console.log({productId: id});
+    const pageLoadedRef = useRef(false);
 
     useEffect(() => {
         fetchProduct(id, gapi);
     }, [fetchProduct, id]);
+
+    useEffect(()=>{
+        const pageLoaded = ()=>{
+            if(localStorage.getItem("passkey")){
+                if(pageLoadedRef.current) return;
+                const passkeyName = localStorage.getItem("passkeyName");
+                createLogs("Accessed", `${passkeyName} entered the ${product.name} Product with id ${id} Analytics's Page`)
+                pageLoadedRef.current = true;
+            }
+        }
+        pageLoaded();
+        return ()=>{}
+    }, []);
 
 
     const refreshData = () => {

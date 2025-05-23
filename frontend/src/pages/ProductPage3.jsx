@@ -29,7 +29,7 @@ function ProductPage3() {
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
                 const passkeyName = localStorage.getItem("passkeyName");
-                createLogs("Accessed", `${passkeyName} entered the ${product.name} Product Page`)
+                createLogs("Accessed", `${passkeyName} entered the ${formData.name} Product Page`)
                 pageLoadedRef.current = true;
             }
         }

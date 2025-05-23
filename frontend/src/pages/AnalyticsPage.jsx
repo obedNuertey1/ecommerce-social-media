@@ -124,7 +124,7 @@ const AnalyticsDashboard = () => {
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
                 const passkeyName = localStorage.getItem("passkeyName");
-                await waiting(2000);
+                await waiting(5000);
                 createLogs("Accessed", `${passkeyName} entered the ${product.name} Product with id ${id} Analytics's Page`)
                 pageLoadedRef.current = true;
             }

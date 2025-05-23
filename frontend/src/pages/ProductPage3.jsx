@@ -4,7 +4,7 @@ import { useProductStore } from "../store/useProductStore";
 import { useEffect, useState, useRef } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 import {toast} from "react-hot-toast";
-import {privilegeAccess} from "../funcs/essentialFuncs";
+import {privilegeAccess, createLogs} from "../funcs/essentialFuncs";
 
 function ProductPage3() {
     const navigate = useNavigate();

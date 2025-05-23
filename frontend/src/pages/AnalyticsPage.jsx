@@ -18,7 +18,7 @@ import { RefreshCw, ArrowLeftIcon, InfoIcon, ArrowRightIcon } from 'lucide-react
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
-import { waiting } from '../funcs/waiting';
+import { createLogs } from '../funcs/essentialFuncs';
 
 // Simplified dummy data generator
 const generateData = (platforms = ['Facebook', 'Instagram', 'Threads']) =>

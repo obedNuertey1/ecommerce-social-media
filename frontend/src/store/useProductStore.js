@@ -4,10 +4,14 @@ import {toast} from "react-hot-toast";
 import {GoogleDriveAPI, GoogleSheetsAPI} from "../lib/googleLibs";
 import {schemas} from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
+import { createLogs } from "../funcs/essentialFuncs";
 
 const productSchema = schemas.find((schema)=>schema.sheetName==="Products");
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 const GOOGLE_DRIVE_NAME = import.meta.env.VITE_GOOGLE_DRIVE_NAME;
+
+const passkeyName = localStorage.getItem("passkeyName");
+const passkey = localStorage.getItem("passkey");
 
 const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "";
 
@@ -69,6 +73,15 @@ export const useProductStore = create((set, get)=>({
 
             const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
 
+            if(passkey){
+                createLogs("Modified", `
+                ${passkeyName} updated a product
+                with name ${updatedRow.name}
+                and price ${updatedRow.price}
+                and description ${updatedRow.description}
+                with ${updatedRow.mediaIds.length} media files`)
+            }
+
             // await axios.put(`${BASE_URL}/api/products/${id}`, formData);
             await get().fetchProduct(id, gapi);
             toast.success("Product updated successfully");
@@ -117,6 +130,16 @@ export const useProductStore = create((set, get)=>({
                 ...mediaUploadRes
             }
             await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, productSchema.sheetName, data, productSchema.shape);
+
+            if(passkey){
+                createLogs("Created", `
+                ${passkeyName} created a new product
+                with name ${data.name}
+                and price ${data.price}
+                and description ${data.description}
+                with ${data.media.length} media files`)
+            }
+
             set({formData: {name: "", price: "", description: "", image: "", media: []}, error: null});
             document.getElementById("my_modal_2").close();
             toast.success("Product added successfully");
@@ -140,6 +163,10 @@ export const useProductStore = create((set, get)=>({
             // console.log({index: id})
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id-1);
             // console.log({driveResult, sheetResult});
+            if(passkey){
+                createLogs("Deleted", `${passkeyName} deleted a product with name ${get().product.name} and id ${id}`)
+            }
+
             set((prev)=>(
                 {products: prev.products.filter((product)=>product.id !== id)}
             ));

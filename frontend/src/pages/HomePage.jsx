@@ -22,10 +22,8 @@ function HomePage() {
         const pageLoaded = ()=>{
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
-                // Create a log using localStorage
-                // localStorage.setItem("passkey_logs", JSON.stringify([...JSON.parse(localStorage.getItem("passkey_logs")), {"passkeyName": localStorage.getItem("passkeyName"), "privileges": JSON.parse(localStorage.getItem("privileges")), "accessiblePages": JSON.parse(localStorage.getItem('accessiblePages')), "activity": "Homepage", "activityDetails": "User entered Products Page", "date": new Date().toISOString()}]));
                 const passkeyName = localStorage.getItem("passkeyName");
-                createLogs("Homepage", `${passkeyName} entered Products Page`)
+                createLogs("Accessed", `${passkeyName} entered Products Page`)
                 pageLoadedRef.current = true;
             }
         }

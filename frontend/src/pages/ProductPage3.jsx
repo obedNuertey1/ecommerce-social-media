@@ -17,6 +17,7 @@ function ProductPage3() {
     const delayRef = useRef(3000);
     const {gapi} = useGoogleAuthContext();
     const {creatableAccess, deletableAccess, updatableAccess, readableAccess} = privilegeAccess();
+    const pageLoadedRef = useRef(false);
 
     useEffect(() => {
         fetchProduct(id, gapi);
@@ -24,6 +25,16 @@ function ProductPage3() {
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        const pageLoaded = ()=>{
+            if(localStorage.getItem("passkey")){
+                if(pageLoadedRef.current) return;
+                const passkeyName = localStorage.getItem("passkeyName");
+                createLogs("Accessed", `${passkeyName} entered the ${formData.name} Product Page`)
+                pageLoadedRef.current = true;
+            }
+        }
+        pageLoaded();
+        return ()=>{};
     }, []);
 
     useEffect(() => {

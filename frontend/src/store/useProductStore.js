@@ -138,7 +138,7 @@ export const useProductStore = create((set, get)=>({
                 with name ${data.name}
                 and price ${data.price}
                 and description ${data.description}
-                with ${data.media.length} media files`)
+                with ${JSON.parse(data.mediaIds).length} media files`)
             }
 
             set({formData: {name: "", price: "", description: "", image: "", media: []}, error: null});

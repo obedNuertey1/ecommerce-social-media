@@ -111,7 +111,7 @@ const AnalyticsDashboard = () => {
     const {gapi} = useGoogleAuthContext();
 
 
-    const { fetchProduct, product, loading, error, resetFormData } = useProductStore();
+    const { fetchProduct, product, loading, error, resetFormData, formData } = useProductStore();
     const { id } = useParams();
     const pageLoadedRef = useRef(false);
 
@@ -125,13 +125,14 @@ const AnalyticsDashboard = () => {
                 if(pageLoadedRef.current) return;
                 const passkeyName = localStorage.getItem("passkeyName");
                 await waiting(5000);
-                createLogs("Accessed", `${passkeyName} entered the ${product.name} Product with id ${id} Analytics's Page`)
+                console.log({formData});
+                createLogs("Accessed", `${passkeyName} entered the ${formData.name} Product with id ${id} Analytics's Page`)
                 pageLoadedRef.current = true;
             }
         }
         pageLoaded();
         return ()=>{}
-    }, [product]);
+    }, [formData]);
 
 
     const refreshData = () => {

@@ -182,7 +182,7 @@ export default function ProductComments() {
     const emojiPickerRef = useRef(null);
     const newCommentButtonRef = useRef(null);
     const [showNewCommentEmojiPicker, setShowNewCommentEmojiPicker] = useState(false);
-    const { fetchProduct, product, loading, error, resetFormData } = useProductStore();
+    const { fetchProduct, product, loading, error, resetFormData, formData } = useProductStore();
     const {gapi} = useGoogleAuthContext();
     const {creatableAccess, deletableAccess} = privilegeAccess();
     const { id } = useParams();
@@ -198,7 +198,7 @@ export default function ProductComments() {
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
                 const passkeyName = localStorage.getItem("passkeyName");
-                createLogs("Accessed", `${passkeyName} entered the ${product.name} Product with id ${id} Comments Page`)
+                createLogs("Accessed", `${passkeyName} entered the ${formData.name} Product with id ${id} Comments Page`)
                 pageLoadedRef.current = true;
             }
         }

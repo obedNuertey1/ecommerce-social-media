@@ -120,11 +120,10 @@ const AnalyticsDashboard = () => {
     }, [fetchProduct, id]);
 
     useEffect(()=>{
-        const pageLoaded = async ()=>{
+        const pageLoaded = ()=>{
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
                 const passkeyName = localStorage.getItem("passkeyName");
-                await waiting(5000);
                 console.log({formData});
                 createLogs("Accessed", `${passkeyName} entered the ${formData.name} Product with id ${id} Analytics's Page`)
                 pageLoadedRef.current = true;
@@ -132,7 +131,7 @@ const AnalyticsDashboard = () => {
         }
         pageLoaded();
         return ()=>{}
-    }, [formData]);
+    }, []);
 
 
     const refreshData = () => {

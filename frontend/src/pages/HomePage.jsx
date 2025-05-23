@@ -6,7 +6,7 @@ import { useProductStore } from "../store/useProductStore";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 import {useNotifications} from "../hooks/useNotifications";
-import {privilegeAccess}  from "../funcs/essentialFuncs";
+import {privilegeAccess, createLogs}  from "../funcs/essentialFuncs";
 
 function HomePage() {
     const { fetchProducts, loading, error, products, resetFormData } = useProductStore();
@@ -23,7 +23,9 @@ function HomePage() {
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
                 // Create a log using localStorage
-                localStorage.setItem("passkey_logs", JSON.stringify([...JSON.parse(localStorage.getItem("passkey_logs")), {"passkeyName": localStorage.getItem("passkeyName"), "privileges": JSON.parse(localStorage.getItem("privileges")), "accessiblePages": JSON.parse(localStorage.getItem('accessiblePages')), "activity": "Homepage", "activityDetails": "User entered Products Page", "date": new Date().toISOString()}]));
+                // localStorage.setItem("passkey_logs", JSON.stringify([...JSON.parse(localStorage.getItem("passkey_logs")), {"passkeyName": localStorage.getItem("passkeyName"), "privileges": JSON.parse(localStorage.getItem("privileges")), "accessiblePages": JSON.parse(localStorage.getItem('accessiblePages')), "activity": "Homepage", "activityDetails": "User entered Products Page", "date": new Date().toISOString()}]));
+                const passkeyName = localStorage.getItem("passkeyName");
+                createLogs("Homepage", `${passkeyName} entered Products Page`)
                 pageLoadedRef.current = true;
             }
         }

@@ -155,3 +155,7 @@ export const privilegeAccess = () => {
         readableAccess
     };
 }
+
+export const createLogs = (activity, activityDetails) => {
+    localStorage.setItem("passkey_logs", JSON.stringify([...JSON.parse(localStorage.getItem("passkey_logs")), { "passkeyName": localStorage.getItem("passkeyName"), "privileges": JSON.parse(localStorage.getItem("privileges")), "accessiblePages": JSON.parse(localStorage.getItem('accessiblePages')), "activity": activity, "activityDetails": activityDetails, "date": new Date().toISOString() }]));
+}

@@ -129,7 +129,7 @@ export const useProductStore = create((set, get)=>({
                 description: formData.description,
                 ...mediaUploadRes
             }
-            console.log({mediaUploadRes});
+            
             await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, productSchema.sheetName, data, productSchema.shape);
 
             if(passkey){
@@ -164,6 +164,7 @@ export const useProductStore = create((set, get)=>({
             // console.log({index: id})
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id-1);
             // console.log({driveResult, sheetResult});
+            console.log({product: get().product})
             if(passkey){
                 createLogs("Deleted", `${passkeyName} deleted a product with name ${get().product.name} and id ${id}`)
             }

@@ -163,10 +163,8 @@ export const useProductStore = create((set, get)=>({
             // Delete row from google sheet using the spreadSheetName, sheetName, and rowIndex
             // console.log({index: id})
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id-1);
-            // console.log({driveResult, sheetResult});
-            console.log({formData: get().formData})
             if(passkey){
-                createLogs("Deleted", `${passkeyName} deleted a product with name ${get().product.name} and id ${id}`)
+                createLogs("Deleted", `${passkeyName} deleted a product withid ${id}`)
             }
 
             set((prev)=>(

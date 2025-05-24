@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {ArrowLeftIcon, Copy, Trash2, Clock, CheckCircle, PlusCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNotifications } from '../hooks/useNotifications';
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
 import {useOrderStore} from "../store/useOrderStore";
 import {useGoogleAuthContext} from "../contexts/GoogleAuthContext"
-import { privilegeAccess } from '../funcs/essentialFuncs';
+import { privilegeAccess, createLogs } from '../funcs/essentialFuncs';
 // Mock data - replace with actual data from your backend
 const initialOrders = [
     {
@@ -45,6 +45,7 @@ export default function OrdersPage() {
     const {setOrderData, orderData, fetchOrders, addOrder, orders:orders2, setOrders:setOrders2, updateOrder, deleteOrder} = useOrderStore();
     const navigate = useNavigate();
     const {creatableAccess, updatableAccess, deletableAccess} = privilegeAccess();
+    const pageLoadedRef = useRef(false);
 
     const handleDelete = (orderId, idx) => {
         // setOrders(orders.filter(order => order.orderId !== orderId));
@@ -80,6 +81,16 @@ export default function OrdersPage() {
 
     useEffect(()=>{
         fetchOrders(gapi);
+        const pageLoaded = ()=>{
+            if(localStorage.getItem("passkey")){
+                if(pageLoadedRef.current) return;
+                const passkeyName = localStorage.getItem("passkeyName");
+                createLogs("Accessed", `${passkeyName} entered the Orders Page`)
+                pageLoadedRef.current = true;
+            }
+        }
+        pageLoaded();
+        return ()=>{}
     },[]);
 
     useEffect(() => {
@@ -124,6 +135,10 @@ export default function OrdersPage() {
             console.log("copyToClipboard=", text);
         navigator.clipboard.writeText(text);
         toast.success('Order details copied to clipboard');
+        if(localStorage.getItem("passkey")){
+            const passkeyName = localStorage.getItem("passkeyName");
+            createLogs("Accessed", `${passkeyName} copied order details with order id ${order.orderId} and phone ${order.phone}`)
+        }
     };
 
     const getStatusProperties = (status) => {

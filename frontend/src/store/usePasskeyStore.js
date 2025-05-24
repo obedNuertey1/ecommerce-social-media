@@ -119,7 +119,7 @@ export const usePasskeyStore = create((set, get) => ({
             // const passkey = passkeys.find((passkey) => passkey.id === id);
             const sheetUpdates = await googleSheet.updateRowByRowId(spreadsheetName, passkeySchema.sheetName, passkeySchema.shape, passkey, id);
 
-            if(passkey){
+            if(!!passkey){
                 createLogs("Modified", `
                 ${passkeyName} updated a passkey
                 with name ${passkey.name}`)

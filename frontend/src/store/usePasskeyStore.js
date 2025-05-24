@@ -8,7 +8,7 @@ const passkeySchema = schemas.find((schema) => schema.sheetName === "Passkeys");
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 
 const passkeyName = localStorage.getItem("passkeyName");
-const passkey = localStorage.getItem("passkey");
+const passkey2 = localStorage.getItem("passkey");
 
 export const usePasskeyStore = create((set, get) => ({
     passkeys: [],
@@ -78,7 +78,7 @@ export const usePasskeyStore = create((set, get) => ({
             const googleSheet = new GoogleSheetsAPI(gapi);
             await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName, passkey, passkeySchema.shape);
 
-            if(passkey){
+            if(passkey2){
                 createLogs("Created", `
                 ${passkeyName} created a new passkey
                 with name ${passkey.name}`)
@@ -98,7 +98,7 @@ export const usePasskeyStore = create((set, get) => ({
             const googleSheet = new GoogleSheetsAPI(gapi);
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName, id - 1);
 
-            if(passkey){
+            if(passkey2){
                 createLogs("Deleted", `${passkeyName} deleted a passkey with id ${id}`)
             }
 
@@ -119,7 +119,7 @@ export const usePasskeyStore = create((set, get) => ({
             // const passkey = passkeys.find((passkey) => passkey.id === id);
             const sheetUpdates = await googleSheet.updateRowByRowId(spreadsheetName, passkeySchema.sheetName, passkeySchema.shape, passkey, id);
 
-            if(!!passkey){
+            if(passkey2){
                 createLogs("Modified", `
                 ${passkeyName} updated a passkey
                 with name ${passkey.name}`)

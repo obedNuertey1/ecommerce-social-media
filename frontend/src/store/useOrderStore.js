@@ -4,10 +4,14 @@ import { GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { objectDifference } from "../funcs/essentialFuncs";
+import { createLogs } from "../funcs/essentialFuncs";
 
 const orderSchema = schemas.find((schema) => schema.sheetName === "Orders");
 const newOrderSchema = schemas.find((schema) => schema.sheetName === "NewOrders");
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
+
+const passkeyName = localStorage.getItem("passkeyName");
+const passkey = localStorage.getItem("passkey");
 
 export const useOrderStore = create((set, get) => ({
     orders: [],
@@ -125,10 +129,11 @@ export const useOrderStore = create((set, get) => ({
             set((prev) => ({
                 orders: prev.orders.filter((order) => order.id !== id)
             }))
-            if (localStorage.getItem("passkey")) {
-                const passkeyName = localStorage.getItem("passkeyName");
-                createLogs("Deleted", `${passkeyName} deleted an order with id ${id}`)
+            
+            if(passkey){
+                createLogs("Deleted", `${passkeyName} deleted an order with id ${id}`); 
             }
+            
             toast.success("Order deleted successfully");
         } catch (e) {
             console.log(`Error deleting product: ${e}`);
@@ -150,11 +155,8 @@ export const useOrderStore = create((set, get) => ({
             const sheetUpdates = await googleSheet.updateRowByRowId(spreadsheetName, orderSchema.sheetName, orderSchema.shape, order, id);
             set({ loading: false, error: null });
 
-            if (localStorage.getItem("passkey")) {
-                const passkeyName = localStorage.getItem("passkeyName");
-                createLogs("Modified", `
-                ${passkeyName} updated an order
-                with order id ${id}`);
+            if(passkey){
+                createLogs("Modified", `${passkeyName} updated an order with order id ${id}`); 
             }
             
             toast.success("Status update successful");

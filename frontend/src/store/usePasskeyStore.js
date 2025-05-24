@@ -3,6 +3,7 @@ import { toast } from "react-hot-toast";
 import { GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
+import { createLogs } from "../funcs/essentialFuncs";
 
 const passkeySchema = schemas.find((schema) => schema.sheetName === "Passkeys");
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;

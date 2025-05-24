@@ -348,7 +348,7 @@ LoginPage   =   ${origin}/auth
                                                     setViewPrivilegesModal(true);
                                                     if(localStorage.getItem("passkey")){
                                                         const passkeyName = localStorage.getItem("passkeyName");
-                                                        createLogs("Accessed", `${passkeyName} viewed privileges and accessible pages of passkey with id ${pk.id}`)
+                                                        createLogs("Accessed", `${passkeyName} viewed privileges and accessible pages of passkey with id ${pk.id} and name ${pk.name}`)
                                                     }
                                                 }}
                                                 className="btn btn-ghost btn-xs"

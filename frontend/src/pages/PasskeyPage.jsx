@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Clipboard, ArrowRightIcon, ClipboardCheck, Plus, ArrowLeftIcon, Trash2, Edit, Eye, Hash, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
@@ -7,7 +7,7 @@ import { createPortal } from 'react-dom';
 import { usePasskeyStore } from '../store/usePasskeyStore';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { privilegeAccess } from '../funcs/essentialFuncs';
+import { privilegeAccess, createLogs } from '../funcs/essentialFuncs';
 
 const HASH_SPLIT_POINT = import.meta.env.VITE_HASH_SPLIT_POINT;
 
@@ -26,6 +26,7 @@ const PasskeyPage = () => {
     const { passkeys: passkeysData, setPasskey, passkey: passkey2, addPasskey, fetchPasskeys, updatePasskey, deletePasskey, updateAddLoading, loading, fetchPasskeys2 } = usePasskeyStore();
     const { gapi } = useGoogleAuthContext();
     const {deletableAccess, updatableAccess, creatableAccess} = privilegeAccess();
+    const pageLoadedRef = useRef(false);
 
     const passkeyLogsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("passkey-logs")) ? false : true;
 
@@ -47,6 +48,16 @@ const PasskeyPage = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        const pageLoadedRef = ()=>{
+            if(localStorage.getItem("passkey")){
+                if(pageLoadedRef.current) return;
+                const passkeyName = localStorage.getItem("passkeyName");
+                createLogs("Accessed", `${passkeyName} entered the Passkeys Page`)
+                pageLoadedRef.current = true;
+            }
+        }
+        pageLoadedRef();
+        return ()=>{}
     }, [])
 
     useEffect(() => {
@@ -173,6 +184,12 @@ LoginPage   =   ${origin}/auth
     
 `;
         navigator.clipboard.writeText(clipText);
+
+        if(localStorage.getItem("passkey")){
+            const passkeyName = localStorage.getItem("passkeyName");
+            createLogs("Accessed", `${passkeyName} copied passkey with passkey name ${passkeyName} to clipboard`)
+        }
+
         toast.success('Copied to clipboard');
     };
 

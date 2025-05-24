@@ -7,6 +7,9 @@ import { cancellableWaiting } from "../hooks/waiting";
 const passkeySchema = schemas.find((schema) => schema.sheetName === "Passkeys");
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 
+const passkeyName = localStorage.getItem("passkeyName");
+const passkey = localStorage.getItem("passkey");
+
 export const usePasskeyStore = create((set, get) => ({
     passkeys: [],
     error: null,
@@ -74,6 +77,13 @@ export const usePasskeyStore = create((set, get) => ({
             const { passkey, passkeys, fetchPasskeys } = get();
             const googleSheet = new GoogleSheetsAPI(gapi);
             await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName, passkey, passkeySchema.shape);
+
+            if(passkey){
+                createLogs("Created", `
+                ${passkeyName} created a new passkey
+                with name ${passkey.name}`)
+            }
+
             set({ passkey: { name: '', passkey: '', privileges: [], accessiblePages: [] }, error: null });
             await fetchPasskeys(gapi);
         } catch (e) {
@@ -87,6 +97,11 @@ export const usePasskeyStore = create((set, get) => ({
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, passkeySchema.sheetName, id - 1);
+
+            if(passkey){
+                createLogs("Deleted", `${passkeyName} deleted a passkey with id ${id}`)
+            }
+
             set((prev) => ({
                 passkeys: prev.passkeys.filter((passkey) => passkey.id !== id)
             }))
@@ -103,6 +118,13 @@ export const usePasskeyStore = create((set, get) => ({
             const { passkey, fetchPasskeys } = get();
             // const passkey = passkeys.find((passkey) => passkey.id === id);
             const sheetUpdates = await googleSheet.updateRowByRowId(spreadsheetName, passkeySchema.sheetName, passkeySchema.shape, passkey, id);
+
+            if(passkey){
+                createLogs("Modified", `
+                ${passkeyName} updated a passkey
+                with name ${passkey.name}`)
+            }
+
             set({ loading: false, error: null, passkey: { name: '', passkey: '', privileges: [], accessiblePages: [] }});
             await fetchPasskeys(gapi);
             // toast.success("Passkey updated successfully");

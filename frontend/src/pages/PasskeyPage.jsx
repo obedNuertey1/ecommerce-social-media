@@ -346,6 +346,10 @@ LoginPage   =   ${origin}/auth
                                                     setViewedPrivileges(pk.privileges);
                                                     setViewedPages(pk.accessiblePages);
                                                     setViewPrivilegesModal(true);
+                                                    if(localStorage.getItem("passkey")){
+                                                        const passkeyName = localStorage.getItem("passkeyName");
+                                                        createLogs("Accessed", `${passkeyName} viewed privileges and accessible pages of passkey with id ${pk.id}`)
+                                                    }
                                                 }}
                                                 className="btn btn-ghost btn-xs"
                                                 aria-label="View Privileges"

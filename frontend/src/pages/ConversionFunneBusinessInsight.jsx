@@ -1,16 +1,27 @@
 import { ArrowLeftIcon, Eye, MousePointerClick, TrendingDown, Lightbulb, Rocket } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { createLogs } from '../funcs/essentialFuncs';
 
 const ConversionFunnelLearnMore = () => {
     const { resetFormData } = useProductStore();
     const navigate = useNavigate();
+    const pageLoadedRef = useRef(false);
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        const pageLoaded = ()=>{
+            if(localStorage.getItem("passkey")){
+                if(pageLoadedRef.current) return;
+                const passkeyName = localStorage.getItem("passkeyName");
+                createLogs("Accessed", `${passkeyName} entered the Conversion Funnel Learn More Page`)
+                pageLoadedRef.current = true;
+            }
+        };
+        pageLoaded();
+        return ()=>{}
     }, []);
-
     return (
         <div className="max-w-7xl mx-auto p-6 space-y-8">
             <button

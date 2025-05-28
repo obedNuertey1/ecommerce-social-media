@@ -262,7 +262,7 @@ const SettingsPage = () => {
                               const message = `\n${passkeyName} Updated the location by entering manually`
                               const strippedMessage = message.trim();
                               setPasskeyActivity(prev => {
-                                let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                let messageAlreadyAdded = `${prev}`.split('\n').some((e) => e.trim() === strippedMessage);
                                 if (!messageAlreadyAdded) {
                                   return `${prev} ${message}`
                                 }
@@ -332,7 +332,7 @@ const SettingsPage = () => {
                             const message = `\n${passkeyName} altered the notification volume.`
                             const strippedMessage = message.trim();
                             setPasskeyActivity(prev => {
-                              let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                              let messageAlreadyAdded = `${prev}`.split('\n').some((e) => e.trim() === strippedMessage);
                               if (!messageAlreadyAdded) {
                                 return `${prev} ${message}`
                               }
@@ -506,7 +506,7 @@ const SettingsPage = () => {
                                 const message = `\n${passkeyName} updated interation threshold.`
                                 const strippedMessage = message.trim();
                                 setPasskeyActivity(prev => {
-                                  let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                  let messageAlreadyAdded = `${prev}`.split('\n').some((e) => e.trim() === strippedMessage);
                                   if (!messageAlreadyAdded) {
                                     return `${prev} ${message}`
                                   }
@@ -891,7 +891,7 @@ const SettingsPage = () => {
                                 const message = `\n${passkeyName} updated the email section`
                                 const strippedMessage = message.trim();
                                 setPasskeyActivity(prev => {
-                                  let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                  let messageAlreadyAdded = `${prev}`.split('\n').some((e) => e.trim() === strippedMessage);
                                   if (!messageAlreadyAdded) {
                                     return `${prev} ${message}`
                                   }
@@ -1082,7 +1082,7 @@ const SettingsPage = () => {
                                     const message = `\n${passkeyName} updated the number of pases for the product ai settings`
                                     const strippedMessage = message.trim();
                                     setPasskeyActivity(prev => {
-                                      let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                      let messageAlreadyAdded = `${prev}`.split('\n').some((e) => e.trim() === strippedMessage);
                                       if (!messageAlreadyAdded) {
                                         return `${prev} ${message}`
                                       }
@@ -1119,7 +1119,7 @@ const SettingsPage = () => {
                                     const message = `\n${passkeyName} updated the product ai settings skin tone range`
                                     const strippedMessage = message.trim();
                                     setPasskeyActivity(prev => {
-                                      let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                      let messageAlreadyAdded = `${prev}`.split('\n').some((e) => e.trim() === strippedMessage);
                                       if (!messageAlreadyAdded) {
                                         return `${prev} ${message}`
                                       }

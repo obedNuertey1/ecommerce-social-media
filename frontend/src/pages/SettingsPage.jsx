@@ -1151,8 +1151,10 @@ const SettingsPage = () => {
                   <div className='flex items-center justify-center flex-wrap px-6 py-4 mb-6 mt-2 min-w-full gap-6'>
                     <button disabled={(loading === true) || updatableAccess} onClick={()=>{
                       handleSave;
-                      createLogs("Modified", `${passkeyName} modified the settings page: ${passkeyActivity}`);
-                      setPasskeyActivity("");
+                      if(passkey){
+                        createLogs("Modified", `${passkeyName} modified the settings page: ${passkeyActivity}`);
+                        setPasskeyActivity("");
+                      }
                     }} className="btn btn-primary min-w-full md:min-w-0 shadow-lg">
                       {
                         loading ? (<span className="loading loading-spinner loading-sm" />) : (
@@ -1163,7 +1165,9 @@ const SettingsPage = () => {
                     </button>
                     <button disabled={(restoreDefaultLoading === true) || updatableAccess} onClick={()=>{
                       handleRestoreDefaults;
-                      createLogs("Modified", `${passkeyName} restored the settings to default`)
+                      if(passkey){
+                        createLogs("Modified", `${passkeyName} restored the settings to default`)
+                      }
                     }} className="btn btn-secondary shadow-lg min-w-full md:min-w-0">
                       {
                         restoreDefaultLoading ? (<span className="loading loading-spinner loading-sm" />) : (

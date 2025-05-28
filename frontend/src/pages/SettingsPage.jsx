@@ -76,6 +76,9 @@ const SettingsPage = () => {
       localStorage.setItem("preferred-theme", "forest");
       restoreDefaultSettings(gapi);
     }
+    if (passkey) {
+      createLogs("Modified", `${passkeyName} restored the settings to default`)
+    }
   }
 
   const modelDiversityOptions = [
@@ -161,6 +164,10 @@ const SettingsPage = () => {
   const handleSave = () => {
     // Your save logic here; for demo, we'll show an alert.
     saveSettings(gapi);
+    if (passkey) {
+      createLogs("Modified", `${passkeyName} modified the settings page: ${passkeyActivity}`);
+      setPasskeyActivity("");
+    }
   };
 
   return (
@@ -1155,13 +1162,8 @@ const SettingsPage = () => {
                 <div className="divider"></div>
                 <div className="card-actions">
                   <div className='flex items-center justify-center flex-wrap px-6 py-4 mb-6 mt-2 min-w-full gap-6'>
-                    <button disabled={(loading === true) || updatableAccess} onClick={()=>{
-                      handleSave;
-                      if(passkey){
-                        createLogs("Modified", `${passkeyName} modified the settings page: ${passkeyActivity}`);
-                        setPasskeyActivity("");
-                      }
-                    }} className="btn btn-primary min-w-full md:min-w-0 shadow-lg">
+                    <button disabled={(loading === true) || updatableAccess} onClick={
+                      handleSave} className="btn btn-primary min-w-full md:min-w-0 shadow-lg">
                       {
                         loading ? (<span className="loading loading-spinner loading-sm" />) : (
                           <SaveIcon className="mr-2 size-6" />
@@ -1169,12 +1171,7 @@ const SettingsPage = () => {
                       }
                       Save Settings
                     </button>
-                    <button disabled={(restoreDefaultLoading === true) || updatableAccess} onClick={()=>{
-                      handleRestoreDefaults;
-                      if(passkey){
-                        createLogs("Modified", `${passkeyName} restored the settings to default`)
-                      }
-                    }} className="btn btn-secondary shadow-lg min-w-full md:min-w-0">
+                    <button disabled={(restoreDefaultLoading === true) || updatableAccess} onClick={handleRestoreDefaults} className="btn btn-secondary shadow-lg min-w-full md:min-w-0">
                       {
                         restoreDefaultLoading ? (<span className="loading loading-spinner loading-sm" />) : (
                           <RefreshCwIcon className="mr-2 size-6" />

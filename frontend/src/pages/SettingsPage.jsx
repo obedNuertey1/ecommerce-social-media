@@ -1090,7 +1090,7 @@ const SettingsPage = () => {
                                 value={settings.visualCustomization.productAiSettings.numberOfPoses}
                                 onChange={(e) => {
                                   if (passkey) {
-                                    const message = `\n${passkeyName} updated the number of pases for the product ai settings`
+                                    const message = `\n${passkeyName} updated the number of poses for the product ai settings`
                                     const strippedMessage = message.trim();
                                     setPasskeyActivity(prev => {
                                       let messageAlreadyAdded = `${prev}`.split('\n').some((e) => e.trim() === strippedMessage);

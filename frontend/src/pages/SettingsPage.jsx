@@ -204,7 +204,7 @@ const SettingsPage = () => {
                         <button
                           className="btn btn-primary"
                           onClick={() => {
-                            handleGetLocation;
+                            handleGetLocation();
                             if (passkey) {
                               setPasskeyActivity(prev => `${prev}\n ${passkeyName} updated the location`);
                             }

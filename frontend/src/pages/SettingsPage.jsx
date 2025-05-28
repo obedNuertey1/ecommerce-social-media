@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SaveIcon, RefreshCwIcon, ArrowLeftIcon, Instagram, Facebook, MessageCircle, AlertTriangle, MapPin } from 'lucide-react';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { THEMES } from '../constants';
@@ -11,7 +11,7 @@ import { LoginSocialInstagram, LoginSocialFacebook } from 'reactjs-social-login'
 import ThreadsSvgIcon from '../components/ThreadsSvgIcon';
 import { useProductStore } from '../store/useProductStore';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
-import { privilegeAccess } from '../funcs/essentialFuncs';
+import { privilegeAccess, createLogs } from '../funcs/essentialFuncs';
 
 const SettingsPage = () => {
   const socialMediaAutomationRef = useRef(null);
@@ -25,6 +25,8 @@ const SettingsPage = () => {
   const descriptionStyleRef = useRef(null);
   const {gapi} = useGoogleAuthContext();
   const {updatableAccess} = privilegeAccess();
+
+  const pageLoadedRef = useRef(false);
 
 
 
@@ -51,7 +53,18 @@ const SettingsPage = () => {
         cancel();
       }
     }
+
+    const pageLoaded = () => {
+      if(localStorage.getItem("passkey")){
+        if(pageLoadedRef.current) return;
+        const passkeyName = localStorage.getItem("passkeyName");
+        createLogs("Accessed", `${passkeyName} entered the Settings Page`);
+        pageLoadedRef.current = true;
+      }
+    }
+
     updateUI();
+    pageLoaded();
   }, [settings.autoPost]);
 
 

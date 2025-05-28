@@ -48,7 +48,7 @@ const PasskeyPage = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        const pageLoadedRef = ()=>{
+        const pageLoaded = ()=>{
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
                 const passkeyName = localStorage.getItem("passkeyName");
@@ -56,7 +56,7 @@ const PasskeyPage = () => {
                 pageLoadedRef.current = true;
             }
         }
-        pageLoadedRef();
+        pageLoaded();
         return ()=>{}
     }, [])
 

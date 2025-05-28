@@ -13,6 +13,9 @@ import { useProductStore } from '../store/useProductStore';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 import { privilegeAccess, createLogs } from '../funcs/essentialFuncs';
 
+const passkeyName = localStorage.getItem("passkeyName");
+const passkey = localStorage.getItem("passkey")
+
 const SettingsPage = () => {
   const socialMediaAutomationRef = useRef(null);
   const repostingRulesRef = useRef(null);
@@ -23,10 +26,11 @@ const SettingsPage = () => {
   const modelDiversityRef = useRef(null);
   const reportFrequencyRef = useRef(null);
   const descriptionStyleRef = useRef(null);
-  const {gapi} = useGoogleAuthContext();
-  const {updatableAccess} = privilegeAccess();
+  const { gapi } = useGoogleAuthContext();
+  const { updatableAccess } = privilegeAccess();
 
   const pageLoadedRef = useRef(false);
+  const [passkeyActivity, setPasskeyActivity] = useState("");
 
 
 
@@ -36,7 +40,7 @@ const SettingsPage = () => {
       if (settings.autoPost.instagram || settings.autoPost.facebook || settings.autoPost.threads) {
         // startTimer();
         // socialMediaAutomationRef.current?.classList.add('grid-cols-1');
-        const {promise, cancel} = cancellableWaiting(500);
+        const { promise, cancel } = cancellableWaiting(500);
         // await waiting(500);
         await promise;
         repostingRulesRef.current?.classList.remove("hidden");
@@ -44,7 +48,7 @@ const SettingsPage = () => {
         cancel();
       } else {
         // await waiting(500);
-        const {promise, cancel} = cancellableWaiting(500);
+        const { promise, cancel } = cancellableWaiting(500);
         await promise;
         // startTimer();
         socialMediaAutomationRef.current?.classList.remove('md:grid-cols-2');
@@ -55,9 +59,8 @@ const SettingsPage = () => {
     }
 
     const pageLoaded = () => {
-      if(localStorage.getItem("passkey")){
-        if(pageLoadedRef.current) return;
-        const passkeyName = localStorage.getItem("passkeyName");
+      if (passkey) {
+        if (pageLoadedRef.current) return;
         createLogs("Accessed", `${passkeyName} entered the Settings Page`);
         pageLoadedRef.current = true;
       }
@@ -193,7 +196,12 @@ const SettingsPage = () => {
                         </label>
                         <button
                           className="btn btn-primary"
-                          onClick={handleGetLocation}
+                          onClick={() => {
+                            handleGetLocation;
+                            if (passkey) {
+                              setPasskeyActivity(prev => `${prev}\n ${passkeyName} updated the location`);
+                            }
+                          }}
                           disabled={location.loading || updatableAccess}
                         >
                           {
@@ -249,13 +257,26 @@ const SettingsPage = () => {
                           className="input input-bordered"
                           placeholder="Enter city or address"
                           value={settings.address.manualAddress}
-                          onChange={(e) => setSettings({
-                            ...settings,
-                            address: {
-                              ...settings.address,
-                              manualAddress: e.target.value
+                          onChange={(e) => {
+                            if (passkey) {
+                              const message = `\n${passkeyName} Updated the location by entering manually`
+                              const strippedMessage = message.trim();
+                              setPasskeyActivity(prev => {
+                                let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                if (!messageAlreadyAdded) {
+                                  return `${prev} ${message}`
+                                }
+                              })
                             }
-                          })}
+
+                            setSettings({
+                              ...settings,
+                              address: {
+                                ...settings.address,
+                                manualAddress: e.target.value
+                              }
+                            })
+                          }}
                         />
                       </div>
                     </div>
@@ -276,13 +297,21 @@ const SettingsPage = () => {
                           type="checkbox"
                           className="toggle"
                           checked={settings.notifications.mute}
-                          onChange={(e) => setSettings({
-                            ...settings,
-                            notifications: {
-                              ...settings.notifications,
-                              mute: e.target.checked
+                          onChange={(e) => {
+
+                            if (passkey) {
+                              const message = `\n${passkeyName} ${e.target.checked ? "muted" : "unmuted"} notifications`;
+                              setPasskeyActivity(prev => `${prev} ${message}`)
                             }
-                          })}
+
+                            setSettings({
+                              ...settings,
+                              notifications: {
+                                ...settings.notifications,
+                                mute: e.target.checked
+                              }
+                            })
+                          }}
                         />
                       </label>
                     </div>
@@ -298,13 +327,26 @@ const SettingsPage = () => {
                         min="0"
                         max="100"
                         value={settings.notifications.volume}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          notifications: {
-                            ...settings.notifications,
-                            volume: parseInt(e.target.value)
+                        onChange={(e) => {
+                          if (passkey) {
+                            const message = `\n${passkeyName} altered the notification volume.`
+                            const strippedMessage = message.trim();
+                            setPasskeyActivity(prev => {
+                              let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                              if (!messageAlreadyAdded) {
+                                return `${prev} ${message}`
+                              }
+                            })
                           }
-                        })}
+
+                          setSettings({
+                            ...settings,
+                            notifications: {
+                              ...settings.notifications,
+                              volume: parseInt(e.target.value)
+                            }
+                          })
+                        }}
                         className="range range-primary"
                         disabled={settings.notifications.mute || updatableAccess}
                       />
@@ -336,7 +378,15 @@ const SettingsPage = () => {
                             type="checkbox"
                             className="toggle"
                             checked={settings.autoPost.instagram}
-                            onChange={(e) => setSettings({ ...settings, autoPost: { ...settings.autoPost, instagram: e.target.checked } })}
+                            onChange={(e) => {
+
+                              if (passkey) {
+                                const message = `\n${passkeyName} ${e.target.checked ? "activated" : "deactivated"} instagram autopost`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
+                              }
+
+                              setSettings({ ...settings, autoPost: { ...settings.autoPost, instagram: e.target.checked } })
+                            }}
                           />
                         </label>
                         {!auth_data.instagram_user_id && (
@@ -371,7 +421,15 @@ const SettingsPage = () => {
                             type="checkbox"
                             className="toggle"
                             checked={settings.autoPost.facebook}
-                            onChange={(e) => setSettings({ ...settings, autoPost: { ...settings.autoPost, facebook: e.target.checked } })}
+                            onChange={(e) => {
+
+                              if (passkey) {
+                                const message = `\n${passkeyName} ${e.target.checked ? "activated" : "deactivated"} facebook autopost`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
+                              }
+
+                              setSettings({ ...settings, autoPost: { ...settings.autoPost, facebook: e.target.checked } })
+                            }}
                           />
                         </label>
                         {!auth_data.facebook_user_id && (
@@ -403,7 +461,15 @@ const SettingsPage = () => {
                             type="checkbox"
                             className="toggle"
                             checked={settings.autoPost.threads}
-                            onChange={(e) => setSettings({ ...settings, autoPost: { ...settings.autoPost, threads: e.target.checked } })}
+                            onChange={(e) => {
+
+                              if (passkey) {
+                                const message = `\n${passkeyName} ${e.target.checked ? "activated" : "deactivated"} threads autopost`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
+                              }
+
+                              setSettings({ ...settings, autoPost: { ...settings.autoPost, threads: e.target.checked } })
+                            }}
                           />
                         </label>
                         {(!auth_data.threads_user_id) && (
@@ -434,7 +500,21 @@ const SettingsPage = () => {
                             type="number"
                             min="0"
                             value={settings.repostingRules.interactionThreshold}
-                            onChange={(e) => setSettings({ ...settings, repostingRules: { ...settings.repostingRules, interactionThreshold: e.target.value } })}
+                            onChange={(e) => {
+
+                              if (passkey) {
+                                const message = `\n${passkeyName} updated interation threshold.`
+                                const strippedMessage = message.trim();
+                                setPasskeyActivity(prev => {
+                                  let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                  if (!messageAlreadyAdded) {
+                                    return `${prev} ${message}`
+                                  }
+                                })
+                              }
+
+                              setSettings({ ...settings, repostingRules: { ...settings.repostingRules, interactionThreshold: e.target.value } })
+                            }}
                             className="input input-bordered"
                             placeholder="Minimum interactions"
                           />
@@ -447,7 +527,15 @@ const SettingsPage = () => {
                             disabled={updatableAccess}
                             className="select select-bordered"
                             value={settings.repostingRules.checkFrequency}
-                            onChange={(e) => setSettings({ ...settings, repostingRules: { ...settings.repostingRules, checkFrequency: e.target.value } })}
+                            onChange={(e) => {
+
+                              if (passkey) {
+                                const message = `\n${passkeyName} updated the reposting rule check frequency to ${e.target.value}`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
+                              }
+
+                              setSettings({ ...settings, repostingRules: { ...settings.repostingRules, checkFrequency: e.target.value } })
+                            }}
                           >
                             <option value="1">Every 24 hours</option>
                             <option value="2">Every 48 hours</option>
@@ -476,6 +564,12 @@ const SettingsPage = () => {
                           className="toggle"
                           checked={settings.aiConfigurations.productDescriptions.enableAiDescriptions}
                           onChange={async (e) => {
+
+                            if (passkey) {
+                              const message = `\n${passkeyName} updated ${e.target.checked ? "enabled" : "disabled"} ai descriptions`;
+                              setPasskeyActivity(prev => `${prev} ${message}`)
+                            }
+
                             setSettings({
                               ...settings,
                               aiConfigurations: {
@@ -487,7 +581,7 @@ const SettingsPage = () => {
                               }
                             })
                             // await waiting(500);
-                            const {promise, cancel} = cancellableWaiting(500);
+                            const { promise, cancel } = cancellableWaiting(500);
                             await promise;
                             if (e.target.checked && !descriptionStyleRef.current?.classList.contains("hidden")) {
                               descriptionStyleRef.current?.classList.remove("hidden");
@@ -511,44 +605,67 @@ const SettingsPage = () => {
                         <label className="label">Description Style</label>
                         <div className="join join-vertical w-full md:join-horizontal">
                           <input disabled={updatableAccess} className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Creative" value="creative"
-                            onChange={(e) => setSettings(
-                              {
-                                ...settings, aiConfigurations: {
-                                  ...settings.aiConfigurations,
-                                  productDescriptions: {
-                                    ...settings.aiConfigurations.productDescriptions,
-                                    descriptionStyle: e.target.value
+                            onChange={(e) => {
+
+                              if (passkey) {
+                                const message = `\n${passkeyName} selected ${e.target.value} description style`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
+                              }
+
+                              setSettings(
+                                {
+                                  ...settings, aiConfigurations: {
+                                    ...settings.aiConfigurations,
+                                    productDescriptions: {
+                                      ...settings.aiConfigurations.productDescriptions,
+                                      descriptionStyle: e.target.value
+                                    }
                                   }
-                                }
-                              })}
+                                })
+                            }}
                             checked={settings.aiConfigurations.productDescriptions.descriptionStyle === "creative"}
                           />
                           <input disabled={updatableAccess} className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Technical" value="technical"
                             // onChange={(e)=>setDescStyle(e.target.value)} checked={descStyle==="Technical"}
-                            onChange={(e) => setSettings(
-                              {
-                                ...settings, aiConfigurations: {
-                                  ...settings.aiConfigurations,
-                                  productDescriptions: {
-                                    ...settings.aiConfigurations.productDescriptions,
-                                    descriptionStyle: e.target.value
+                            onChange={(e) => {
+                              if (passkey) {
+                                const message = `\n${passkeyName} selected ${e.target.value} description style`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
+                              }
+
+                              setSettings(
+                                {
+                                  ...settings, aiConfigurations: {
+                                    ...settings.aiConfigurations,
+                                    productDescriptions: {
+                                      ...settings.aiConfigurations.productDescriptions,
+                                      descriptionStyle: e.target.value
+                                    }
                                   }
-                                }
-                              })}
+                                })
+                            }}
                             checked={settings.aiConfigurations.productDescriptions.descriptionStyle === "technical"}
                           />
                           <input disabled={updatableAccess} className="join-item btn flex-1 w-full text-sm md:text-base" type="radio" name="desc-style" aria-label="Casual" value="casual"
                             // onChange={(e)=>setDescStyle(e.target.value)} checked={descStyle==="Casual"} 
-                            onChange={(e) => setSettings(
-                              {
-                                ...settings, aiConfigurations: {
-                                  ...settings.aiConfigurations,
-                                  productDescriptions: {
-                                    ...settings.aiConfigurations.productDescriptions,
-                                    descriptionStyle: e.target.value
+                            onChange={(e) => {
+
+                              if (passkey) {
+                                const message = `\n${passkeyName} selected ${e.target.value} description style`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
+                              }
+
+                              setSettings(
+                                {
+                                  ...settings, aiConfigurations: {
+                                    ...settings.aiConfigurations,
+                                    productDescriptions: {
+                                      ...settings.aiConfigurations.productDescriptions,
+                                      descriptionStyle: e.target.value
+                                    }
                                   }
-                                }
-                              })}
+                                })
+                            }}
                             checked={settings.aiConfigurations.productDescriptions.descriptionStyle === "casual"}
                           />
                         </div>
@@ -570,12 +687,19 @@ const SettingsPage = () => {
                             // onChange={() => setAiSettings({ ...aiSettings, autoReply: 'manual' })}
                             value="manual"
                             checked={settings.aiConfigurations.socialMediaReplies === "manual"}
-                            onChange={(e) => setSettings({
-                              ...settings, aiConfigurations: {
-                                ...settings.aiConfigurations,
-                                socialMediaReplies: e.target.value
+                            onChange={(e) => {
+                              if (passkey) {
+                                const message = `\n${passkeyName} checked ${e.target.value} social media replies type`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
                               }
-                            })}
+
+                              setSettings({
+                                ...settings, aiConfigurations: {
+                                  ...settings.aiConfigurations,
+                                  socialMediaReplies: e.target.value
+                                }
+                              })
+                            }}
                           />
                         </label>
                       </div>
@@ -591,12 +715,19 @@ const SettingsPage = () => {
                             // onChange={() => setAiSettings({ ...aiSettings, autoReply: 'ai-only' })}
                             value="ai-only"
                             checked={settings.aiConfigurations.socialMediaReplies === "ai-only"}
-                            onChange={(e) => setSettings({
-                              ...settings, aiConfigurations: {
-                                ...settings.aiConfigurations,
-                                socialMediaReplies: e.target.value
+                            onChange={(e) => {
+                              if (passkey) {
+                                const message = `\n${passkeyName} checked ${e.target.value} social media replies type`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
                               }
-                            })}
+
+                              setSettings({
+                                ...settings, aiConfigurations: {
+                                  ...settings.aiConfigurations,
+                                  socialMediaReplies: e.target.value
+                                }
+                              })
+                            }}
                           />
                         </label>
                       </div>
@@ -612,12 +743,19 @@ const SettingsPage = () => {
                             // onChange={() => setAiSettings({ ...aiSettings, autoReply: 'hybrid' })}
                             value="hybrid"
                             checked={settings.aiConfigurations.socialMediaReplies === "hybrid"}
-                            onChange={(e) => setSettings({
-                              ...settings, aiConfigurations: {
-                                ...settings.aiConfigurations,
-                                socialMediaReplies: e.target.value
+                            onChange={(e) => {
+                              if (passkey) {
+                                const message = `\n${passkeyName} checked ${e.target.value} social media replies type`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
                               }
-                            })}
+
+                              setSettings({
+                                ...settings, aiConfigurations: {
+                                  ...settings.aiConfigurations,
+                                  socialMediaReplies: e.target.value
+                                }
+                              })
+                            }}
                           />
                         </label>
                       </div>
@@ -637,16 +775,23 @@ const SettingsPage = () => {
                           className="select select-bordered w-full"
                           value={settings.aiConfigurations.aiModelSelection.model}
                           disabled={updatableAccess}
-                          onChange={(e) => setSettings({
-                            ...settings,
-                            aiConfigurations: {
-                              ...settings.aiConfigurations,
-                              aiModelSelection: {
-                                ...settings.aiConfigurations.aiModelSelection,
-                                model: e.target.value
-                              }
+                          onChange={(e) => {
+                            if (passkey) {
+                              const message = `\n${passkeyName} selected the ${e.target.value} ai model`;
+                              setPasskeyActivity(prev => `${prev} ${message}`)
                             }
-                          })}
+
+                            setSettings({
+                              ...settings,
+                              aiConfigurations: {
+                                ...settings.aiConfigurations,
+                                aiModelSelection: {
+                                  ...settings.aiConfigurations.aiModelSelection,
+                                  model: e.target.value
+                                }
+                              }
+                            })
+                          }}
                         >
                           {aiModels.map(model => (
                             <option key={model.id} value={model.id}>{model.name}</option>
@@ -674,16 +819,24 @@ const SettingsPage = () => {
                           type="checkbox"
                           className="toggle"
                           checked={settings.aiConfigurations.reportsGeneration.automaticPdfReports}
-                          onChange={async (e) => setSettings({
-                            ...settings,
-                            aiConfigurations: {
-                              ...settings.aiConfigurations,
-                              reportsGeneration: {
-                                ...settings.aiConfigurations.reportsGeneration,
-                                automaticPdfReports: e.target.checked
-                              }
+                          onChange={async (e) => {
+
+                            if (passkey) {
+                              const message = `\n${passkeyName} ${e.target.checked ? "activated" : "deactivated"} automatic pdf reports`;
+                              setPasskeyActivity(prev => `${prev} ${message}`)
                             }
-                          })}
+
+                            setSettings({
+                              ...settings,
+                              aiConfigurations: {
+                                ...settings.aiConfigurations,
+                                reportsGeneration: {
+                                  ...settings.aiConfigurations.reportsGeneration,
+                                  automaticPdfReports: e.target.checked
+                                }
+                              }
+                            })
+                          }}
                         />
                       </label>
                       <div
@@ -699,16 +852,23 @@ const SettingsPage = () => {
                             className="select select-bordered w-full"
                             disabled={updatableAccess}
                             value={settings.aiConfigurations.reportsGeneration.reportFrequency}
-                            onChange={(e) => setSettings({
-                              ...settings,
-                              aiConfigurations: {
-                                ...settings.aiConfigurations,
-                                reportsGeneration: {
-                                  ...settings.aiConfigurations.reportsGeneration,
-                                  reportFrequency: e.target.value
-                                }
+                            onChange={(e) => {
+                              if (passkey) {
+                                const message = `\n${passkeyName} selected ${e.target.value} report frequency value`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
                               }
-                            })}
+
+                              setSettings({
+                                ...settings,
+                                aiConfigurations: {
+                                  ...settings.aiConfigurations,
+                                  reportsGeneration: {
+                                    ...settings.aiConfigurations.reportsGeneration,
+                                    reportFrequency: e.target.value
+                                  }
+                                }
+                              })
+                            }}
                           >
                             <option value="1">Daily</option>
                             <option value="7">Weekly</option>
@@ -725,16 +885,30 @@ const SettingsPage = () => {
                             className="input input-bordered"
                             placeholder="Enter email to recieve pdf reports"
                             value={settings.aiConfigurations.reportsGeneration.email}
-                            onChange={(e) => setSettings({
-                              ...settings,
-                              aiConfigurations: {
-                                ...settings.aiConfigurations,
-                                reportsGeneration: {
-                                  ...settings.aiConfigurations.reportsGeneration,
-                                  email: e.target.value
-                                }
+                            onChange={(e) => {
+
+                              if (passkey) {
+                                const message = `\n${passkeyName} updated the email section`
+                                const strippedMessage = message.trim();
+                                setPasskeyActivity(prev => {
+                                  let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                  if (!messageAlreadyAdded) {
+                                    return `${prev} ${message}`
+                                  }
+                                })
                               }
-                            })}
+
+                              setSettings({
+                                ...settings,
+                                aiConfigurations: {
+                                  ...settings.aiConfigurations,
+                                  reportsGeneration: {
+                                    ...settings.aiConfigurations.reportsGeneration,
+                                    email: e.target.value
+                                  }
+                                }
+                              })
+                            }}
                           />
                         </div>
                       </div>
@@ -759,6 +933,12 @@ const SettingsPage = () => {
                             currentTheme={settings.visualCustomization.themeSelection.theme}
                             onThemeChange={(newTheme) => {
                               localStorage.setItem("preferred-theme", newTheme);
+
+                              if (passkey) {
+                                const message = `\n${passkeyName} selected ${newTheme} as theme`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
+                              }
+
                               setSettings({
                                 ...settings,
                                 visualCustomization: {
@@ -785,6 +965,12 @@ const SettingsPage = () => {
                           className="toggle"
                           checked={settings.visualCustomization.productAiSettings.enableVirtualTryOnGeneration}
                           onChange={async (e) => {
+
+                            if (passkey) {
+                              const message = `\n${passkeyName} ${e.target.value ? "enabled" : "disabled"} virtual try on`;
+                              setPasskeyActivity(prev => `${prev} ${message}`)
+                            }
+
                             setSettings({
                               ...settings,
                               visualCustomization: {
@@ -797,7 +983,7 @@ const SettingsPage = () => {
 
                             })
                             // await waiting(500);
-                            const {promise, cancel} = cancellableWaiting(500);
+                            const { promise, cancel } = cancellableWaiting(500);
                             await promise;
                             if (e.target.checked && !modelDiversityRef.current?.classList.contains("hidden")) {
                               modelDiversityRef.current?.classList.remove("hidden");
@@ -822,16 +1008,23 @@ const SettingsPage = () => {
                             className="select select-bordered w-full"
                             disabled={updatableAccess}
                             value={settings.visualCustomization.productAiSettings.productType}
-                            onChange={(e) => setSettings({
-                              ...settings,
-                              visualCustomization: {
-                                ...settings.visualCustomization,
-                                productAiSettings: {
-                                  ...settings.visualCustomization.productAiSettings,
-                                  productType: e.target.value
-                                }
+                            onChange={(e) => {
+                              if (passkey) {
+                                const message = `\n${passkeyName} ${e.target.value ? "enabled" : "disabled"} virtual try on`;
+                                setPasskeyActivity(prev => `${prev} ${message}`)
                               }
-                            })}
+
+                              setSettings({
+                                ...settings,
+                                visualCustomization: {
+                                  ...settings.visualCustomization,
+                                  productAiSettings: {
+                                    ...settings.visualCustomization.productAiSettings,
+                                    productType: e.target.value
+                                  }
+                                }
+                              })
+                            }}
                           >
                             {["clothing", "item", "property"].map((option, i) => (
                               <option key={i} value={option.toLowerCase()}>{option}</option>
@@ -849,16 +1042,23 @@ const SettingsPage = () => {
                                 className="select select-bordered w-full"
                                 disabled={updatableAccess}
                                 value={settings.visualCustomization.productAiSettings.modelDiversity}
-                                onChange={(e) => setSettings({
-                                  ...settings,
-                                  visualCustomization: {
-                                    ...settings.visualCustomization,
-                                    productAiSettings: {
-                                      ...settings.visualCustomization.productAiSettings,
-                                      modelDiversity: e.target.value
-                                    }
+                                onChange={(e) => {
+                                  if (passkey) {
+                                    const message = `\n${passkeyName} selected an ${e.target.value} model`;
+                                    setPasskeyActivity(prev => `${prev} ${message}`)
                                   }
-                                })}
+
+                                  setSettings({
+                                    ...settings,
+                                    visualCustomization: {
+                                      ...settings.visualCustomization,
+                                      productAiSettings: {
+                                        ...settings.visualCustomization.productAiSettings,
+                                        modelDiversity: e.target.value
+                                      }
+                                    }
+                                  })
+                                }}
                               >
                                 {modelDiversityOptions.map((option, i) => (
                                   <option key={i} value={option.toLowerCase()}>{option}</option>
@@ -877,16 +1077,29 @@ const SettingsPage = () => {
                                 max="6"
                                 className="input input-bordered w-full"
                                 value={settings.visualCustomization.productAiSettings.numberOfPoses}
-                                onChange={(e) => setSettings({
-                                  ...settings,
-                                  visualCustomization: {
-                                    ...settings.visualCustomization,
-                                    productAiSettings: {
-                                      ...settings.visualCustomization.productAiSettings,
-                                      numberOfPoses: e.target.value
-                                    }
+                                onChange={(e) => {
+                                  if (passkey) {
+                                    const message = `\n${passkeyName} updated the number of pases for the product ai settings`
+                                    const strippedMessage = message.trim();
+                                    setPasskeyActivity(prev => {
+                                      let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                      if (!messageAlreadyAdded) {
+                                        return `${prev} ${message}`
+                                      }
+                                    })
                                   }
-                                })}
+
+                                  setSettings({
+                                    ...settings,
+                                    visualCustomization: {
+                                      ...settings.visualCustomization,
+                                      productAiSettings: {
+                                        ...settings.visualCustomization.productAiSettings,
+                                        numberOfPoses: e.target.value
+                                      }
+                                    }
+                                  })
+                                }}
                               />
                             </div>
 
@@ -901,16 +1114,30 @@ const SettingsPage = () => {
                                 max="5"
                                 className="range range-primary"
                                 value={settings.visualCustomization.productAiSettings.skinToneVariation}
-                                onChange={(e) => setSettings({
-                                  ...settings,
-                                  visualCustomization: {
-                                    ...settings.visualCustomization,
-                                    productAiSettings: {
-                                      ...settings.visualCustomization.productAiSettings,
-                                      skinToneVariation: e.target.value
-                                    }
+                                onChange={(e) => {
+                                  if (passkey) {
+                                    const message = `\n${passkeyName} updated the product ai settings skin tone range`
+                                    const strippedMessage = message.trim();
+                                    setPasskeyActivity(prev => {
+                                      let messageAlreadyAdded = prev.split('\n').some((e) => e.trim() === strippedMessage);
+                                      if (!messageAlreadyAdded) {
+                                        return `${prev} ${message}`
+                                      }
+                                    })
                                   }
-                                })}
+
+
+                                  setSettings({
+                                    ...settings,
+                                    visualCustomization: {
+                                      ...settings.visualCustomization,
+                                      productAiSettings: {
+                                        ...settings.visualCustomization.productAiSettings,
+                                        skinToneVariation: e.target.value
+                                      }
+                                    }
+                                  })
+                                }}
                               />
                             </div>
                           </>
@@ -922,7 +1149,11 @@ const SettingsPage = () => {
                 <div className="divider"></div>
                 <div className="card-actions">
                   <div className='flex items-center justify-center flex-wrap px-6 py-4 mb-6 mt-2 min-w-full gap-6'>
-                    <button disabled={(loading === true) || updatableAccess} onClick={handleSave} className="btn btn-primary min-w-full md:min-w-0 shadow-lg">
+                    <button disabled={(loading === true) || updatableAccess} onClick={()=>{
+                      handleSave;
+                      createLogs("Modified", `${passkeyName} modified the settings page: ${passkeyActivity}`);
+                      setPasskeyActivity("");
+                    }} className="btn btn-primary min-w-full md:min-w-0 shadow-lg">
                       {
                         loading ? (<span className="loading loading-spinner loading-sm" />) : (
                           <SaveIcon className="mr-2 size-6" />
@@ -930,7 +1161,10 @@ const SettingsPage = () => {
                       }
                       Save Settings
                     </button>
-                    <button disabled={(restoreDefaultLoading === true) || updatableAccess} onClick={handleRestoreDefaults} className="btn btn-secondary shadow-lg min-w-full md:min-w-0">
+                    <button disabled={(restoreDefaultLoading === true) || updatableAccess} onClick={()=>{
+                      handleRestoreDefaults;
+                      createLogs("Modified", `${passkeyName} restored the settings to default`)
+                    }} className="btn btn-secondary shadow-lg min-w-full md:min-w-0">
                       {
                         restoreDefaultLoading ? (<span className="loading loading-spinner loading-sm" />) : (
                           <RefreshCwIcon className="mr-2 size-6" />

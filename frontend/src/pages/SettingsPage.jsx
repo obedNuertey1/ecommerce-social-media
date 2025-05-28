@@ -266,6 +266,7 @@ const SettingsPage = () => {
                                 if (!messageAlreadyAdded) {
                                   return `${prev} ${message}`
                                 }
+                                return prev;
                               })
                             }
 
@@ -336,6 +337,7 @@ const SettingsPage = () => {
                               if (!messageAlreadyAdded) {
                                 return `${prev} ${message}`
                               }
+                              return prev;
                             })
                           }
 
@@ -510,6 +512,7 @@ const SettingsPage = () => {
                                   if (!messageAlreadyAdded) {
                                     return `${prev} ${message}`
                                   }
+                                  return prev;
                                 })
                               }
 
@@ -895,6 +898,7 @@ const SettingsPage = () => {
                                   if (!messageAlreadyAdded) {
                                     return `${prev} ${message}`
                                   }
+                                  return prev;
                                 })
                               }
 
@@ -1086,6 +1090,7 @@ const SettingsPage = () => {
                                       if (!messageAlreadyAdded) {
                                         return `${prev} ${message}`
                                       }
+                                      return prev;
                                     })
                                   }
 
@@ -1123,6 +1128,7 @@ const SettingsPage = () => {
                                       if (!messageAlreadyAdded) {
                                         return `${prev} ${message}`
                                       }
+                                      return prev;
                                     })
                                   }
 

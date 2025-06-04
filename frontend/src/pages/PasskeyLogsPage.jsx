@@ -1,9 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { Trash2, Eye, Filter, CalendarDays, ListChecks, AlertCircle, ArrowLeftIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
+import { createLogs } from '../funcs/essentialFuncs';
+
+const passkeyName = localStorage.getItem("passkeyName");
+const passkey = localStorage.getItem("passkey");
 
 export default function PasskeyLogsPage() {
     const [dateFilter, setDateFilter] = useState('all');
@@ -11,6 +15,19 @@ export default function PasskeyLogsPage() {
     const [selectedLog, setSelectedLog] = useState(null);
     const { resetFormData } = useProductStore();
     const navigate = useNavigate();
+    const pageLoadedRef = useRef(false);
+
+    useEffect(()=>{
+        const pageLoaded = ()=>{
+            if(pageLoadedRef.current) return;
+            if(passkey){
+                createLogs("Accessed", `${passkeyName} entered the Passkey Logs Page`);
+                pageLoadedRef.current = true;
+            }
+        }
+        pageLoaded();
+        return ()=>{};
+    },[]);
 
     // Mock log data
     const [logs, setLogs] = useState(() => {
@@ -51,6 +68,9 @@ export default function PasskeyLogsPage() {
     ];
 
     const showLogDetails = (log) => {
+        if(passkey){
+            createLogs("Accessed", `${passkeyName} viewed log details with passkeyName ${log.passkeyName}`);
+        }
         setSelectedLog(log);
     };
 
@@ -166,12 +186,19 @@ export default function PasskeyLogsPage() {
     const deleteSelected = () => {
         if (!selectedLogs.length) return;
 
+        if(passkey){
+            createLogs("Deleted", `${passkeyName} deleted ${selectedLogs.length} log(s)`);
+        }
+
         setLogs(prev => prev.filter(log => !selectedLogs.includes(log.id)));
         setSelectedLogs([]);
         toast.success(`${selectedLogs.length} log(s) deleted successfully`);
     };
 
     const deleteSingleLog = (logId) => {
+        if(passkey){
+            createLogs("Deleted", `${passkeyName} deleted log with id ${logId}`);
+        }
         setLogs(prev => prev.filter(log => log.id !== logId));
         toast.success('Log entry deleted successfully');
     };

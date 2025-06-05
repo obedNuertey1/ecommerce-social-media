@@ -126,8 +126,10 @@ function App() {
   })
 
   useEffect(()=>{
-    if(isSuccess){
-      localStorage.setItem("passkey_logs", JSON.stringify([]));
+    if(Boolean(localStorage.getItem("passkey"))){
+      if(isSuccess){
+        localStorage.setItem("passkey_logs", JSON.stringify([]));
+      }
     }
 
     return ()=>{};

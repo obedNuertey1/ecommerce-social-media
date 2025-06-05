@@ -1,6 +1,6 @@
 // ./lib/googleLibs/GoogleSheetsApi.js
 import { convert2dArrToObjArr, getMediaUrls } from "../../funcs/essentialFuncs";
-import {schemas} from "../../schemas/initSheetSchema"
+import { schemas } from "../../schemas/initSheetSchema"
 
 class GoogleSheetsAPI {
     constructor(gapi) {
@@ -118,7 +118,7 @@ class GoogleSheetsAPI {
             const resultObjArr = await convert2dArrToObjArr(result.values);
 
             const finalResult = await getMediaUrls(resultObjArr);
-            console.log({finalResult});
+            console.log({ finalResult });
             return finalResult;
         } catch (e) {
             console.log(e);
@@ -138,7 +138,7 @@ class GoogleSheetsAPI {
             const result = await this.getSpreadsheetValues(spreadsheetId, sheetName);
             // console.log("googl", { result })
             // result.values
-            const finalResult  = await convert2dArrToObjArr(result.values);
+            const finalResult = await convert2dArrToObjArr(result.values);
 
             return finalResult;
         } catch (e) {
@@ -770,15 +770,15 @@ class GoogleSheetsAPI {
         return this.deleteRowAtIndex(spreadsheetId, sheetName, rowIndex);
     }
 
-        /**
-     * Deletes all rows in a sheet.
-     *
-     * @param {string} spreadsheetId - The ID of the spreadsheet.
-     * @param {string} sheetName - The name of the sheet.
-     * @param {Array} range - an array of values representing the range of the rows.
-     * @returns {Promise<Object>} A promise that resolves with the deletion response.
-     */
-    deleteAllRows(spreadsheetId, sheetName, range){
+    /**
+ * Deletes all rows in a sheet.
+ *
+ * @param {string} spreadsheetId - The ID of the spreadsheet.
+ * @param {string} sheetName - The name of the sheet.
+ * @param {Array} range - an array of values representing the range of the rows.
+ * @returns {Promise<Object>} A promise that resolves with the deletion response.
+ */
+    deleteAllRows(spreadsheetId, sheetName, range) {
         return this.getSheetIdByName(spreadsheetId, sheetName)
             .then((sheetId) => {
                 const accessToken = this.gapi.auth.getToken().access_token;
@@ -821,7 +821,7 @@ class GoogleSheetsAPI {
             });
     }
 
-    async deleteAllRowsByName(spreadsheetName, sheetName, range){
+    async deleteAllRowsByName(spreadsheetName, sheetName, range) {
         const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
         if (!spreadsheet) {
             throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
@@ -840,10 +840,10 @@ class GoogleSheetsAPI {
      * @returns {Promise<Object>} A promise that resolves with the append response.
      */
     appendRow(spreadsheetId, sheetName, rowData, valueInputOption = "USER_ENTERED") {
-        if(Array.isArray(rowData)){
-            return this.appendSpreadsheetValues(spreadsheetId, sheetName, rowData, valueInputOption);
-        }
-        return this.appendSpreadsheetValues(spreadsheetId, sheetName, [rowData], valueInputOption);
+        // if (Array.isArray(rowData)) {
+        //     return this.appendSpreadsheetValues(spreadsheetId, sheetName, rowData, valueInputOption);
+        // }
+        return this.appendSpreadsheetValues(spreadsheetId, sheetName, [...rowData], valueInputOption);
     }
 
     /**
@@ -984,7 +984,7 @@ class GoogleSheetsAPI {
  * @param {Array<String>} schema - The settings data (from your store) to post.
  * @returns {Promise<Object>} A promise that resolves with the response from appending the row.
  */
-    async postOneRowPage(spreadsheetName, data, schema, rowIndex, schemaName="Settings") {
+    async postOneRowPage(spreadsheetName, data, schema, rowIndex, schemaName = "Settings") {
         try {
             // Retrieve the spreadsheet by name.
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
@@ -1020,21 +1020,21 @@ class GoogleSheetsAPI {
         }
     }
 
-        /**
- * Posts the current settings data to the "Settings" sheet.
- *
- * This method retrieves the spreadsheet by its name, then appends a new row to the "Settings"
- * sheet using the following schema:
- * ["address", "autoPost", "repostingRules", "aiConfigurations", "visualCustomization", "notifications"]
- *
- * @param {String} spreadsheetName - The name of the spreadsheet.
- * @param {String} sheetName - The name of the sheet inside of the spreadsheet.
- * @param {Array<String>} schema - The settings data (from your store) to post.
- * @param {Object} data - The data to post.
- * @param {String | Number} - The row index in the sheet 
- * @returns {Promise<Object>} A promise that resolves with the response from appending the row.
- */
-    async updateRowByRowId(spreadsheetName, sheetName, schema, data, rowIndex){
+    /**
+* Posts the current settings data to the "Settings" sheet.
+*
+* This method retrieves the spreadsheet by its name, then appends a new row to the "Settings"
+* sheet using the following schema:
+* ["address", "autoPost", "repostingRules", "aiConfigurations", "visualCustomization", "notifications"]
+*
+* @param {String} spreadsheetName - The name of the spreadsheet.
+* @param {String} sheetName - The name of the sheet inside of the spreadsheet.
+* @param {Array<String>} schema - The settings data (from your store) to post.
+* @param {Object} data - The data to post.
+* @param {String | Number} - The row index in the sheet 
+* @returns {Promise<Object>} A promise that resolves with the response from appending the row.
+*/
+    async updateRowByRowId(spreadsheetName, sheetName, schema, data, rowIndex) {
         try {
             // Retrieve the spreadsheet by name.
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
@@ -1092,6 +1092,25 @@ class GoogleSheetsAPI {
             }
             const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
 
+            if (Array.isArray(data)) {
+                const finalRowData = [];
+                for (let i = 0; i < data.length; i++) {
+                    let val = data[i];
+                    const rowData = schema.map(key => {
+                        let value = val[key];
+
+                        if (value && typeof value === "object") {
+                            return JSON.stringify(value);
+                        }
+                        return value;
+                    })
+                    finalRowData.push(rowData);
+                }
+                const response = await this.appendRow(spreadsheetId, sheetName, finalRowData);
+                // console.log(`${sheetName} row appended:`, response);
+                return response;
+            }
+
             // Convert the data object into an array based on the schema order.
             const rowData = schema.map(key => {
                 let value = data[key];
@@ -1104,7 +1123,7 @@ class GoogleSheetsAPI {
 
             // Append the row to the "Settings" sheet.
             // Assume you have defined appendRow which wraps appendSpreadsheetValues.
-            const response = await this.appendRow(spreadsheetId, sheetName, rowData);
+            const response = await this.appendRow(spreadsheetId, sheetName, [rowData]);
             // console.log(`${sheetName} row appended:`, response);
             return response;
         } catch (error) {
@@ -1655,16 +1674,16 @@ class GoogleSheetsAPI {
                 console.log(`Error Row ${rowIndex} not found in sheet ${sheetName}`);
                 return null;
             }
-            const headers = schemas.find((schema)=>schema.sheetName===sheetName).shape;
+            const headers = schemas.find((schema) => schema.sheetName === sheetName).shape;
             // data.values is an array of rows, but since we requested a single row, return the first element.
             data.values.unshift(headers);
             const toObjArr = await convert2dArrToObjArr(data.values);
-            console.log({toObjArr})
-            if(sheetName === "Auth" || sheetName === "Passkeys"){
+            console.log({ toObjArr })
+            if (sheetName === "Auth" || sheetName === "Passkeys") {
                 return toObjArr ? toObjArr[0] : null;
             }
             const getMediaUrlsResult = await getMediaUrls(toObjArr);
-            console.log({getMediaUrlsResult: getMediaUrlsResult[0]})
+            console.log({ getMediaUrlsResult: getMediaUrlsResult[0] })
             return getMediaUrlsResult[0];
         } catch (error) {
             console.error(`Error retrieving row ${rowIndex} from sheet ${sheetName}:`, error);
@@ -1672,15 +1691,15 @@ class GoogleSheetsAPI {
         }
     }
 
-    async getRowByIndexByName(spreadsheetName, sheetName, rowIndex){
-        try{
+    async getRowByIndexByName(spreadsheetName, sheetName, rowIndex) {
+        try {
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
-            if(!spreadsheet){
+            if (!spreadsheet) {
                 throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
             }
             const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
             return this.getRowByIndex(spreadsheetId, sheetName, rowIndex);
-        }catch(e){
+        } catch (e) {
             console.log(`Error retrieving row ${rowIndex} from sheet ${sheetName}:`, e);
             throw error;
         }

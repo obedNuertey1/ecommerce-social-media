@@ -1085,6 +1085,7 @@ class GoogleSheetsAPI {
  */
     async appendRowInPage(spreadsheetName, sheetName, data, schema) {
         try {
+            console.log("line 1088 just below try keyword", spreadsheetName);
             // Retrieve the spreadsheet by name.
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
             console.log("line 1090", {spreadsheet});

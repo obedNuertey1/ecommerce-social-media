@@ -113,7 +113,7 @@ function App() {
     refetchIntervalInBackground: true
   });
 
-  const {data: data2} = useQuery({
+  const {data: data2, isSuccess} = useQuery({
     queryKey: ['passkey_logs'],
     queryFn: () => bulkAddPasskeyLogs(gapi),
     // refetchInterval: 1000 * 60 * 4,
@@ -122,11 +122,16 @@ function App() {
     enabled: ()=>{
       if((JSON.parse(localStorage.getItem("passkey_logs"))?.length > 0) && localStorage.getItem("passkey")) return true;
       return false;
-    },
-    onSuccess: (data)=>{
-      localStorage.setItem("passkey_logs", JSON.stringify([]));
     }
   })
+
+  useEffect(()=>{
+    if(isSuccess){
+      localStorage.setItem("passkey_logs", JSON.stringify([]));
+    }
+
+    return ()=>{};
+  }, [isSuccess]);
 
   const { playNotification } = useNotifications("orders_notification_sound");
   const { playNotification: playNewArrivlsNotification } = useNotifications("new_arrivals_sound");

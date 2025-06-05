@@ -44,11 +44,17 @@ export const usePasskeyLogsStore = create((set, get)=>({
     bulkAddPasskeyLogs: async (gapi)=>{
         try{
             if(passkeyLogs){
-                // console.log({passkeyLogs})                
+                const newPasskeyLogs = passkeyLogs.map((logs)=>{
+                    return {
+                        ...logs,
+                        privileges: JSON.stringify(logs.privileges),
+                        accessiblePages: JSON.stringify(logs.accessiblePages)
+                    }
+                })                
                 const googleSheet = new GoogleSheetsAPI(gapi);
-                await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, passkeyLogs, passkeyLogsSchema.shape);
-                // console.log({passkeyLogsSchema, passkeyLogs});
-                // localStorage.setItem("passkey_logs", JSON.stringify([]));
+                await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, newPasskeyLogs, passkeyLogsSchema.shape);
+                console.log({passkeyLogsSchema, newPasskeyLogs});
+                localStorage.setItem("passkey_logs", JSON.stringify([]));
             }
         }catch(e){
             console.log(`Error adding passkey logs: ${e}`);

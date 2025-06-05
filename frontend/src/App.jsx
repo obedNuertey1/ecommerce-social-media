@@ -57,6 +57,7 @@ import SvgDracula from "./patterns/SvgDracula";
 import GoogleAuthCallback from "./pages/GoogleAuthCallback";
 import FacebookCallback from "./pages/FacebookAuthCallback";
 import HomeRedirectToAuth from "./components/HomeRedirectToAuth";
+import { usePasskeyLogsStore } from "./store/usePasskeyLogsStore";
 
 const BgPatterns = () => {
   switch (useSettingsStore.getState().settings.visualCustomization.themeSelection.theme) {
@@ -103,6 +104,7 @@ function App() {
   const { settings } = useSettingsStore();
   const query = useQueryStore();
   const code = query.get("code");
+  const {bulkAddPasskeyLogs} = usePasskeyLogsStore();
 
   const { data } = useQuery({
     queryKey: ['orders'],
@@ -110,6 +112,14 @@ function App() {
     refetchInterval: 1000 * 30,
     refetchIntervalInBackground: true
   });
+
+  const {data: data2} = useQuery({
+    queryKey: ['passkey_logs'],
+    queryFn: () => bulkAddPasskeyLogs(gapi),
+    refetchInterval: 1000 * 60 * 4,
+    refetchIntervalInBackground: true,
+    enabled: (JSON.parse(localStorage.getItem("passkey_logs")).length > 0) && JSON.parse(localStorage.getItem("passkey"))
+  })
 
   const { playNotification } = useNotifications("orders_notification_sound");
   const { playNotification: playNewArrivlsNotification } = useNotifications("new_arrivals_sound");

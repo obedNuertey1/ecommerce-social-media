@@ -840,6 +840,9 @@ class GoogleSheetsAPI {
      * @returns {Promise<Object>} A promise that resolves with the append response.
      */
     appendRow(spreadsheetId, sheetName, rowData, valueInputOption = "USER_ENTERED") {
+        if(Array.isArray(rowData)){
+            return this.appendSpreadsheetValues(spreadsheetId, sheetName, rowData, valueInputOption);
+        }
         return this.appendSpreadsheetValues(spreadsheetId, sheetName, [rowData], valueInputOption);
     }
 

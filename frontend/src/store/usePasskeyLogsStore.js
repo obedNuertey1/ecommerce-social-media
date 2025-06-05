@@ -6,6 +6,8 @@ import { cancellableWaiting } from "../hooks/waiting";
 
 const passkeyLogsSchema = schemas.find((schema)=>schema.sheetName === "PasskeyLogs");
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
+const passkeyName = localStorage.getItem("passkeyName");
+const passkeyLogs = JSON.parse(localStorage.getItem("passkey_logs"));
 
 export const usePasskeyLogsStore = create((set, get)=>({
     passkeyLogs: [],
@@ -39,28 +41,18 @@ export const usePasskeyLogsStore = create((set, get)=>({
             cancel();
         }
     },
-    addPasskeyLog: async (gapi)=>{
-        // set({loading: true});
+    bulkAddPasskeyLogs: async (gapi)=>{
         try{
-            const {passkeyLogData, passkeyLogs} = get();
-            // passkeyLogData.total = (Number(passkeyLogData.total)).toFixed(2);
-            const googleSheet = new GoogleSheetsAPI(gapi);
-            await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, passkeyLogData, passkeyLogsSchema.shape);
-            set({passkeyLogData: {passkeyName: null, privileges: null, accessiblePages: null, activity: null, activityDetails: null, date: null}, error: null});
-            toast.success("Passkey log added successfully");
-
-            // get previous orders and save it in the localStorage under recent_orders
-
-            // await get().fetchPasskeyLogs(gapi);
+            if(passkeyLogs){                
+                const googleSheet = new GoogleSheetsAPI(gapi);
+                await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, passkeyLogs, passkeyLogsSchema.shape);
+                localStorage.setItem("passkey_logs", JSON.stringify([]));
+            }
         }catch(e){
-            console.log(`Error adding passkey log: ${e}`);
-            toast.error("Something went wrong");
+            console.log(`Error adding passkey logs: ${e}`);
         }
-        // finally{
-        //     set({loading: false});
-        // }
     },
-    deletePasskeyLog: async (id, gapi)=>{
+    bulkDeletePasskeyLogs: async (id, gapi)=>{
         // set({loading: true});
         try{
            const googleSheet = new GoogleSheetsAPI(gapi);
@@ -76,6 +68,19 @@ export const usePasskeyLogsStore = create((set, get)=>({
         // finally{
         //     set({loading: false});
         // }
+    },
+    deletePasskeyLog: async (id, gapi)=>{
+        try{
+            const googleSheet = new GoogleSheetsAPI(gapi);
+            const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, id-1);
+            set((prev)=>({
+                passkeyLogs: prev.passkeyLogs.filter((passkeyLog)=>passkeyLog.id !== id)
+            }))
+            toast.success("Passkey log deleted successfully");
+        }catch(e){
+            console.log(`Error deleting passkey log: ${e}`);
+            toast.error("Something went wrong");
+        }
     },
     updatePasskeyLog: async (gapi, id)=>{
         // set({loading: true})

@@ -52,9 +52,9 @@ export const usePasskeyLogsStore = create((set, get)=>({
                     }
                 })                
                 const googleSheet = new GoogleSheetsAPI(gapi);
-                await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, newPasskeyLogs, passkeyLogsSchema.shape);
+                await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, passkeyLogs, passkeyLogsSchema.shape);
                 console.log({passkeyLogsSchema, newPasskeyLogs});
-                localStorage.setItem("passkey_logs", JSON.stringify([]));
+                // localStorage.setItem("passkey_logs", JSON.stringify([]));
             }
         }catch(e){
             console.log(`Error adding passkey logs: ${e}`);

@@ -843,6 +843,7 @@ class GoogleSheetsAPI {
         // if (Array.isArray(rowData)) {
         //     return this.appendSpreadsheetValues(spreadsheetId, sheetName, rowData, valueInputOption);
         // }
+        console.log({rowData});
         return this.appendSpreadsheetValues(spreadsheetId, sheetName, [...rowData], valueInputOption);
     }
 

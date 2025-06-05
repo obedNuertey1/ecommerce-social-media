@@ -1376,9 +1376,9 @@ class GoogleSheetsAPI {
      * @param {string} [valueInputOption="USER_ENTERED"] - How the input data should be interpreted.
      * @returns {Promise<Object>} A promise that resolves with the append response.
      */
-    appendRow(spreadsheetId, sheetName, rowData, valueInputOption = "USER_ENTERED") {
-        return this.appendSpreadsheetValues(spreadsheetId, sheetName, [rowData], valueInputOption);
-    }
+    // appendRow(spreadsheetId, sheetName, rowData, valueInputOption = "USER_ENTERED") {
+    //     return this.appendSpreadsheetValues(spreadsheetId, sheetName, [rowData], valueInputOption);
+    // }
 
     /**
  * Creates a spreadsheet (if it doesn't exist) and for each provided schema:

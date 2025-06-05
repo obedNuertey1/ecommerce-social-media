@@ -44,7 +44,7 @@ export const usePasskeyLogsStore = create((set, get)=>({
     bulkAddPasskeyLogs: async (gapi)=>{
         try{
             if(passkeyLogs){
-                const newPasskeyLogs = passkeyLogs.map((logs)=>{
+                const newPasskeyLogs = JSON.parse(localStorage.getItem("passkey_logs"))?.map((logs)=>{
                     return {
                         ...logs,
                         privileges: JSON.stringify(logs.privileges),
@@ -52,7 +52,7 @@ export const usePasskeyLogsStore = create((set, get)=>({
                     }
                 })                
                 const googleSheet = new GoogleSheetsAPI(gapi);
-                await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, passkeyLogs, passkeyLogsSchema.shape);
+                await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, newPasskeyLogs, passkeyLogsSchema.shape);
                 console.log({passkeyLogsSchema, newPasskeyLogs});
             }
             return ["Passkey logs added successfully"];

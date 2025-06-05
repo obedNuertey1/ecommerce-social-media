@@ -116,7 +116,7 @@ function App() {
   const {data: data2, isSuccess} = useQuery({
     queryKey: ['passkey_logs'],
     queryFn: () => bulkAddPasskeyLogs(gapi),
-    refetchInterval: 1000 * 60 * 3,
+    refetchInterval: 1000 * 60 * 5.2,
     // refetchInterval: 1000 * 60,
     refetchIntervalInBackground: true,
     enabled: ()=>{

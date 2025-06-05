@@ -116,7 +116,8 @@ function App() {
   const {data: data2} = useQuery({
     queryKey: ['passkey_logs'],
     queryFn: () => bulkAddPasskeyLogs(gapi),
-    refetchInterval: 1000 * 60 * 4,
+    // refetchInterval: 1000 * 60 * 4,
+    refetchInterval: 1000 * 60,
     refetchIntervalInBackground: true,
     enabled: ()=>{
       if((JSON.parse(localStorage.getItem("passkey_logs"))?.length > 0) && localStorage.getItem("passkey")) return true;

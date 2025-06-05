@@ -1566,35 +1566,35 @@ class GoogleSheetsAPI {
  * @param {Array<String>} schema - The settings data (from your store) to post.
  * @returns {Promise<Object>} A promise that resolves with the response from appending the row.
  */
-    async appendRowInPage(spreadsheetName, sheetName, data, schema) {
-        try {
-            // Retrieve the spreadsheet by name.
-            const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
-            if (!spreadsheet) {
-                throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
-            }
-            const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+    // async appendRowInPage(spreadsheetName, sheetName, data, schema) {
+    //     try {
+    //         // Retrieve the spreadsheet by name.
+    //         const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+    //         if (!spreadsheet) {
+    //             throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
+    //         }
+    //         const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
 
-            // Convert the data object into an array based on the schema order.
-            const rowData = schema.map(key => {
-                let value = data[key];
-                // If the value is an object, you can store it as a JSON string.
-                if (value && typeof value === "object") {
-                    return JSON.stringify(value);
-                }
-                return value;
-            });
+    //         // Convert the data object into an array based on the schema order.
+    //         const rowData = schema.map(key => {
+    //             let value = data[key];
+    //             // If the value is an object, you can store it as a JSON string.
+    //             if (value && typeof value === "object") {
+    //                 return JSON.stringify(value);
+    //             }
+    //             return value;
+    //         });
 
-            // Append the row to the "Settings" sheet.
-            // Assume you have defined appendRow which wraps appendSpreadsheetValues.
-            const response = await this.appendRow(spreadsheetId, sheetName, rowData);
-            // console.log(`${sheetName} row appended:`, response);
-            return response;
-        } catch (error) {
-            console.error(`Error posting ${sheetName} page:`, error);
-            throw error;
-        }
-    }
+    //         // Append the row to the "Settings" sheet.
+    //         // Assume you have defined appendRow which wraps appendSpreadsheetValues.
+    //         const response = await this.appendRow(spreadsheetId, sheetName, rowData);
+    //         // console.log(`${sheetName} row appended:`, response);
+    //         return response;
+    //     } catch (error) {
+    //         console.error(`Error posting ${sheetName} page:`, error);
+    //         throw error;
+    //     }
+    // }
 
 
     /**

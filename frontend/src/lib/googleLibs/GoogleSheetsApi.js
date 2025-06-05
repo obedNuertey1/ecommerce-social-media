@@ -843,7 +843,6 @@ class GoogleSheetsAPI {
         // if (Array.isArray(rowData)) {
         //     return this.appendSpreadsheetValues(spreadsheetId, sheetName, rowData, valueInputOption);
         // }
-        console.log({rowData});
         return this.appendSpreadsheetValues(spreadsheetId, sheetName, [...rowData], valueInputOption);
     }
 
@@ -1088,26 +1087,33 @@ class GoogleSheetsAPI {
         try {
             // Retrieve the spreadsheet by name.
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+            console.log("line 1090", {spreadsheet});
             if (!spreadsheet) {
                 throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
             }
+            console.log("line 1092", {spreadsheet});
             const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
 
             if (Array.isArray(data)) {
+                console.log("line 1098", {spreadsheet});
                 const finalRowData = [];
                 for (let i = 0; i < data.length; i++) {
                     let val = data[i];
+                    console.log("line 1102", {val});
                     const rowData = schema.map(key => {
                         let value = val[key];
-
                         if (value && typeof value === "object") {
                             return JSON.stringify(value);
                         }
+                        console.log("line 1105", {value});
                         return value;
                     })
+                    console.log("line 1111", {rowData});
                     finalRowData.push(rowData);
                 }
+                console.log("line 1110", {finalRowData});
                 const response = await this.appendRow(spreadsheetId, sheetName, finalRowData);
+                console.log("line 1115", {response});
                 // console.log(`${sheetName} row appended:`, response);
                 return response;
             }
@@ -1115,16 +1121,19 @@ class GoogleSheetsAPI {
             // Convert the data object into an array based on the schema order.
             const rowData = schema.map(key => {
                 let value = data[key];
+                console.log("line 1124", {value});
                 // If the value is an object, you can store it as a JSON string.
                 if (value && typeof value === "object") {
                     return JSON.stringify(value);
                 }
                 return value;
             });
+            console.log("line 1128", {rowData});
 
             // Append the row to the "Settings" sheet.
             // Assume you have defined appendRow which wraps appendSpreadsheetValues.
             const response = await this.appendRow(spreadsheetId, sheetName, [rowData]);
+            console.log("line 1132", {response});
             // console.log(`${sheetName} row appended:`, response);
             return response;
         } catch (error) {

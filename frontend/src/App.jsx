@@ -121,6 +121,9 @@ function App() {
     enabled: ()=>{
       if((JSON.parse(localStorage.getItem("passkey_logs"))?.length > 0) && localStorage.getItem("passkey")) return true;
       return false;
+    },
+    onSuccess: (data)=>{
+      localStorage.setItem("passkey_logs", JSON.stringify([]));
     }
   })
 

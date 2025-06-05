@@ -46,6 +46,7 @@ export const usePasskeyLogsStore = create((set, get)=>({
             if(passkeyLogs){                
                 const googleSheet = new GoogleSheetsAPI(gapi);
                 await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, passkeyLogs, passkeyLogsSchema.shape);
+                console.log({passkeyLogsSchema, passkeyLogs});
                 localStorage.setItem("passkey_logs", JSON.stringify([]));
             }
         }catch(e){

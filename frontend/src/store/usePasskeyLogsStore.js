@@ -55,7 +55,8 @@ export const usePasskeyLogsStore = create((set, get)=>({
                 await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, newPasskeyLogs, passkeyLogsSchema.shape);
                 console.log({passkeyLogsSchema, newPasskeyLogs});
             }
-            return ["Passkey logs added successfully"];
+            const randomNum = Math.random() * 1000;
+            return [String(randomNum)];
         }catch(e){
             console.log(`Error adding passkey logs: ${e}`);
             return new Error(`Error adding passkey logs: ${e}`);

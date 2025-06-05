@@ -131,7 +131,7 @@ function App() {
     }
 
     return ()=>{};
-  }, [isSuccess]);
+  }, [data2]);
 
   const { playNotification } = useNotifications("orders_notification_sound");
   const { playNotification: playNewArrivlsNotification } = useNotifications("new_arrivals_sound");

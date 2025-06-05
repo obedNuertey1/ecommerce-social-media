@@ -118,7 +118,7 @@ function App() {
     queryFn: () => bulkAddPasskeyLogs(gapi),
     refetchInterval: 1000 * 60 * 4,
     refetchIntervalInBackground: true,
-    enabled: (JSON.parse(localStorage.getItem("passkey_logs")).length > 0) && JSON.parse(localStorage.getItem("passkey"))
+    enabled: (JSON.parse(localStorage.getItem("passkey_logs"))?.length > 0) && JSON.parse(localStorage.getItem("passkey"))
   })
 
   const { playNotification } = useNotifications("orders_notification_sound");

@@ -43,7 +43,8 @@ export const usePasskeyLogsStore = create((set, get)=>({
     },
     bulkAddPasskeyLogs: async (gapi)=>{
         try{
-            if(passkeyLogs){                
+            if(passkeyLogs){
+                console.log({passkeyLogs})                
                 const googleSheet = new GoogleSheetsAPI(gapi);
                 await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, passkeyLogs, passkeyLogsSchema.shape);
                 console.log({passkeyLogsSchema, passkeyLogs});

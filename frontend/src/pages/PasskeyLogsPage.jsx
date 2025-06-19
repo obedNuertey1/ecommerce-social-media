@@ -23,7 +23,7 @@ export default function PasskeyLogsPage() {
     const { gapi } = useGoogleAuthContext()
 
     const { data } = useQuery({
-        queryKey: ['orders'],
+        queryKey: ['passkey_logs'],
         queryFn: () => fetchPasskeyLogsNoRetries(gapi),
         refetchInterval: 1000 * 30
     });

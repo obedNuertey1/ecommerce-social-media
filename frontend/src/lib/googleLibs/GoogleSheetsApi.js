@@ -143,6 +143,7 @@ class GoogleSheetsAPI {
             // result.values
             const finalResult = await convert2dArrToObjArr(result.values);
             console.log("line 145 GoogleSheetsApi works")
+            console.log({finalResult});
 
             return finalResult;
         } catch (e) {

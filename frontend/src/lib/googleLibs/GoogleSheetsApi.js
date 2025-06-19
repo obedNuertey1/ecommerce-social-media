@@ -131,14 +131,18 @@ class GoogleSheetsAPI {
         // get spreadsheet by name
         try {
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+            console.log("line 134 GoogleSheetsApi works")
             if (!spreadsheet) {
                 throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
             }
+            console.log("line 138 GoogleSheetsApi works")
             const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
             const result = await this.getSpreadsheetValues(spreadsheetId, sheetName);
+            console.log("line 141 GoogleSheetsApi works")
             // console.log("googl", { result })
             // result.values
             const finalResult = await convert2dArrToObjArr(result.values);
+            console.log("line 145 GoogleSheetsApi works")
 
             return finalResult;
         } catch (e) {

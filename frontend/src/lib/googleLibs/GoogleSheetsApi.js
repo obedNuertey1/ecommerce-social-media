@@ -131,6 +131,7 @@ class GoogleSheetsAPI {
         // get spreadsheet by name
         try {
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+            console.log({spreadsheetName})
             console.log("line 134 GoogleSheetsApi works")
             if (!spreadsheet) {
                 throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);

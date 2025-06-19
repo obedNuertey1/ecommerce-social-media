@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from "react-router-dom";
 import { useProductStore } from "../store/useProductStore";
 import { createLogs } from '../funcs/essentialFuncs';
+import { usePasskeyLogsStore } from '../store/usePasskeyLogsStore';
+import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 
 const passkeyName = localStorage.getItem("passkeyName");
 const passkey = localStorage.getItem("passkey");
@@ -16,20 +18,31 @@ export default function PasskeyLogsPage() {
     const { resetFormData } = useProductStore();
     const navigate = useNavigate();
     const pageLoadedRef = useRef(false);
+    const { fetchPasskeyLogsNoRetries, passkeyLogs, loading, error } = usePasskeyLogsStore();
+    const { gapi } = useGoogleAuthContext()
 
-    useEffect(()=>{
-        const pageLoaded = ()=>{
-            if(pageLoadedRef.current) return;
-            if(passkey){
+    const { data } = useQuery({
+        queryKey: ['orders'],
+        queryFn: () => fetchPasskeyLogsNoRetries(gapi),
+        refetchInterval: 1000 * 30
+    });
+
+    useEffect(() => {
+        const pageLoaded = () => {
+            if (pageLoadedRef.current) return;
+            if (passkey) {
                 createLogs("Accessed", `${passkeyName} entered the Passkey Logs Page`);
                 pageLoadedRef.current = true;
             }
         }
         pageLoaded();
-        return ()=>{};
-    },[]);
+        return () => { };
+    }, []);
+
+    console.log({passkeyLogs});
 
     // Mock log data
+    // logs is the same as passkeyLogs gotten from usePasskeyLogsStore
     const [logs, setLogs] = useState(() => {
         const sampleLogs = [];
         const activities = ['Created', 'Modified', 'Deleted', 'Accessed'];
@@ -68,7 +81,7 @@ export default function PasskeyLogsPage() {
     ];
 
     const showLogDetails = (log) => {
-        if(passkey){
+        if (passkey) {
             createLogs("Accessed", `${passkeyName} viewed log details with passkeyName ${log.passkeyName}`);
         }
         setSelectedLog(log);
@@ -186,7 +199,7 @@ export default function PasskeyLogsPage() {
     const deleteSelected = () => {
         if (!selectedLogs.length) return;
 
-        if(passkey){
+        if (passkey) {
             createLogs("Deleted", `${passkeyName} deleted ${selectedLogs.length} log(s)`);
         }
 
@@ -196,7 +209,7 @@ export default function PasskeyLogsPage() {
     };
 
     const deleteSingleLog = (logId) => {
-        if(passkey){
+        if (passkey) {
             createLogs("Deleted", `${passkeyName} deleted log with id ${logId}`);
         }
         setLogs(prev => prev.filter(log => log.id !== logId));
@@ -256,19 +269,19 @@ export default function PasskeyLogsPage() {
                         </ul>
                     </div>
                     {/* Delete Selected Button */}
-                {selectedLogs.length > 0 && (
-                    <div className="hidden md:flex">
-                        <button
-                            className="btn btn-error btn-sm md:btn-md shadow-lg"
-                            onClick={deleteSelected}
-                        >
-                            <Trash2 className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
-                            <span className="text-xs md:text-sm">
-                                Delete ({selectedLogs.length})
-                            </span>
-                        </button>
-                    </div>
-                )}
+                    {selectedLogs.length > 0 && (
+                        <div className="hidden md:flex">
+                            <button
+                                className="btn btn-error btn-sm md:btn-md shadow-lg"
+                                onClick={deleteSelected}
+                            >
+                                <Trash2 className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
+                                <span className="text-xs md:text-sm">
+                                    Delete ({selectedLogs.length})
+                                </span>
+                            </button>
+                        </div>
+                    )}
                 </div>
                 {/* Desktop Date Filters */}
                 <div className="hidden md:flex join">

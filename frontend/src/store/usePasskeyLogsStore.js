@@ -41,6 +41,27 @@ export const usePasskeyLogsStore = create((set, get)=>({
             cancel();
         }
     },
+    fetchPasskeyLogsNoRetries: async (gapi, retries = 1, error = null)=>{
+        if(retries === 0){
+            if(error){
+                set({error: error, passkeyLogs: [], loading: false})
+                throw new Error(error);
+            }
+        }
+        set({loading: true});
+        const {promise, cancel} = cancellableWaiting(1000);
+        try{
+            const googleSheet = new GoogleSheetsAPI(gapi);
+            const passkeyLogs = await googleSheet.getSpreadSheetValuesByName2(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName);
+            set({passkeyLogs: passkeyLogs, error: null, loading: false});
+            return passkeyLogs;
+        }catch(e){
+            error = "Something went wrong";
+            await promise;
+            await get().fetchPasskeyLogs(gapi, retries-1, error);
+            cancel();
+        }
+    },
     bulkAddPasskeyLogs: async (gapi)=>{
         try{
             if(passkeyLogs){

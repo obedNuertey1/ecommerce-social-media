@@ -199,7 +199,7 @@ export default function PasskeyLogsPage() {
     }, [logs, dateFilter]);
 
     const toggleSelectAll = (e) => {
-        setSelectedLogs(e.target.checked ? filteredLogs.map(log => log.id) : []);
+        setSelectedLogs(e.target.checked ? filteredLogs?.map(log => log.id) : []);
     };
 
     const deleteSelected = () => {
@@ -262,7 +262,7 @@ export default function PasskeyLogsPage() {
                             tabIndex={0}
                             className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
                         >
-                            {dateFilters.map(filter => (
+                            {dateFilters?.map(filter => (
                                 <li key={filter.value}>
                                     <button
                                         onClick={() => setDateFilter(filter.value)}
@@ -291,7 +291,7 @@ export default function PasskeyLogsPage() {
                 </div>
                 {/* Desktop Date Filters */}
                 <div className="hidden md:flex join">
-                    {dateFilters.map(filter => (
+                    {dateFilters?.map(filter => (
                         <button
                             key={filter.value}
                             onClick={() => setDateFilter(filter.value)}
@@ -332,7 +332,7 @@ export default function PasskeyLogsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredLogs.map(log => (
+                            {filteredLogs?.map(log => (
                                 <tr key={log.id} className="hover">
                                     <td className="sm:table-cell">
                                         <input

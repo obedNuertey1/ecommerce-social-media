@@ -53,6 +53,7 @@ export const usePasskeyLogsStore = create((set, get)=>({
         try{
             const googleSheet = new GoogleSheetsAPI(gapi);
             const passkeyLogs = await googleSheet.getSpreadSheetValuesByName2(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName);
+            console.log({"works!": passkeyLogs});
             set({passkeyLogs: passkeyLogs, error: null, loading: false});
             return passkeyLogs;
         }catch(e){

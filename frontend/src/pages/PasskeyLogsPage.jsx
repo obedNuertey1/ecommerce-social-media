@@ -29,6 +29,12 @@ export default function PasskeyLogsPage() {
     });
 
     useEffect(() => {
+        console.log({ data });
+        console.log({ passkeyLogs });
+
+    }, [data, passkeyLogs]);
+
+    useEffect(() => {
         const pageLoaded = () => {
             if (pageLoadedRef.current) return;
             if (passkey) {
@@ -40,7 +46,6 @@ export default function PasskeyLogsPage() {
         return () => { };
     }, []);
 
-    console.log({passkeyLogs});
 
     // Mock log data
     // logs is the same as passkeyLogs gotten from usePasskeyLogsStore

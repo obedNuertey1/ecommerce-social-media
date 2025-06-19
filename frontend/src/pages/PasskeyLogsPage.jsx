@@ -28,11 +28,11 @@ export default function PasskeyLogsPage() {
         refetchInterval: 1000 * 30
     });
 
-    useEffect(() => {
-        console.log({ data });
-        console.log({ passkeyLogs });
+    // useEffect(() => {
+    //     console.log({ data });
+    //     console.log({ passkeyLogs });
 
-    }, [data, passkeyLogs]);
+    // }, [data, passkeyLogs]);
 
     useEffect(() => {
         const pageLoaded = () => {

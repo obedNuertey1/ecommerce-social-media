@@ -58,7 +58,7 @@ export const usePasskeyLogsStore = create((set, get)=>({
         }catch(e){
             error = "Something went wrong";
             await promise;
-            await get().fetchPasskeyLogs(gapi, retries-1, error);
+            await get().fetchPasskeyLogsNoRetries(gapi, retries-1, error);
             cancel();
         }
     },

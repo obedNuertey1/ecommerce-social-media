@@ -7,6 +7,7 @@ import { useProductStore } from "../store/useProductStore";
 import { createLogs } from '../funcs/essentialFuncs';
 import { usePasskeyLogsStore } from '../store/usePasskeyLogsStore';
 import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
+import { useQuery } from "@tanstack/react-query";
 
 const passkeyName = localStorage.getItem("passkeyName");
 const passkey = localStorage.getItem("passkey");

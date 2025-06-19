@@ -30,7 +30,7 @@ export const usePasskeyLogsStore = create((set, get)=>({
         const {promise, cancel} = cancellableWaiting(1000);
         try{
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const passkeyLogs = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName);
+            const passkeyLogs = await googleSheet.getSpreadsheetValuesByName3(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName);
             set({passkeyLogs: passkeyLogs, error: null, loading: false});
             return;
         }catch(e){
@@ -52,7 +52,7 @@ export const usePasskeyLogsStore = create((set, get)=>({
         const {promise, cancel} = cancellableWaiting(1000);
         try{
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const passkeyLogs = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName);
+            const passkeyLogs = await googleSheet.getSpreadsheetValuesByName3(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName);
             set({passkeyLogs: passkeyLogs, error: null, loading: false});
             return passkeyLogs;
         }catch(e){

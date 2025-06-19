@@ -146,6 +146,27 @@ class GoogleSheetsAPI {
             throw new Error(e);
         }
     }
+    
+    async getSpreadsheetValuesByName3(spreadsheetName, sheetName) {
+
+        // get spreadsheet by name
+        try {
+            const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+            if (!spreadsheet) {
+                throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
+            }
+            const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+            const result = await this.getSpreadsheetValues(spreadsheetId, sheetName);
+            // console.log("googl", { result })
+            // result.values
+            const finalResult = await convert2dArrToObjArr(result.values);
+
+            return finalResult;
+        } catch (e) {
+            console.log(e);
+            throw new Error(e);
+        }
+    }
 
     /**
      * Updates values in a specified range of a spreadsheet.

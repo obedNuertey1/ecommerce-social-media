@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { toast } from 'react-hot-toast';
-import { Trash2, Eye, Filter, CalendarDays, ListChecks, AlertCircle, ArrowLeftIcon } from 'lucide-react';
-import { createPortal } from 'react-dom';
 import { useNavigate } from "react-router-dom";
+import { Eye, Filter, CalendarDays, ListChecks, AlertCircle, ArrowLeftIcon } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { useProductStore } from "../store/useProductStore";
 import { createLogs } from '../funcs/essentialFuncs';
 import { usePasskeyLogsStore } from '../store/usePasskeyLogsStore';
@@ -12,27 +11,27 @@ import { useQuery } from "@tanstack/react-query";
 const passkeyName = localStorage.getItem("passkeyName");
 const passkey = localStorage.getItem("passkey");
 
+// Function to determine severity based on activity type
+const getSeverity = (activity) => {
+  if (activity === 'Deleted') return 'high';
+  if (activity === 'Modified') return 'medium';
+  return 'low';
+};
+
 export default function PasskeyLogsPage() {
     const [dateFilter, setDateFilter] = useState('all');
-    const [selectedLogs, setSelectedLogs] = useState([]);
     const [selectedLog, setSelectedLog] = useState(null);
     const { resetFormData } = useProductStore();
     const navigate = useNavigate();
     const pageLoadedRef = useRef(false);
     const { fetchPasskeyLogsNoRetries, passkeyLogs, loading, error } = usePasskeyLogsStore();
-    const { gapi } = useGoogleAuthContext()
+    const { gapi } = useGoogleAuthContext();
 
-    const { data } = useQuery({
+    useQuery({
         queryKey: ['passkey_logs'],
         queryFn: () => fetchPasskeyLogsNoRetries(gapi),
         refetchInterval: 1000 * 30
     });
-
-    useEffect(() => {
-        console.log({ data });
-        console.log({ passkeyLogs });
-
-    }, [data, passkeyLogs]);
 
     useEffect(() => {
         const pageLoaded = () => {
@@ -43,39 +42,22 @@ export default function PasskeyLogsPage() {
             }
         }
         pageLoaded();
-        return () => { };
     }, []);
 
-
-    // Mock log data
-    // logs is the same as passkeyLogs gotten from usePasskeyLogsStore
-    const [logs, setLogs] = useState(() => {
-        const sampleLogs = [];
-        const activities = ['Created', 'Modified', 'Deleted', 'Accessed'];
-        const passkeyNames = ['Admin Key', 'User Key', 'API Key', 'Backup Key'];
-        const resources = ['Product', 'User', 'Order', 'Settings'];
-
-        for (let i = 0; i < 15; i++) {
-            const activityIndex = i % 4;
-            const details = {
-                Created: `Created new ${resources[i % 4]} "${i % 2 === 0 ? 'Guitar' : 'Piano'}" (ID: ${i + 100})`,
-                Modified: `Updated ${resources[i % 4]} settings (ID: ${i + 200})`,
-                Deleted: `Deleted ${resources[i % 4]} "${i % 3 === 0 ? 'Old Inventory' : 'User Account'}" (ID: ${i + 300})`,
-                Accessed: `Viewed sensitive ${resources[i % 4]} data (ID: ${i + 400})`
-            }[activities[activityIndex]];
-
-            sampleLogs.push({
-                id: crypto.randomUUID(),
-                passkeyName: passkeyNames[i % 4],
-                activity: activities[activityIndex],
-                activityDetails: details,
-                privileges: ['view-only', 'moderate', 'full-access'].slice(0, (i % 3) + 1),
-                timestamp: new Date(Date.now() - (i * 86400000 * 2)),
-                severity: ['low', 'medium', 'high'][i % 3]
-            });
-        }
-        return sampleLogs;
-    });
+    // Transform passkeyLogs to match UI structure
+    const transformedLogs = useMemo(() => {
+        if (!passkeyLogs || !Array.isArray(passkeyLogs)) return [];
+        
+        return passkeyLogs.map(log => ({
+            id: log.id.toString(),
+            passkeyName: log.passkeyName,
+            activity: log.activity,
+            activityDetails: log.activityDetails,
+            privileges: log.privileges,
+            timestamp: new Date(log.date),
+            severity: getSeverity(log.activity)
+        }));
+    }, [passkeyLogs]);
 
     const dateFilters = [
         { label: 'All', value: 'all' },
@@ -149,7 +131,6 @@ export default function PasskeyLogsPage() {
         document.body
     );
 
-
     const TableRowActions = ({ log }) => (
         <div className="flex gap-1 md:gap-2">
             <button
@@ -159,17 +140,9 @@ export default function PasskeyLogsPage() {
             >
                 <Eye className="w-4 h-4 md:w-5 md:h-5" />
             </button>
-            <button
-                className="btn btn-circle btn-ghost btn-xs md:btn-sm text-error"
-                onClick={() => deleteSingleLog(log.id)}
-                title="Delete log"
-            >
-                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
-            </button>
         </div>
     );
 
-    // Updated table cell for activity with severity indicator
     const ActivityCell = ({ log }) => (
         <td className="hidden sm:table-cell">
             <div className="flex items-center gap-2">
@@ -183,7 +156,7 @@ export default function PasskeyLogsPage() {
 
     const filteredLogs = useMemo(() => {
         const now = new Date();
-        return logs.filter(log => {
+        return transformedLogs.filter(log => {
             const logDate = new Date(log.timestamp);
             const diffDays = Math.floor((now - logDate) / (1000 * 60 * 60 * 24));
 
@@ -196,31 +169,7 @@ export default function PasskeyLogsPage() {
                 default: return true;
             }
         });
-    }, [logs, dateFilter]);
-
-    const toggleSelectAll = (e) => {
-        setSelectedLogs(e.target.checked ? filteredLogs?.map(log => log.id) : []);
-    };
-
-    const deleteSelected = () => {
-        if (!selectedLogs.length) return;
-
-        if (passkey) {
-            createLogs("Deleted", `${passkeyName} deleted ${selectedLogs.length} log(s)`);
-        }
-
-        setLogs(prev => prev.filter(log => !selectedLogs.includes(log.id)));
-        setSelectedLogs([]);
-        toast.success(`${selectedLogs.length} log(s) deleted successfully`);
-    };
-
-    const deleteSingleLog = (logId) => {
-        if (passkey) {
-            createLogs("Deleted", `${passkeyName} deleted log with id ${logId}`);
-        }
-        setLogs(prev => prev.filter(log => log.id !== logId));
-        toast.success('Log entry deleted successfully');
-    };
+    }, [transformedLogs, dateFilter]);
 
     return (
         <div className="p-4 md:p-8 max-w-6xl mx-auto bg-base-300/60 min-h-screen">
@@ -234,6 +183,7 @@ export default function PasskeyLogsPage() {
                 <ArrowLeftIcon className="size-5 mr-2" />
                 Back to Passkeys
             </button>
+            
             {/* Header Section */}
             <div className="flex flex-col gap-4 mb-6">
                 <div className="flex items-center justify-between">
@@ -242,17 +192,6 @@ export default function PasskeyLogsPage() {
                         <span className="flex-nowrap text-nowrap whitespace-nowrap">Audit Logs</span>
                     </h1>
 
-                    <div className="flex justify-between items-center w-full md:hidden">
-                        {selectedLogs.length > 0 && (
-                            <button
-                                className="ml-auto btn btn-error btn-xs"
-                                onClick={deleteSelected}
-                            >
-                                <Trash2 className="w-3 h-3" />
-                                <span className="ml-1">Delete ({selectedLogs.length})</span>
-                            </button>
-                        )}
-                    </div>
                     {/* Mobile Date Filter Dropdown */}
                     <div className="md:hidden dropdown dropdown-end z-10">
                         <label tabIndex={0} className="btn btn-sm btn-ghost">
@@ -274,21 +213,8 @@ export default function PasskeyLogsPage() {
                             ))}
                         </ul>
                     </div>
-                    {/* Delete Selected Button */}
-                    {selectedLogs.length > 0 && (
-                        <div className="hidden md:flex">
-                            <button
-                                className="btn btn-error btn-sm md:btn-md shadow-lg"
-                                onClick={deleteSelected}
-                            >
-                                <Trash2 className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
-                                <span className="text-xs md:text-sm">
-                                    Delete ({selectedLogs.length})
-                                </span>
-                            </button>
-                        </div>
-                    )}
                 </div>
+                
                 {/* Desktop Date Filters */}
                 <div className="hidden md:flex join">
                     {dateFilters?.map(filter => (
@@ -314,17 +240,6 @@ export default function PasskeyLogsPage() {
                     <table className="table table-zebra">
                         <thead>
                             <tr>
-                                <th className="">
-                                    <label className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox checkbox-primary checkbox-xs md:checkbox-sm"
-                                            checked={selectedLogs.length === filteredLogs.length}
-                                            onChange={toggleSelectAll}
-                                        />
-                                        <span className="ml-2 text-xs md:text-sm hidden md:inline">Select All</span>
-                                    </label>
-                                </th>
                                 <th className="text-sm md:text-base">Passkey</th>
                                 <th className="text-sm md:text-base hidden sm:table-cell">Activity</th>
                                 <th className="text-sm md:text-base">Date</th>
@@ -334,20 +249,6 @@ export default function PasskeyLogsPage() {
                         <tbody>
                             {filteredLogs?.map(log => (
                                 <tr key={log.id} className="hover">
-                                    <td className="sm:table-cell">
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox checkbox-primary checkbox-xs md:checkbox-sm"
-                                            checked={selectedLogs.includes(log.id)}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setSelectedLogs(prev => [...prev, log.id]);
-                                                } else {
-                                                    setSelectedLogs(prev => prev.filter(id => id !== log.id));
-                                                }
-                                            }}
-                                        />
-                                    </td>
                                     <td>
                                         <div className="font-medium text-sm md:text-base">
                                             {log.passkeyName}
@@ -362,10 +263,11 @@ export default function PasskeyLogsPage() {
                                             {log.timestamp.toLocaleDateString('en-US', {
                                                 month: 'short',
                                                 day: 'numeric',
+                                                year: 'numeric'
                                             })}
-                                            <span className="hidden md:inline">
-                                                , {log.timestamp.getFullYear()}
-                                            </span>
+                                            <div className="text-xs text-gray-500">
+                                                {log.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </div>
                                         </div>
                                     </td>
                                     <td>

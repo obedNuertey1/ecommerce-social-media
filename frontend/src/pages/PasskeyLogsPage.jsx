@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
-import { Eye, Filter, CalendarDays, ListChecks, AlertCircle, ArrowLeftIcon } from 'lucide-react';
+import { Eye, Filter, CalendarDays, ListChecks, AlertCircle, ArrowLeftIcon, Trash2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useProductStore } from "../store/useProductStore";
 import { createLogs } from '../funcs/essentialFuncs';
@@ -20,6 +21,7 @@ const getSeverity = (activity) => {
 
 export default function PasskeyLogsPage() {
     const [dateFilter, setDateFilter] = useState('all');
+    const [selectedLogs, setSelectedLogs] = useState([]);
     const [selectedLog, setSelectedLog] = useState(null);
     const { resetFormData } = useProductStore();
     const navigate = useNavigate();
@@ -140,6 +142,13 @@ export default function PasskeyLogsPage() {
             >
                 <Eye className="w-4 h-4 md:w-5 md:h-5" />
             </button>
+            <button
+                className="btn btn-circle btn-ghost btn-xs md:btn-sm text-error"
+                onClick={() => deleteSingleLog(log.id)}
+                title="Delete log"
+            >
+                <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
         </div>
     );
 
@@ -171,6 +180,30 @@ export default function PasskeyLogsPage() {
         });
     }, [transformedLogs, dateFilter]);
 
+    const toggleSelectAll = (e) => {
+        setSelectedLogs(e.target.checked ? filteredLogs?.map(log => log.id) : []);
+    };
+
+    const deleteSelected = () => {
+        if (!selectedLogs.length) return;
+
+        if (passkey) {
+            createLogs("Deleted", `${passkeyName} deleted ${selectedLogs.length} log(s)`);
+        }
+
+        // Placeholder for actual deletion logic
+        toast.success(`${selectedLogs.length} log(s) marked for deletion`);
+        setSelectedLogs([]);
+    };
+
+    const deleteSingleLog = (logId) => {
+        if (passkey) {
+            createLogs("Deleted", `${passkeyName} deleted log with id ${logId}`);
+        }
+        // Placeholder for actual deletion logic
+        toast.success('Log entry marked for deletion');
+    };
+
     return (
         <div className="p-4 md:p-8 max-w-6xl mx-auto bg-base-300/60 min-h-screen">
             <button
@@ -192,27 +225,53 @@ export default function PasskeyLogsPage() {
                         <span className="flex-nowrap text-nowrap whitespace-nowrap">Audit Logs</span>
                     </h1>
 
-                    {/* Mobile Date Filter Dropdown */}
-                    <div className="md:hidden dropdown dropdown-end z-10">
-                        <label tabIndex={0} className="btn btn-sm btn-ghost">
-                            <Filter className="w-4 h-4" />
-                        </label>
-                        <ul
-                            tabIndex={0}
-                            className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
-                        >
-                            {dateFilters?.map(filter => (
-                                <li key={filter.value}>
-                                    <button
-                                        onClick={() => setDateFilter(filter.value)}
-                                        className={dateFilter === filter.value ? 'active' : ''}
-                                    >
-                                        {filter.label}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
+                    <div className="flex justify-between items-center w-full md:hidden">
+                        {selectedLogs.length > 0 && (
+                            <button
+                                className="ml-auto btn btn-error btn-xs"
+                                onClick={deleteSelected}
+                            >
+                                <Trash2 className="w-3 h-3" />
+                                <span className="ml-1">Delete ({selectedLogs.length})</span>
+                            </button>
+                        )}
+                        {/* Mobile Date Filter Dropdown */}
+                        <div className="md:hidden dropdown dropdown-end z-10">
+                            <label tabIndex={0} className="btn btn-sm btn-ghost">
+                                <Filter className="w-4 h-4" />
+                            </label>
+                            <ul
+                                tabIndex={0}
+                                className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
+                            >
+                                {dateFilters?.map(filter => (
+                                    <li key={filter.value}>
+                                        <button
+                                            onClick={() => setDateFilter(filter.value)}
+                                            className={dateFilter === filter.value ? 'active' : ''}
+                                        >
+                                            {filter.label}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
+                    
+                    {/* Delete Selected Button */}
+                    {selectedLogs.length > 0 && (
+                        <div className="hidden md:flex">
+                            <button
+                                className="btn btn-error btn-sm md:btn-md shadow-lg"
+                                onClick={deleteSelected}
+                            >
+                                <Trash2 className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
+                                <span className="text-xs md:text-sm">
+                                    Delete ({selectedLogs.length})
+                                </span>
+                            </button>
+                        </div>
+                    )}
                 </div>
                 
                 {/* Desktop Date Filters */}
@@ -240,6 +299,17 @@ export default function PasskeyLogsPage() {
                     <table className="table table-zebra">
                         <thead>
                             <tr>
+                                <th className="">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            className="checkbox checkbox-primary checkbox-xs md:checkbox-sm"
+                                            checked={selectedLogs.length === filteredLogs.length}
+                                            onChange={toggleSelectAll}
+                                        />
+                                        <span className="ml-2 text-xs md:text-sm hidden md:inline">Select All</span>
+                                    </label>
+                                </th>
                                 <th className="text-sm md:text-base">Passkey</th>
                                 <th className="text-sm md:text-base hidden sm:table-cell">Activity</th>
                                 <th className="text-sm md:text-base">Date</th>
@@ -249,6 +319,20 @@ export default function PasskeyLogsPage() {
                         <tbody>
                             {filteredLogs?.map(log => (
                                 <tr key={log.id} className="hover">
+                                    <td className="sm:table-cell">
+                                        <input
+                                            type="checkbox"
+                                            className="checkbox checkbox-primary checkbox-xs md:checkbox-sm"
+                                            checked={selectedLogs.includes(log.id)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedLogs(prev => [...prev, log.id]);
+                                                } else {
+                                                    setSelectedLogs(prev => prev.filter(id => id !== log.id));
+                                                }
+                                            }}
+                                        />
+                                    </td>
                                     <td>
                                         <div className="font-medium text-sm md:text-base">
                                             {log.passkeyName}

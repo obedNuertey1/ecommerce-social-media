@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 import { Eye, Filter, CalendarDays, ListChecks, AlertCircle, ArrowLeftIcon, Trash2 } from 'lucide-react';
@@ -17,6 +17,67 @@ const getSeverity = (activity) => {
   if (activity === 'Deleted') return 'high';
   if (activity === 'Modified') return 'medium';
   return 'low';
+};
+
+// Extracted Modal Component
+const LogDetailsModal = ({ selectedLog, onClose }) => {
+  if (!selectedLog) return null;
+  
+  return createPortal(
+    <dialog className="modal modal-open">
+      <div className="modal-box max-w-xs md:max-w-md">
+        <div className="flex items-start gap-3 mb-4">
+          <AlertCircle className={`w-6 h-6 ${selectedLog?.severity === 'high' ? 'text-error' :
+            selectedLog?.severity === 'medium' ? 'text-warning' : 'text-info'
+            }`} />
+          <div>
+            <h3 className="font-bold text-lg">{selectedLog?.activity} Event</h3>
+            <p className="text-sm text-gray-500">
+              {selectedLog?.timestamp.toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-semibold mb-2">Activity Details</h4>
+            <p className="text-sm bg-base-200 rounded-lg p-3">
+              {selectedLog?.activityDetails}
+            </p>
+          </div>
+
+          <div className="divider my-2"></div>
+
+          <div>
+            <h4 className="font-semibold mb-2">Associated Privileges</h4>
+            <div className="flex flex-wrap gap-2">
+              {selectedLog?.privileges?.map(privilege => (
+                <span
+                  key={privilege}
+                  className="badge badge-outline badge-sm md:badge-md"
+                >
+                  {privilege}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-action">
+          <button
+            className="btn btn-sm md:btn-md"
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={onClose}>close</button>
+      </form>
+    </dialog>,
+    document.body
+  );
 };
 
 export default function PasskeyLogsPage() {
@@ -70,70 +131,18 @@ export default function PasskeyLogsPage() {
         { label: 'Over 1 Month', value: 'over30d' },
     ];
 
-    const showLogDetails = (log) => {
+    const showLogDetails = useCallback((log) => {
         if (passkey) {
             createLogs("Accessed", `${passkeyName} viewed log details with passkeyName ${log.passkeyName}`);
         }
         setSelectedLog(log);
-    };
+    }, [passkey]);
 
-    const LogDetailsModal = () => createPortal(
-        <dialog className={`modal ${selectedLog ? 'modal-open' : ''}`}>
-            <div className="modal-box max-w-xs md:max-w-md">
-                <div className="flex items-start gap-3 mb-4">
-                    <AlertCircle className={`w-6 h-6 ${selectedLog?.severity === 'high' ? 'text-error' :
-                        selectedLog?.severity === 'medium' ? 'text-warning' : 'text-info'
-                        }`} />
-                    <div>
-                        <h3 className="font-bold text-lg">{selectedLog?.activity} Event</h3>
-                        <p className="text-sm text-gray-500">
-                            {selectedLog?.timestamp.toLocaleString()}
-                        </p>
-                    </div>
-                </div>
+    const closeModal = useCallback(() => {
+        setSelectedLog(null);
+    }, []);
 
-                <div className="space-y-4">
-                    <div>
-                        <h4 className="font-semibold mb-2">Activity Details</h4>
-                        <p className="text-sm bg-base-200 rounded-lg p-3">
-                            {selectedLog?.activityDetails}
-                        </p>
-                    </div>
-
-                    <div className="divider my-2"></div>
-
-                    <div>
-                        <h4 className="font-semibold mb-2">Associated Privileges</h4>
-                        <div className="flex flex-wrap gap-2">
-                            {selectedLog?.privileges?.map(privilege => (
-                                <span
-                                    key={privilege}
-                                    className="badge badge-outline badge-sm md:badge-md"
-                                >
-                                    {privilege}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="modal-action">
-                    <button
-                        className="btn btn-sm md:btn-md"
-                        onClick={() => setSelectedLog(null)}
-                    >
-                        Close
-                    </button>
-                </div>
-            </div>
-            <form method="dialog" className="modal-backdrop">
-                <button onClick={() => setSelectedLog(null)}>close</button>
-            </form>
-        </dialog>,
-        document.body
-    );
-
-    const TableRowActions = ({ log }) => (
+    const TableRowActions = useMemo(() => ({ log }) => (
         <div className="flex gap-1 md:gap-2">
             <button
                 className="btn btn-circle btn-ghost btn-xs md:btn-sm"
@@ -150,9 +159,9 @@ export default function PasskeyLogsPage() {
                 <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
             </button>
         </div>
-    );
+    ), [showLogDetails]);
 
-    const ActivityCell = ({ log }) => (
+    const ActivityCell = useMemo(() => ({ log }) => (
         <td className="hidden sm:table-cell">
             <div className="flex items-center gap-2">
                 <span className={`badge badge-xs ${log.severity === 'high' ? 'badge-error' :
@@ -161,7 +170,7 @@ export default function PasskeyLogsPage() {
                 {log.activity}
             </div>
         </td>
-    );
+    ), []);
 
     const filteredLogs = useMemo(() => {
         const now = new Date();
@@ -365,7 +374,7 @@ export default function PasskeyLogsPage() {
             )}
 
             {/* Privileges Modal */}
-            <LogDetailsModal />
+            <LogDetailsModal selectedLog={selectedLog} onClose={closeModal} />
         </div>
     );
 }

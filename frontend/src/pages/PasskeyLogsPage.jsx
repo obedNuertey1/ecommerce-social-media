@@ -87,7 +87,7 @@ export default function PasskeyLogsPage() {
     const { resetFormData } = useProductStore();
     const navigate = useNavigate();
     const pageLoadedRef = useRef(false);
-    const { fetchPasskeyLogsNoRetries, passkeyLogs, loading, error } = usePasskeyLogsStore();
+    const { fetchPasskeyLogsNoRetries, passkeyLogs, deletePasskeyLog, loading, error } = usePasskeyLogsStore();
     const { gapi } = useGoogleAuthContext();
 
     useQuery({
@@ -205,11 +205,12 @@ export default function PasskeyLogsPage() {
         setSelectedLogs([]);
     };
 
-    const deleteSingleLog = (logId) => {
+    const deleteSingleLog = async (logId) => {
         if (passkey) {
             createLogs("Deleted", `${passkeyName} deleted log with id ${logId}`);
         }
         // Placeholder for actual deletion logic
+        await deletePasskeyLog(logId, gapi);
         toast.success('Log entry marked for deletion');
     };
 

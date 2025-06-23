@@ -87,7 +87,7 @@ export default function PasskeyLogsPage() {
     const { resetFormData } = useProductStore();
     const navigate = useNavigate();
     const pageLoadedRef = useRef(false);
-    const { fetchPasskeyLogsNoRetries, passkeyLogs, deletePasskeyLog, loading, error } = usePasskeyLogsStore();
+    const { fetchPasskeyLogsNoRetries, fetchPasskeyLogs, passkeyLogs, deletePasskeyLog, loading, error } = usePasskeyLogsStore();
     const { gapi } = useGoogleAuthContext();
 
     useQuery({
@@ -106,6 +106,10 @@ export default function PasskeyLogsPage() {
         }
         pageLoaded();
     }, []);
+
+    useEffect(() => {
+        fetchPasskeyLogs(gapi);
+    }, [passkeyLogs]);
 
     // Transform passkeyLogs to match UI structure
     const transformedLogs = useMemo(() => {

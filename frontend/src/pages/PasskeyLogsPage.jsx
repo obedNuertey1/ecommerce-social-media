@@ -215,7 +215,6 @@ export default function PasskeyLogsPage() {
         }
         // Placeholder for actual deletion logic
         await deletePasskeyLog(logId, gapi);
-        toast.success('Log entry marked for deletion');
     };
 
     return (

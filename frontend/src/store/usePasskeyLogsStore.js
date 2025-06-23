@@ -105,7 +105,7 @@ export const usePasskeyLogsStore = create((set, get)=>({
             const googleSheet = new GoogleSheetsAPI(gapi);
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, id-1);
             set((prev)=>({
-                passkeyLogs: prev.passkeyLogs.filter((passkeyLog)=>passkeyLog.id !== id)
+                passkeyLogs: prev.passkeyLogs.filter((passkeyLog)=>passkeyLog.id != id)
             }))
             toast.success("Passkey log deleted successfully");
         }catch(e){

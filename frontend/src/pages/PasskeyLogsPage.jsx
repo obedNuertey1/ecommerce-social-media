@@ -87,7 +87,7 @@ export default function PasskeyLogsPage() {
     const { resetFormData } = useProductStore();
     const navigate = useNavigate();
     const pageLoadedRef = useRef(false);
-    const { fetchPasskeyLogsNoRetries, fetchPasskeyLogs, passkeyLogs, deletePasskeyLog, loading, error } = usePasskeyLogsStore();
+    const { fetchPasskeyLogsNoRetries, fetchPasskeyLogs, passkeyLogs, deletePasskeyLog, bulkDeletePasskeyLogs, loading, error } = usePasskeyLogsStore();
     const { gapi } = useGoogleAuthContext();
 
     useQuery({
@@ -197,15 +197,15 @@ export default function PasskeyLogsPage() {
         setSelectedLogs(e.target.checked ? filteredLogs?.map(log => log.id) : []);
     };
 
-    const deleteSelected = () => {
+    const deleteSelected = async () => {
         if (!selectedLogs.length) return;
 
         if (passkey) {
             createLogs("Deleted", `${passkeyName} deleted ${selectedLogs.length} log(s)`);
         }
 
-        // Placeholder for actual deletion logic
-        toast.success(`${selectedLogs.length} log(s) marked for deletion`);
+        await bulkDeletePasskeyLogs(selectedLogs, gapi);
+        
         setSelectedLogs([]);
     };
 

@@ -771,6 +771,84 @@ class GoogleSheetsAPI {
     }
 
     /**
+ * Deletes all rows whose “id” cell matches one of the IDs in idsToDelete.
+ * @param {string} spreadsheetName  the name of the spreadsheet
+ * @param {string} sheetName        the name of the tab
+ * @param {number[]} idsToDelete    array of numeric IDs to delete
+ */
+    async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
+        // 1) find your spreadsheet and sheetId
+        const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+        if (!spreadsheet) throw new Error(`Spreadsheet "${spreadsheetName}" not found.`);
+        const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+        const sheetId = await this.getSheetIdByName(spreadsheetId, sheetName);
+
+        // 2) pull down the entire sheet (or at least the column containing your IDs)
+        const accessToken = this.gapi.auth.getToken().access_token;
+        const range = `${sheetName}!A:Z`;          // adjust so only the columns you need
+        const res = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`,
+            {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            }
+        );
+        if (!res.ok) throw new Error(`Error fetching sheet values: ${res.statusText}`);
+        const { values } = await res.json();
+
+        // 3) assume your "id" lives in a known column—find its index
+        const headerRow = values[0];
+        const idColIndex = headerRow.indexOf('id');
+        if (idColIndex === -1) throw new Error(`No "id" column in sheet "${sheetName}".`);
+
+        // 4) map IDs to their rowIndexes (zero-based in the sheet data excl header)
+        const rowIndexes = values
+            .map((row, idx) => ({ idx, id: Number(row[idColIndex]) }))
+            .filter(r => idsToDelete.includes(r.id))
+            .map(r => r.idx - 1)    // convert from values[] index to zero-based sheet ROW index (minus header)
+            .filter(i => i >= 0);
+
+        if (rowIndexes.length === 0) {
+            console.warn('No matching IDs found; nothing to delete.');
+            return;
+        }
+
+        // 5) sort descending so deletions don't shift subsequent indexes
+        rowIndexes.sort((a, b) => b - a);
+
+        // 6) build one batchUpdate with all deleteDimension requests
+        const requests = rowIndexes.map(rowIndex => ({
+            deleteDimension: {
+                range: {
+                    sheetId,
+                    dimension: 'ROWS',
+                    startIndex: rowIndex,
+                    endIndex: rowIndex + 1
+                }
+            }
+        }));
+
+        // 7) fire the batchUpdate
+        const batchRes = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ requests })
+            }
+        );
+        if (!batchRes.ok) {
+            throw new Error(`Error deleting rows: ${batchRes.statusText}`);
+        }
+        const result = await batchRes.json();
+        console.log(`Deleted ${rowIndexes.length} rows`, result);
+        return result;
+    }
+
+
+    /**
  * Deletes all rows in a sheet.
  *
  * @param {string} spreadsheetId - The ID of the spreadsheet.
@@ -843,7 +921,7 @@ class GoogleSheetsAPI {
         // if (Array.isArray(rowData)) {
         //     return this.appendSpreadsheetValues(spreadsheetId, sheetName, rowData, valueInputOption);
         // }
-        console.log({rowData: [...rowData]});
+        console.log({ rowData: [...rowData] });
         return this.appendSpreadsheetValues(spreadsheetId, sheetName, [...rowData], valueInputOption);
     }
 
@@ -1089,33 +1167,33 @@ class GoogleSheetsAPI {
             console.log("line 1088 just below try keyword", spreadsheetName);
             // Retrieve the spreadsheet by name.
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
-            console.log("line 1090", {spreadsheet});
+            console.log("line 1090", { spreadsheet });
             if (!spreadsheet) {
                 throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
             }
-            console.log("line 1092", {spreadsheet});
+            console.log("line 1092", { spreadsheet });
             const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
 
             if (Array.isArray(data)) {
-                console.log("line 1098", {spreadsheet});
+                console.log("line 1098", { spreadsheet });
                 const finalRowData = [];
                 for (let i = 0; i < data.length; i++) {
                     let val = data[i];
-                    console.log("line 1102", {val});
+                    console.log("line 1102", { val });
                     const rowData = schema.map(key => {
                         let value = val[key];
                         if (value && typeof value === "object") {
                             return JSON.stringify(value);
                         }
-                        console.log("line 1105", {value});
+                        console.log("line 1105", { value });
                         return value;
                     })
-                    console.log("line 1111", {rowData});
+                    console.log("line 1111", { rowData });
                     finalRowData.push(rowData);
                 }
-                console.log("line 1110", {finalRowData});
+                console.log("line 1110", { finalRowData });
                 const response = await this.appendRow(spreadsheetId, sheetName, finalRowData);
-                console.log("line 1115", {response});
+                console.log("line 1115", { response });
                 // console.log(`${sheetName} row appended:`, response);
                 return response;
             }
@@ -1123,19 +1201,19 @@ class GoogleSheetsAPI {
             // Convert the data object into an array based on the schema order.
             const rowData = schema.map(key => {
                 let value = data[key];
-                console.log("line 1124", {value});
+                console.log("line 1124", { value });
                 // If the value is an object, you can store it as a JSON string.
                 if (value && typeof value === "object") {
                     return JSON.stringify(value);
                 }
                 return value;
             });
-            console.log("line 1128", {rowData});
+            console.log("line 1128", { rowData });
 
             // Append the row to the "Settings" sheet.
             // Assume you have defined appendRow which wraps appendSpreadsheetValues.
             const response = await this.appendRow(spreadsheetId, sheetName, [rowData]);
-            console.log("line 1132", {response});
+            console.log("line 1132", { response });
             // console.log(`${sheetName} row appended:`, response);
             return response;
         } catch (error) {

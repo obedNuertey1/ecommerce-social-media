@@ -86,13 +86,13 @@ export const usePasskeyLogsStore = create((set, get) => ({
     bulkDeletePasskeyLogs: async (selectedLogs, gapi) => {
         // set({loading: true});
         try {
-            let selectedLogs = selectedLogs.map((log)=>Number(log.id));
+            const selectedLogsIds = selectedLogs.map((log) => Number(log));
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const sheetResult = await googleSheet.deleteRowsByIdList(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, selectedLogs);
+            const sheetResult = await googleSheet.deleteRowsByIdList(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, selectedLogsIds);
             set((prev) => ({
                 passkeyLogs: prev.passkeyLogs.filter((passkeyLog) => !(selectedLogsIds.includes(passkeyLog.id)))
             }))
-            toast.success(`${selectedLogs.length} log(s) marked for deletion`);
+            toast.success(`${selectedLogsIds.length} log(s) marked for deletion`);
         } catch (e) {
             console.log(`Error deleting passkey logs: ${e}`);
             toast.error("Something went wrong");

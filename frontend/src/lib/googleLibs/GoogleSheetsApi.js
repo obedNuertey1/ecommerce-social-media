@@ -782,9 +782,11 @@ class GoogleSheetsAPI {
         if (!spreadsheet) throw new Error(`Spreadsheet "${spreadsheetName}" not found.`);
         const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
         const sheetId = await this.getSheetIdByName(spreadsheetId, sheetName);
+        console.log("deleteRowsByIdList row number 785 works!")
 
         // 2) pull down the entire sheet (or at least the column containing your IDs)
         const accessToken = this.gapi.auth.getToken().access_token;
+        console.log("deleteRowsByIdList row number 789 works!")
         const range = `${sheetName}!A:Z`;          // adjust so only the columns you need
         const res = await fetch(
             `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`,
@@ -794,10 +796,12 @@ class GoogleSheetsAPI {
         );
         if (!res.ok) throw new Error(`Error fetching sheet values: ${res.statusText}`);
         const { values } = await res.json();
+        console.log("deleteRowsByIdList row number 799 works!")
 
         // 3) assume your "id" lives in a known column—find its index
         const headerRow = values[0];
         const idColIndex = headerRow.indexOf('id');
+        console.log({headerRow});
         if (idColIndex === -1) throw new Error(`No "id" column in sheet "${sheetName}".`);
 
         // 4) map IDs to their rowIndexes (zero-based in the sheet data excl header)
@@ -811,6 +815,7 @@ class GoogleSheetsAPI {
             console.warn('No matching IDs found; nothing to delete.');
             return;
         }
+        console.log("deleteRowsByIdList row number 818 works!")
 
         // 5) sort descending so deletions don't shift subsequent indexes
         rowIndexes.sort((a, b) => b - a);

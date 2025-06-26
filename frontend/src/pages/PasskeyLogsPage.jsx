@@ -205,6 +205,7 @@ export default function PasskeyLogsPage() {
         }
 
         await bulkDeletePasskeyLogs(selectedLogs, gapi);
+        console.log({selectedLogs});
         
         setSelectedLogs([]);
     };

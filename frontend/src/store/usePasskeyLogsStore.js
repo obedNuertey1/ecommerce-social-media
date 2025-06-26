@@ -87,7 +87,7 @@ export const usePasskeyLogsStore = create((set, get) => ({
         // set({loading: true});
         try {
             const selectedLogsIds = selectedLogs.map((log) => log.id);
-            console.log({selectedLogsIds});
+            console.log({selectedLogsIds, selectedLogs});
             const googleSheet = new GoogleSheetsAPI(gapi);
             const sheetResult = await googleSheet.deleteRowsByIdList(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, selectedLogsIds);
             set((prev) => ({

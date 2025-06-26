@@ -776,81 +776,133 @@ class GoogleSheetsAPI {
  * @param {string} sheetName        the name of the tab
  * @param {number[]} idsToDelete    array of numeric IDs to delete
  */
-    async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
-        // 1) find your spreadsheet and sheetId
-        const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
-        if (!spreadsheet) throw new Error(`Spreadsheet "${spreadsheetName}" not found.`);
-        const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
-        const sheetId = await this.getSheetIdByName(spreadsheetId, sheetName);
-        console.log("deleteRowsByIdList row number 785 works!")
+async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
+    // 1) Find spreadsheet and sheet ID
+    const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+    if (!spreadsheet) throw new Error(`Spreadsheet "${spreadsheetName}" not found.`);
+    const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+    const sheetId = await this.getSheetIdByName(spreadsheetId, sheetName);
 
-        // 2) pull down the entire sheet (or at least the column containing your IDs)
-        const accessToken = this.gapi.auth.getToken().access_token;
-        console.log("deleteRowsByIdList row number 789 works!")
-        const range = `${sheetName}!A:Z`;          // adjust so only the columns you need
-        const res = await fetch(
-            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`,
-            {
-                headers: { Authorization: `Bearer ${accessToken}` }
-            }
-        );
-        if (!res.ok) throw new Error(`Error fetching sheet values: ${res.statusText}`);
-        const { values } = await res.json();
-        console.log("deleteRowsByIdList row number 799 works!")
+    // 2) Convert row numbers to zero-based indices and sort descending
+    const rowIndices = [...new Set(idsToDelete)]  // Remove duplicates
+        .map(rowNum => rowNum - 1)                 // Convert to zero-based index
+        .sort((a, b) => b - a);                    // Sort descending for safe deletion
 
-        // 3) assume your "id" lives in a known column—find its index
-        const headerRow = values[0];
-        const idColIndex = headerRow.indexOf('id');
-        console.log({headerRow});
-        if (idColIndex === -1) throw new Error(`No "id" column in sheet "${sheetName}".`);
-
-        // 4) map IDs to their rowIndexes (zero-based in the sheet data excl header)
-        const rowIndexes = values
-            .map((row, idx) => ({ idx, id: Number(row[idColIndex]) }))
-            .filter(r => idsToDelete.includes(r.id))
-            .map(r => r.idx - 1)    // convert from values[] index to zero-based sheet ROW index (minus header)
-            .filter(i => i >= 0);
-
-        if (rowIndexes.length === 0) {
-            console.warn('No matching IDs found; nothing to delete.');
-            return;
-        }
-        console.log("deleteRowsByIdList row number 818 works!")
-
-        // 5) sort descending so deletions don't shift subsequent indexes
-        rowIndexes.sort((a, b) => b - a);
-
-        // 6) build one batchUpdate with all deleteDimension requests
-        const requests = rowIndexes.map(rowIndex => ({
-            deleteDimension: {
-                range: {
-                    sheetId,
-                    dimension: 'ROWS',
-                    startIndex: rowIndex,
-                    endIndex: rowIndex + 1
-                }
-            }
-        }));
-
-        // 7) fire the batchUpdate
-        const batchRes = await fetch(
-            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`
-                },
-                body: JSON.stringify({ requests })
-            }
-        );
-        if (!batchRes.ok) {
-            throw new Error(`Error deleting rows: ${batchRes.statusText}`);
-        }
-        const result = await batchRes.json();
-        console.log(`Deleted ${rowIndexes.length} rows`, result);
-        return result;
+    if (rowIndices.length === 0) {
+        console.warn('No valid row numbers provided; nothing to delete.');
+        return;
     }
+
+    // 3) Create batch delete requests
+    const requests = rowIndices.map(index => ({
+        deleteDimension: {
+            range: {
+                sheetId,
+                dimension: 'ROWS',
+                startIndex: index,
+                endIndex: index + 1
+            }
+        }
+    }));
+
+    // 4) Execute batch update
+    const accessToken = this.gapi.auth.getToken().access_token;
+    const batchRes = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({ requests })
+        }
+    );
+
+    if (!batchRes.ok) {
+        const error = await batchRes.json();
+        throw new Error(`Error deleting rows: ${error.error.message}`);
+    }
+
+    const result = await batchRes.json();
+    console.log(`Deleted ${rowIndices.length} rows`);
+    return result;
+}
+    // async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
+    //     // 1) find your spreadsheet and sheetId
+    //     const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+    //     if (!spreadsheet) throw new Error(`Spreadsheet "${spreadsheetName}" not found.`);
+    //     const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+    //     const sheetId = await this.getSheetIdByName(spreadsheetId, sheetName);
+    //     console.log("deleteRowsByIdList row number 785 works!")
+
+    //     // 2) pull down the entire sheet (or at least the column containing your IDs)
+    //     const accessToken = this.gapi.auth.getToken().access_token;
+    //     console.log("deleteRowsByIdList row number 789 works!")
+    //     const range = `${sheetName}!A:Z`;          // adjust so only the columns you need
+    //     const res = await fetch(
+    //         `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`,
+    //         {
+    //             headers: { Authorization: `Bearer ${accessToken}` }
+    //         }
+    //     );
+    //     if (!res.ok) throw new Error(`Error fetching sheet values: ${res.statusText}`);
+    //     const { values } = await res.json();
+    //     console.log("deleteRowsByIdList row number 799 works!")
+
+    //     // 3) assume your "id" lives in a known column—find its index
+    //     const headerRow = values[0];
+    //     const idColIndex = headerRow.indexOf('id');
+    //     console.log({headerRow});
+    //     if (idColIndex === -1) throw new Error(`No "id" column in sheet "${sheetName}".`);
+
+    //     // 4) map IDs to their rowIndexes (zero-based in the sheet data excl header)
+    //     const rowIndexes = values
+    //         .map((row, idx) => ({ idx, id: Number(row[idColIndex]) }))
+    //         .filter(r => idsToDelete.includes(r.id))
+    //         .map(r => r.idx - 1)    // convert from values[] index to zero-based sheet ROW index (minus header)
+    //         .filter(i => i >= 0);
+
+    //     if (rowIndexes.length === 0) {
+    //         console.warn('No matching IDs found; nothing to delete.');
+    //         return;
+    //     }
+    //     console.log("deleteRowsByIdList row number 818 works!")
+
+    //     // 5) sort descending so deletions don't shift subsequent indexes
+    //     rowIndexes.sort((a, b) => b - a);
+
+    //     // 6) build one batchUpdate with all deleteDimension requests
+    //     const requests = rowIndexes.map(rowIndex => ({
+    //         deleteDimension: {
+    //             range: {
+    //                 sheetId,
+    //                 dimension: 'ROWS',
+    //                 startIndex: rowIndex,
+    //                 endIndex: rowIndex + 1
+    //             }
+    //         }
+    //     }));
+
+    //     // 7) fire the batchUpdate
+    //     const batchRes = await fetch(
+    //         `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+    //         {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 Authorization: `Bearer ${accessToken}`
+    //             },
+    //             body: JSON.stringify({ requests })
+    //         }
+    //     );
+    //     if (!batchRes.ok) {
+    //         throw new Error(`Error deleting rows: ${batchRes.statusText}`);
+    //     }
+    //     const result = await batchRes.json();
+    //     console.log(`Deleted ${rowIndexes.length} rows`, result);
+    //     return result;
+    // }
 
 
     /**

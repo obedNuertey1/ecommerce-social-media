@@ -45,6 +45,7 @@ export default function AuthPage() {
   const handleFacebookLogin = (response) => {
     setIsLoading(true);
     console.log({ response })
+    localStorage.setItem("facebookResponse", JSON.stringify(response));
     if (!acceptedTerms) {
       toast.error("You must accept the terms to continue");
       setIsLoading(false);

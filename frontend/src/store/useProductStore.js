@@ -129,6 +129,7 @@ export const useProductStore = create((set, get)=>({
                 description: formData.description,
                 ...mediaUploadRes
             }
+            console.log({mediaUploadRes})
             
             await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, productSchema.sheetName, data, productSchema.shape);
 

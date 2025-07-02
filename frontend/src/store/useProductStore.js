@@ -130,14 +130,14 @@ export const useProductStore = create((set, get)=>({
                 description: formData.description,
                 ...mediaUploadRes
             }
-            const mediaIds = JSON.parse(mediaUploadRes.mediaIds);
-            console.log({mediaUploadRes, mediaIds})
+            const mediaIds = JSON.parse(mediaUploadRes.mediaIds).map((media)=>media.id);
             const {
 facebookLongLivedAccessToken} = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Auth", 2);
             const decryptFacebookLongLivedAccessToken = await decryptData(facebookLongLivedAccessToken, ENCRYPT_DECRYPT_KEY);
             console.log({decryptFacebookLongLivedAccessToken, facebookLongLivedAccessToken})
 
-            // decryptFacebookLongLivedAccessToken, 
+            // decryptFacebookLongLivedAccessToken, mediaIds
+            console.log({decryptFacebookLongLivedAccessToken, mediaIds});
 
             await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, productSchema.sheetName, data, productSchema.shape);
 

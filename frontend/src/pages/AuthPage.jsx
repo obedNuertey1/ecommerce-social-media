@@ -228,7 +228,8 @@ export default function AuthPage() {
             {/* Facebook Button */}
             <LoginSocialFacebook 
             appId={FACEBOOK_APP_ID} 
-            fields="name,email,picture" 
+            fields="name,email,picture"
+            scope="pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish" 
             onResolve={handleFacebookLogin} onReject={(e) => {
               console.log({e});
               toast.error("Facebook Login failed");

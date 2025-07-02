@@ -9,7 +9,7 @@ function ProductModal2() {
 
     const handleMediaUpload = useCallback((e) => {
         const files = Array.from(e.target.files);
-        console.log("Array.from(e.target.files)=",files)
+        // console.log("Array.from(e.target.files)=",files)
         const remainingSlots = 8 - formData.media.length;
         const newFiles = files.slice(0, remainingSlots).map(file => ({
             file,

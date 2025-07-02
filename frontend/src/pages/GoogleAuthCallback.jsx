@@ -42,7 +42,7 @@ async function exchangeFacebookToken(appId, appSecret, shortLivedToken) {
         }
 
         const data = await response.json();
-        console.log('Long-lived token data:', data);
+        // console.log('Long-lived token data:', data);
         return data;
     } catch (error) {
         console.error('Error exchanging token:', error);
@@ -58,7 +58,7 @@ function GoogleAuthCallback() {
     // get code
     const code = query.get("code");
     const runOnceRef = useRef(false);
-    console.log({ code })
+    // console.log({ code })
     useEffect(() => {
         const getRefreshToken = async () => {
             if (runOnceRef.current) return;
@@ -78,13 +78,13 @@ function GoogleAuthCallback() {
                 body: data.toString()
             })
                 .then(response => {
-                    console.log({response});
+                    // console.log({response});
                     return response.json();
                 })
                 .then(async (result) => {
                     try {
                         // const {promise, cancel} = cancellableWaiting(2000);
-                        console.log({ result });
+                        // console.log({ result });
                         const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
                         const userId = getUserIdFromIdToken(result.id_token);
                         // this.gapi.auth.getToken().access_token
@@ -95,7 +95,7 @@ function GoogleAuthCallback() {
                                 }
                             }
                         }
-                        console.log({gapi2});
+                        // console.log({gapi2});
                         // Set tokens to authenticate user
                         gapi.auth.setToken(result);
                         // gapi.auth2.getAuthInstance().setAccessToken(result.access_token);
@@ -106,7 +106,7 @@ function GoogleAuthCallback() {
                         // Encrypt meta refresh and access tokens
                         const googleSheet = new GoogleSheetsAPI(gapi2);
                         const facebookAuthData = JSON.parse(localStorage.getItem("facebookAuthToken"));
-                        console.log({facebookAuthData});
+                        // console.log({facebookAuthData});
                         const longLivedFBTokenData = {};
                         if (facebookAuthData) {
                             const facebookAccessToken = facebookAuthData.accessToken
@@ -114,7 +114,7 @@ function GoogleAuthCallback() {
                             longLivedFBTokenData["facebookLongLivedAccessToken"] = await encryptData(longLivedTokenData.access_token, ENCRYPT_DECRYPT_KEY);
                             longLivedFBTokenData["facebookLongLivedAccessTokenExpires"] = longLivedTokenData.expires_in;
                             longLivedFBTokenData["facebookUserId"] = facebookAuthData.userID;
-                            console.log({longLivedTokenData, facebookAccessToken})
+                            // console.log({longLivedTokenData, facebookAccessToken})
                         }
                         
                         const authObj = {
@@ -134,7 +134,7 @@ function GoogleAuthCallback() {
                         }
 
                         await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, AuthSchema.sheetName, authObj, AuthSchema.shape);
-                        console.log({ result })
+                        // console.log({ result })
                         // Authenticate user and redirect to homepage (if given the right privilege)
                         // localStorage.clear();
                         localStorage.setItem("googleAuthToken", JSON.stringify(result));

@@ -154,7 +154,7 @@ export default function AuthPage() {
 
 
       const pages = JSON.parse(passkeyToLocalStorage).accessiblePages;
-      console.log({pages});
+      // console.log({pages});
       let url = "";
       if (pages.includes("products")) {
         url = "/";

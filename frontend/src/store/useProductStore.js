@@ -33,7 +33,7 @@ export const useProductStore = create((set, get)=>({
             const imagesToUpdate = formData.media.filter((blob)=>(blob?.operation === "update"));
             const getAllMediaInFolder = formData.media.map((blob)=>{
                     if(blob?.operation === "update" || !blob.hasOwnProperty("operation")){
-                        console.log({blob})
+                        // console.log({blob})
                         const mediaId = product.mediaIds.find((media)=>media?.id == blob?.id);
                         return {
                             id: mediaId.id,
@@ -44,12 +44,12 @@ export const useProductStore = create((set, get)=>({
                     return null;
             })
             .filter((media)=>media !== null);
-            console.log({newImagesToAdd, imagesToUpdate, imagesToDelete, product
-                , getAllMediaInFolder
-            });
+            // console.log({newImagesToAdd, imagesToUpdate, imagesToDelete, product
+            //     , getAllMediaInFolder
+            // });
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
-            console.log({folderId: product.mediaFolderId});
+            // console.log({folderId: product.mediaFolderId});
             // // update media in the product's folder
             const updateRes = await googleDrive.replaceMultipleFilesInFolder(product.mediaFolderId, imagesToUpdate);
             // // add new media to the prouduct's folder

@@ -64,7 +64,7 @@ function FacebookCallback() {
                     const isSignedIn = await authInstance.isSignedIn.get();
                     const title = GOOGLE_SPREADSHEET_NAME;
 
-                    console.log("Before if (isSignedIn) { This is supposed to house the authData");
+                    // console.log("Before if (isSignedIn) { This is supposed to house the authData");
                     if (isSignedIn) {
                         // console.log({initSheetSchema})
                         const googleDrive = new GoogleDriveAPI(gapi);
@@ -73,9 +73,9 @@ function FacebookCallback() {
                         initSheetSchema.push(settingsSchema())
                         const sheetRes = await googleSheet.createSpreadsheetWithSheetsAndHeaders(title, initSheetSchema);
                         const authData = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Auth", 2);
-                        console.log("After if (isSignedIn) { This is supposed to house the authData");
+                        // console.log("After if (isSignedIn) { This is supposed to house the authData");
 
-                        console.log("This is supposed to house the authData");
+                        // console.log("This is supposed to house the authData");
                         // Check google spreadsheet if google refresh token exist
                         if (authData) {
                             console.log({ authData })
@@ -98,7 +98,7 @@ function FacebookCallback() {
                                 }
                             }
                         } else if (!authData) {
-                            console.log("else if (!authData) {")
+                            // console.log("else if (!authData) {")
                             // Means the user is a new user
                             // If so we need to create a refresh token for the new user
                             // logoutuser
@@ -129,7 +129,7 @@ function FacebookCallback() {
                             localStorage.setItem("logged-in", "false");
                         }
 
-                        console.log("Navigate to home page");
+                        // console.log("Navigate to home page");
                         window.location.href = "/";
                     }
                 } catch (e) {

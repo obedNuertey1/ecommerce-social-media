@@ -183,7 +183,7 @@ function App() {
       playNewArrivlsNotification();
       cancel();
       await promise;
-      console.log("settings.notifications.volume / 100=", settings.notifications.volume / 100)
+      // console.log("settings.notifications.volume / 100=", settings.notifications.volume / 100)
       if (data.length === 1) {
         textToSpeech(`You have a new order.`, "en-GB", 1, 1, 5, (settings.notifications.volume / 100));
       } else {

@@ -132,7 +132,7 @@ export default function OrdersPage() {
             Items: ${order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}
             Total: $${Number(order.total).toFixed(2)}
             Status: ${order.status}`;
-            console.log("copyToClipboard=", text);
+            // console.log("copyToClipboard=", text);
         navigator.clipboard.writeText(text);
         toast.success('Order details copied to clipboard');
         if(localStorage.getItem("passkey")){

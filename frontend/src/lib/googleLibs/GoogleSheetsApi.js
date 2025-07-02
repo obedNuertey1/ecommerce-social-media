@@ -978,7 +978,7 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
         // if (Array.isArray(rowData)) {
         //     return this.appendSpreadsheetValues(spreadsheetId, sheetName, rowData, valueInputOption);
         // }
-        console.log({ rowData: [...rowData] });
+        // console.log({ rowData: [...rowData] });
         return this.appendSpreadsheetValues(spreadsheetId, sheetName, [...rowData], valueInputOption);
     }
 
@@ -1221,36 +1221,36 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
  */
     async appendRowInPage(spreadsheetName, sheetName, data, schema) {
         try {
-            console.log("line 1088 just below try keyword", spreadsheetName);
+            // console.log("line 1088 just below try keyword", spreadsheetName);
             // Retrieve the spreadsheet by name.
             const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
-            console.log("line 1090", { spreadsheet });
+            // console.log("line 1090", { spreadsheet });
             if (!spreadsheet) {
                 throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
             }
-            console.log("line 1092", { spreadsheet });
+            // console.log("line 1092", { spreadsheet });
             const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
 
             if (Array.isArray(data)) {
-                console.log("line 1098", { spreadsheet });
+                // console.log("line 1098", { spreadsheet });
                 const finalRowData = [];
                 for (let i = 0; i < data.length; i++) {
                     let val = data[i];
-                    console.log("line 1102", { val });
+                    // console.log("line 1102", { val });
                     const rowData = schema.map(key => {
                         let value = val[key];
                         if (value && typeof value === "object") {
                             return JSON.stringify(value);
                         }
-                        console.log("line 1105", { value });
+                        // console.log("line 1105", { value });
                         return value;
                     })
-                    console.log("line 1111", { rowData });
+                    // console.log("line 1111", { rowData });
                     finalRowData.push(rowData);
                 }
-                console.log("line 1110", { finalRowData });
+                // console.log("line 1110", { finalRowData });
                 const response = await this.appendRow(spreadsheetId, sheetName, finalRowData);
-                console.log("line 1115", { response });
+                // console.log("line 1115", { response });
                 // console.log(`${sheetName} row appended:`, response);
                 return response;
             }
@@ -1258,19 +1258,19 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
             // Convert the data object into an array based on the schema order.
             const rowData = schema.map(key => {
                 let value = data[key];
-                console.log("line 1124", { value });
+                // console.log("line 1124", { value });
                 // If the value is an object, you can store it as a JSON string.
                 if (value && typeof value === "object") {
                     return JSON.stringify(value);
                 }
                 return value;
             });
-            console.log("line 1128", { rowData });
+            // console.log("line 1128", { rowData });
 
             // Append the row to the "Settings" sheet.
             // Assume you have defined appendRow which wraps appendSpreadsheetValues.
             const response = await this.appendRow(spreadsheetId, sheetName, [rowData]);
-            console.log("line 1132", { response });
+            // console.log("line 1132", { response });
             // console.log(`${sheetName} row appended:`, response);
             return response;
         } catch (error) {
@@ -1825,12 +1825,12 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
             // data.values is an array of rows, but since we requested a single row, return the first element.
             data.values.unshift(headers);
             const toObjArr = await convert2dArrToObjArr(data.values);
-            console.log({ toObjArr })
+            // console.log({ toObjArr })
             if (sheetName === "Auth" || sheetName === "Passkeys") {
                 return toObjArr ? toObjArr[0] : null;
             }
             const getMediaUrlsResult = await getMediaUrls(toObjArr);
-            console.log({ getMediaUrlsResult: getMediaUrlsResult[0] })
+            // console.log({ getMediaUrlsResult: getMediaUrlsResult[0] })
             return getMediaUrlsResult[0];
         } catch (error) {
             console.error(`Error retrieving row ${rowIndex} from sheet ${sheetName}:`, error);

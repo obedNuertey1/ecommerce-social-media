@@ -37,10 +37,10 @@ const generateData = (platforms = ['Facebook', 'Instagram', 'Threads']) =>
     );
 
 const CustomPieTooltip = ({ actualData, active, payload }) => {
-    console.log({ actualData, payload })
+    // console.log({ actualData, payload })
     if (active && payload && payload.length) {
         const total = actualData.map((elem, i) => (elem.likes)).reduce((elem, i, accum) => (elem + i), 0);
-        console.log({ total })
+        // console.log({ total })
 
         const percentage = ((payload[0].value / total) * 100).toFixed(1);
 
@@ -124,7 +124,7 @@ const AnalyticsDashboard = () => {
             if(localStorage.getItem("passkey")){
                 if(pageLoadedRef.current) return;
                 const passkeyName = localStorage.getItem("passkeyName");
-                console.log({formData});
+                // console.log({formData});
                 createLogs("Accessed", `${passkeyName} entered the ${formData.name} Product with id ${id} Analytics's Page`)
                 pageLoadedRef.current = true;
             }

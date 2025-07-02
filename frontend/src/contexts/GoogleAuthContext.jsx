@@ -183,7 +183,7 @@ export function GoogleAuthProvider({ children }) {
                     localStorage.setItem("logged-in", "false");
                 }
 
-                console.log("Before if (isSignedIn) { This is supposed to house the authData");
+                // console.log("Before if (isSignedIn) { This is supposed to house the authData");
                 if (isSignedIn) {
                     // console.log({initSheetSchema})
                     const googleDrive = new GoogleDriveAPI(gapi);
@@ -192,10 +192,10 @@ export function GoogleAuthProvider({ children }) {
                     initSheetSchema.push(settingsSchema())
                     const sheetRes = await googleSheet.createSpreadsheetWithSheetsAndHeaders(title, initSheetSchema);
                     const authData = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Auth", 2);
-                    console.log("After if (isSignedIn) { This is supposed to house the authData");
+                    // console.log("After if (isSignedIn) { This is supposed to house the authData");
 
                     // Check google spreadsheet if google refresh token exist
-                    console.log("This is supposed to house the authData");
+                    // console.log("This is supposed to house the authData");
                     // if (authData) {
                     //     console.log({authData})
                     //     if (authData.googleRefreshToken) {

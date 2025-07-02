@@ -17,7 +17,7 @@ function useTokenRefresh() {
                     // Optionally, update the gapi client if needed:
                     gapi.auth.setToken(newAuthResponse);
                     gapi.client.setToken(newAuthResponse);
-                    console.log("Token refreshed and stored:", newAuthResponse);
+                    // console.log("Token refreshed and stored:", newAuthResponse);
                 } catch (error) {
                     console.error("Error refreshing token:", error);
                 }

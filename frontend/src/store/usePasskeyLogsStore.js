@@ -74,7 +74,7 @@ export const usePasskeyLogsStore = create((set, get) => ({
                 })
                 const googleSheet = new GoogleSheetsAPI(gapi);
                 await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, passkeyLogsSchema.sheetName, newPasskeyLogs, passkeyLogsSchema.shape);
-                console.log({ passkeyLogsSchema, newPasskeyLogs });
+                // console.log({ passkeyLogsSchema, newPasskeyLogs });
             }
             const randomNum = Math.random() * 1000;
             return [String(randomNum)];

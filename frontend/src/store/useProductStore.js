@@ -130,7 +130,9 @@ export const useProductStore = create((set, get)=>({
                 ...mediaUploadRes
             }
             console.log({mediaUploadRes})
-            
+            const authResponse = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Auth", 2);
+            console.log({authResponse});
+
             await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, productSchema.sheetName, data, productSchema.shape);
 
             if(passkey){

@@ -4,11 +4,12 @@ import {toast} from "react-hot-toast";
 import {GoogleDriveAPI, GoogleSheetsAPI} from "../lib/googleLibs";
 import {schemas} from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
-import { createLogs } from "../funcs/essentialFuncs";
+import { createLogs, decryptData } from "../funcs/essentialFuncs";
 
 const productSchema = schemas.find((schema)=>schema.sheetName==="Products");
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 const GOOGLE_DRIVE_NAME = import.meta.env.VITE_GOOGLE_DRIVE_NAME;
+const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
 
 const passkeyName = localStorage.getItem("passkeyName");
 const passkey = localStorage.getItem("passkey");
@@ -130,8 +131,10 @@ export const useProductStore = create((set, get)=>({
                 ...mediaUploadRes
             }
             console.log({mediaUploadRes})
-            const authResponse = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Auth", 2);
-            console.log({authResponse});
+            const {
+facebookLongLivedAccessToken} = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Auth", 2);
+            const decryptFacebookLongLivedAccessToken = await decryptData(facebookLongLivedAccessToken, ENCRYPT_DECRYPT_KEY);
+            console.log({decryptFacebookLongLivedAccessToken, facebookLongLivedAccessToken})
 
             await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, productSchema.sheetName, data, productSchema.shape);
 

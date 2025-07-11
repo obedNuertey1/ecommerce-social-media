@@ -3,20 +3,20 @@ import axios from 'axios'
 // const endpointVersion = "v19.0"
 const endpointVersion = "v23.0"
 
-//–– Helper: get your Page ID and Instagram Business ID ––//
+//–– Get Page ID, Instagram ID & PAGE ACCESS TOKEN ––//
 async function getPageAndIgIds(userToken) {
-    // 1. List pages the user manages
+    // 1. Get managed pages + PAGE ACCESS TOKEN
     const { data: pages } = await axios.get(
         `https://graph.facebook.com/${endpointVersion}/me/accounts`,
         { params: { access_token: userToken } }
-    )
-    if (!pages.data?.length) {
-        throw new Error('No pages found for this user token.')
-    }
-    const page = pages.data[0]
-    const pageId = page.id
+    );
+    
+    if (!pages.data?.length) throw new Error('No pages found');
+    const page = pages.data[0];
+    const pageId = page.id;
+    const pageAccessToken = page.access_token; // CRITICAL
 
-    // 2. Fetch linked Instagram Business account
+    // 2. Get linked Instagram account (Professional/Business)
     const { data: pageInfo } = await axios.get(
         `https://graph.facebook.com/${endpointVersion}/${pageId}`,
         {
@@ -25,69 +25,70 @@ async function getPageAndIgIds(userToken) {
                 access_token: userToken,
             },
         }
-    )
-    const igBusiness = pageInfo.instagram_business_account
-    if (!igBusiness?.id) {
-        throw new Error('This page has no Instagram Business account linked.')
-    }
+    );
+    const igBusiness = pageInfo.instagram_business_account;
+    if (!igBusiness?.id) throw new Error('No linked Instagram account');
 
-    return { pageId, igBusinessId: igBusiness.id }
+    return { pageId, igBusinessId: igBusiness.id, pageAccessToken }; // Include token
 }
 
-//–– CREATE ––//
+//–– CREATE POST ––//
 export const createSocialMediaPost = async (
-    fbLongLivedAccessToken,
+    userToken, // Renamed from fbLongLivedAccessToken
     caption,
-    description,
-    mediaUrl
+    mediaUrl, // For Instagram
+    description = "", // Optional for Facebook
+    link = "" // Optional for Facebook
 ) => {
-    const { pageId, igBusinessId } = await getPageAndIgIds(fbLongLivedAccessToken)
+    const { pageId, igBusinessId, pageAccessToken } = await getPageAndIgIds(userToken);
 
-    // 1) Create on Facebook Page
+    // 1. Post to Facebook Page (use PAGE token)
     const fbRes = await axios.post(
         `https://graph.facebook.com/${endpointVersion}/${pageId}/feed`,
         null,
         {
             params: {
                 message: `${caption}\n\n${description}`,
-                link: mediaUrl,
-                access_token: fbLongLivedAccessToken,
+                link: link || mediaUrl, // Fallback to mediaUrl
+                access_token: pageAccessToken, // USE PAGE TOKEN
             },
         }
-    )
+    );
 
-    // 2) Create on Instagram Business
-    //  2a) Upload media container
+    // 2. Post to Instagram (REQUIRES PAGE TOKEN)
+    // 2a. Create media container
     const igUpload = await axios.post(
         `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media`,
         null,
         {
             params: {
                 image_url: mediaUrl,
-                caption: `${caption}\n\n${description}`,
-                access_token: fbLongLivedAccessToken,
+                caption: caption,
+                access_token: pageAccessToken, // USE PAGE TOKEN
             },
         }
-    )
-    const creationId = igUpload.data.id
+    );
+    const creationId = igUpload.data.id;
 
-    //  2b) Publish
+    // 2b. Publish the container
     const igPublish = await axios.post(
         `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media_publish`,
         null,
         {
             params: {
                 creation_id: creationId,
-                access_token: fbLongLivedAccessToken,
+                access_token: pageAccessToken, // USE PAGE TOKEN
             },
         }
-    )
+    );
 
     return {
         facebookPostId: fbRes.data.id,
         instagramPostId: igPublish.data.id,
-    }
-}
+        pageAccessToken // Return for future operations
+    };
+};
+
 
 //–– READ ––//
 export const readSocialMediaPost = async (fbLongLivedAccessToken, postId) => {

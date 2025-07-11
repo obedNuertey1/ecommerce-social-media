@@ -42,6 +42,9 @@ export default function AuthPage() {
   const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
   const navigate = useNavigate();
 
+  // const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
+  const fbScopes = "";
+
   const handleFacebookLogin = (response) => {
     setIsLoading(true);
     console.log({ response })
@@ -229,7 +232,7 @@ export default function AuthPage() {
             <LoginSocialFacebook 
             appId={FACEBOOK_APP_ID} 
             fields="name,email,picture"
-            scope="pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish" 
+            scope={fbScopes}
             onResolve={handleFacebookLogin} onReject={(e) => {
               console.log({e});
               toast.error("Facebook Login failed");

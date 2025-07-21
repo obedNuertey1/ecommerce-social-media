@@ -42,8 +42,8 @@ export default function AuthPage() {
   const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
   const navigate = useNavigate();
 
-  // const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
-  const fbScopes = "";
+  const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
+  // const fbScopes = "";
 
   const handleFacebookLogin = (response) => {
     setIsLoading(true);
@@ -232,6 +232,7 @@ export default function AuthPage() {
             <LoginSocialFacebook 
             appId={FACEBOOK_APP_ID} 
             fields="name,email,picture"
+            version="v19.0"
             scope={fbScopes}
             onResolve={handleFacebookLogin} onReject={(e) => {
               console.log({e});

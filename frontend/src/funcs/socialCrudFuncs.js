@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-// const endpointVersion = "v19.0"
-const endpointVersion = "v23.0"
+const endpointVersion = "v19.0"
+// const endpointVersion = "v23.0"
 
 //–– Get Page ID, Instagram ID & PAGE ACCESS TOKEN ––//
 async function getPageAndIgIds(userToken) {

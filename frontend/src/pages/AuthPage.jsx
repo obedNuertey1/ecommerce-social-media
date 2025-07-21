@@ -42,6 +42,7 @@ export default function AuthPage() {
   const { loadSettings, settingsSchema } = useSettingsStore();
   const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
   const navigate = useNavigate();
+  // renect version
 
   // const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
   const fbScopes = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";

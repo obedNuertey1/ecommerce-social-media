@@ -50,41 +50,10 @@ export default function AuthPage() {
   const { loadSettings, settingsSchema } = useSettingsStore();
   const { passkey: passkeyStoreData, updatePasskey, setPasskey: setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
   const navigate = useNavigate();
-  const [fbInitialized, setFbInitialized] = useState(false);
-
-  // Initialize Facebook SDK with v19.0
-  useEffect(() => {
-    const loadFacebookSDK = () => {
-      window.fbAsyncInit = function () {
-        window.FB.init({
-          appId: FACEBOOK_APP_ID,
-          cookie: true,
-          xfbml: true,
-          version: 'v19.0' // EXPLICITLY SET VERSION
-        });
-        setFbInitialized(true);
-      };
-
-      // Load SDK asynchronously
-      (function (d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0];
-        if (d.getElementById(id)) return;
-        js = d.createElement(s); js.id = id;
-        js.src = "https://connect.facebook.net/en_US/sdk.js";
-        fjs.parentNode.insertBefore(js, fjs);
-      }(document, 'script', 'facebook-jssdk'));
-    };
-
-    if (!window.FB) {
-      loadFacebookSDK();
-    } else {
-      setFbInitialized(true);
-    }
-  }, []);
+  // recent version
 
   // const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
-  // const fbScopes = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
-  // const FB_SCOPES = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
+  const fbScopes = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
 
   // const handleFacebookLogin = (response) => {
   //   setIsLoading(true);

@@ -40,29 +40,108 @@ export default function AuthPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { gapi } = useGoogleAuthContext();
   const { loadSettings, settingsSchema } = useSettingsStore();
-  const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
+  const { passkey: passkeyStoreData, updatePasskey, setPasskey: setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
   const navigate = useNavigate();
-  // renect version
+  const [fbInitialized, setFbInitialized] = useState(false);
+
+  // Initialize Facebook SDK with v19.0
+  useEffect(() => {
+    const loadFacebookSDK = () => {
+      window.fbAsyncInit = function () {
+        window.FB.init({
+          appId: FACEBOOK_APP_ID,
+          cookie: true,
+          xfbml: true,
+          version: 'v19.0' // EXPLICITLY SET VERSION
+        });
+        setFbInitialized(true);
+      };
+
+      // Load SDK asynchronously
+      (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    };
+
+    if (!window.FB) {
+      loadFacebookSDK();
+    } else {
+      setFbInitialized(true);
+    }
+  }, []);
 
   // const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
-  const fbScopes = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
+  // const fbScopes = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
 
-  const handleFacebookLogin = (response) => {
+  const handleFacebookLogin = async () => {
     setIsLoading(true);
-    console.log({ response })
-    localStorage.setItem("facebookResponse", JSON.stringify(response));
     if (!acceptedTerms) {
       toast.error("You must accept the terms to continue");
       setIsLoading(false);
       return;
     }
-    localStorage.setItem("facebookAuthToken", JSON.stringify(response.data));
 
-    setIsLoading(false);
-    // Existing Facebook logic
-    localStorage.setItem("facebookAuthCallbackActivated", "true");
-    window.location.href = "/facebook/auth/callback/";
+    try {
+      // Login with required permissions
+      const response = await new Promise((resolve, reject) => {
+        window.FB.login(res => {
+          if (res.authResponse) resolve(res);
+          else reject(new Error("Login failed or cancelled"));
+        }, {
+          scope: FB_SCOPES,
+          return_scopes: true
+        });
+      });
+
+      // Exchange for long-lived token
+      const longLivedToken = await exchangeToken(response.authResponse.accessToken);
+
+      // Store encrypted credentials
+      const facebookData = {
+        token: longLivedToken,
+        expiresAt: Date.now() + (60 * 24 * 60 * 60 * 1000) // 60 days
+      };
+
+      const encryptedData = await encryptData(
+        JSON.stringify(facebookData),
+        ENCRYPT_DECRYPT_KEY
+      );
+
+      localStorage.setItem("facebookAuth", encryptedData);
+      toast.success("Facebook & Instagram connected!");
+
+      // Redirect to callback
+      localStorage.setItem("facebookAuthCallbackActivated", "true");
+      window.location.href = "/facebook/auth/callback/";
+
+    } catch (error) {
+      console.error("Facebook login failed:", error);
+      toast.error(error.message || "Connection failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // const handleFacebookLogin = (response) => {
+  //   setIsLoading(true);
+  //   console.log({ response })
+  //   localStorage.setItem("facebookResponse", JSON.stringify(response));
+  //   if (!acceptedTerms) {
+  //     toast.error("You must accept the terms to continue");
+  //     setIsLoading(false);
+  //     return;
+  //   }
+  //   localStorage.setItem("facebookAuthToken", JSON.stringify(response.data));
+
+  //   setIsLoading(false);
+  //   // Existing Facebook logic
+  //   localStorage.setItem("facebookAuthCallbackActivated", "true");
+  //   window.location.href = "/facebook/auth/callback/";
+  // };
 
   const handlePasskeyLogin = async (e) => {
     e.preventDefault();
@@ -77,10 +156,10 @@ export default function AuthPage() {
         toast.error("Please enter a valid passkey");
         return;
       }
-      
+
       // 1. Validate passkey
       const encryptedRefreshToken = (passkey.split(HASH_SPLIT_POINT))[1];
-      if(!encryptedRefreshToken){
+      if (!encryptedRefreshToken) {
         toast.error("Invalid passkey");
         return;
       }
@@ -100,16 +179,16 @@ export default function AuthPage() {
         },
         body: data.toString()
       })
-      if(!response.status){
+      if (!response.status) {
         toast.error("Passkey invalid");
         throw new Error("Error refreshing token");
       }
       const result = await response.json();
       const resultData = await result;
-      const gapiData = {...resultData, refresh_token: REFRESH_TOKEN};
+      const gapiData = { ...resultData, refresh_token: REFRESH_TOKEN };
       const gapi2 = {
         auth: {
-          getToken(){
+          getToken() {
             return gapiData;
           }
         }
@@ -122,7 +201,7 @@ export default function AuthPage() {
 
 
       const passkeyExist = Boolean(passkeyFromSheet);
-      if(!passkeyExist){
+      if (!passkeyExist) {
         toast.error("Passkey invalid");
         gapi.auth2.getAuthInstance().signOut()
         throw new Error("Passkey invalid");
@@ -131,12 +210,12 @@ export default function AuthPage() {
       passkeyFromSheet.isOnline = "true";
       const passkeyToLocalStorage = JSON.stringify(passkeyFromSheet);
       const passkeyToLocalStorage2 = await encryptData(passkeyToLocalStorage, ENCRYPT_DECRYPT_KEY);
-      
+
       passkeyFromSheet.accessiblePages = JSON.stringify(passkeyFromSheet.accessiblePages);
       passkeyFromSheet.privileges = JSON.stringify(passkeyFromSheet.privileges);
       setPasskeyStoreData(passkeyFromSheet);
       await updatePasskey(gapi2, passkeyFromSheet.id);
-      
+
 
       const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
 
@@ -149,12 +228,12 @@ export default function AuthPage() {
       localStorage.setItem("passkey_logs", JSON.stringify([]));
       localStorage.setItem("passkeyName", passkeyFromSheet.name);
 
-      if(passkeyToLocalStorage2){
-          const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
-          // setGetPasskey({...JSON.parse(passkeyData)});
-          let {accessiblePages, privileges} = JSON.parse(passkeyData);
-          localStorage.setItem("accessiblePages", JSON.stringify(accessiblePages));
-          localStorage.setItem("privileges", JSON.stringify(privileges));
+      if (passkeyToLocalStorage2) {
+        const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
+        // setGetPasskey({...JSON.parse(passkeyData)});
+        let { accessiblePages, privileges } = JSON.parse(passkeyData);
+        localStorage.setItem("accessiblePages", JSON.stringify(accessiblePages));
+        localStorage.setItem("privileges", JSON.stringify(privileges));
       }
 
 
@@ -182,7 +261,7 @@ export default function AuthPage() {
       window.location.href = url;
     } catch (error) {
       toast.error("Authentication failed");
-      console.error({error});
+      console.error({ error });
     } finally {
       setPasskeyLoading(false);
     }
@@ -231,20 +310,19 @@ export default function AuthPage() {
           {/* Login Options */}
           <div className="w-full space-y-3 sm:space-y-4">
             {/* Facebook Button */}
-            <LoginSocialFacebook 
-            appId={FACEBOOK_APP_ID} 
-            fields="name,email,picture"
-            version="v19.0"
-            scope={fbScopes}
-            onResolve={handleFacebookLogin} onReject={(e) => {
-              console.log({e});
-              toast.error("Facebook Login failed");
-            }}>
+            {/* <LoginSocialFacebook
+              appId={FACEBOOK_APP_ID}
+              fields="name,email,picture"
+              version="v19.0"
+              scope={fbScopes}
+              onResolve={handleFacebookLogin} onReject={(e) => {
+                console.log({ e });
+                toast.error("Facebook Login failed");
+              }}>
               <button
                 disabled={isLoading || !acceptedTerms}
                 className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
               >
-                {/* bg-[#1877F2] hover:bg-[#166FE5] text-white */}
                 {isLoading ? (
                   <span className="loading loading-spinner"></span>
                 ) : (
@@ -254,7 +332,22 @@ export default function AuthPage() {
                   </>
                 )}
               </button>
-            </LoginSocialFacebook>
+            </LoginSocialFacebook> */}
+            {/* UPDATED Facebook Button */}
+            <button
+              onClick={handleFacebookLogin}
+              disabled={isLoading || !acceptedTerms || !fbInitialized}
+              className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
+            >
+              {isLoading ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                <>
+                  <FacebookIcon className="w-4 h-4 sm:w-6 sm:h-6" />
+                  <span className="text-xs sm:text-base">Continue with Facebook</span>
+                </>
+              )}
+            </button>
 
             {/* Divider */}
             <div className="flex items-center gap-2 sm:gap-4 text-base-content/50 text-xs">

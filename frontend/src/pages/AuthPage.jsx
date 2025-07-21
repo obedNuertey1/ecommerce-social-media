@@ -33,6 +33,14 @@ const HASH_SPLIT_POINT = import.meta.env.VITE_HASH_SPLIT_POINT;
 
 const passkeySchema = initSheetSchema.find((schema) => schema.sheetName === "Passkeys");
 
+const FB_SCOPES = [
+  'pages_show_list',
+  'pages_manage_posts',
+  'instagram_basic',
+  'instagram_content_publish',
+  'business_management'
+].join(',');
+
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [passkey, setPasskey] = useState("");
@@ -40,29 +48,58 @@ export default function AuthPage() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { gapi } = useGoogleAuthContext();
   const { loadSettings, settingsSchema } = useSettingsStore();
-  const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
+  const { passkey: passkeyStoreData, updatePasskey, setPasskey: setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
   const navigate = useNavigate();
   // renect version
 
   // const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
   const fbScopes = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
 
-  const handleFacebookLogin = (response) => {
-    setIsLoading(true);
-    console.log({ response })
-    localStorage.setItem("facebookResponse", JSON.stringify(response));
+  // const handleFacebookLogin = (response) => {
+  //   setIsLoading(true);
+  //   console.log({ response })
+  //   localStorage.setItem("facebookResponse", JSON.stringify(response));
+  //   if (!acceptedTerms) {
+  //     toast.error("You must accept the terms to continue");
+  //     setIsLoading(false);
+  //     return;
+  //   }
+  //   localStorage.setItem("facebookAuthToken", JSON.stringify(response.data));
+
+  //   setIsLoading(false);
+  //   // Existing Facebook logic
+  //   localStorage.setItem("facebookAuthCallbackActivated", "true");
+  //   window.location.href = "/facebook/auth/callback/";
+  // };
+
+  // NEW: Direct OAuth redirect for v19.0
+  const initiateFacebookLogin = () => {
     if (!acceptedTerms) {
       toast.error("You must accept the terms to continue");
-      setIsLoading(false);
       return;
     }
-    localStorage.setItem("facebookAuthToken", JSON.stringify(response.data));
 
-    setIsLoading(false);
-    // Existing Facebook logic
-    localStorage.setItem("facebookAuthCallbackActivated", "true");
-    window.location.href = "/facebook/auth/callback/";
+    setIsLoading(true);
+
+    // Generate a random state token for CSRF protection
+    const stateToken = Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15);
+
+    localStorage.setItem("fb_oauth_state", stateToken);
+
+    // Construct the OAuth URL with v19.0
+    const params = new URLSearchParams({
+      client_id: FACEBOOK_APP_ID,
+      redirect_uri: `${ORIGIN}/facebook/auth/callback/`,
+      scope: FB_SCOPES,
+      state: stateToken,
+      response_type: 'code',
+      version: 'v19.0'
+    });
+
+    window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`;
   };
+
 
   const handlePasskeyLogin = async (e) => {
     e.preventDefault();
@@ -77,10 +114,10 @@ export default function AuthPage() {
         toast.error("Please enter a valid passkey");
         return;
       }
-      
+
       // 1. Validate passkey
       const encryptedRefreshToken = (passkey.split(HASH_SPLIT_POINT))[1];
-      if(!encryptedRefreshToken){
+      if (!encryptedRefreshToken) {
         toast.error("Invalid passkey");
         return;
       }
@@ -100,16 +137,16 @@ export default function AuthPage() {
         },
         body: data.toString()
       })
-      if(!response.status){
+      if (!response.status) {
         toast.error("Passkey invalid");
         throw new Error("Error refreshing token");
       }
       const result = await response.json();
       const resultData = await result;
-      const gapiData = {...resultData, refresh_token: REFRESH_TOKEN};
+      const gapiData = { ...resultData, refresh_token: REFRESH_TOKEN };
       const gapi2 = {
         auth: {
-          getToken(){
+          getToken() {
             return gapiData;
           }
         }
@@ -122,7 +159,7 @@ export default function AuthPage() {
 
 
       const passkeyExist = Boolean(passkeyFromSheet);
-      if(!passkeyExist){
+      if (!passkeyExist) {
         toast.error("Passkey invalid");
         gapi.auth2.getAuthInstance().signOut()
         throw new Error("Passkey invalid");
@@ -131,12 +168,12 @@ export default function AuthPage() {
       passkeyFromSheet.isOnline = "true";
       const passkeyToLocalStorage = JSON.stringify(passkeyFromSheet);
       const passkeyToLocalStorage2 = await encryptData(passkeyToLocalStorage, ENCRYPT_DECRYPT_KEY);
-      
+
       passkeyFromSheet.accessiblePages = JSON.stringify(passkeyFromSheet.accessiblePages);
       passkeyFromSheet.privileges = JSON.stringify(passkeyFromSheet.privileges);
       setPasskeyStoreData(passkeyFromSheet);
       await updatePasskey(gapi2, passkeyFromSheet.id);
-      
+
 
       const authData = await googleSheet.getRowByIndexByName("EcommerceSpreadSheet", "Auth", 2);
 
@@ -149,12 +186,12 @@ export default function AuthPage() {
       localStorage.setItem("passkey_logs", JSON.stringify([]));
       localStorage.setItem("passkeyName", passkeyFromSheet.name);
 
-      if(passkeyToLocalStorage2){
-          const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
-          // setGetPasskey({...JSON.parse(passkeyData)});
-          let {accessiblePages, privileges} = JSON.parse(passkeyData);
-          localStorage.setItem("accessiblePages", JSON.stringify(accessiblePages));
-          localStorage.setItem("privileges", JSON.stringify(privileges));
+      if (passkeyToLocalStorage2) {
+        const passkeyData = await decryptData(passkeyToLocalStorage2, ENCRYPT_DECRYPT_KEY);
+        // setGetPasskey({...JSON.parse(passkeyData)});
+        let { accessiblePages, privileges } = JSON.parse(passkeyData);
+        localStorage.setItem("accessiblePages", JSON.stringify(accessiblePages));
+        localStorage.setItem("privileges", JSON.stringify(privileges));
       }
 
 
@@ -182,7 +219,7 @@ export default function AuthPage() {
       window.location.href = url;
     } catch (error) {
       toast.error("Authentication failed");
-      console.error({error});
+      console.error({ error });
     } finally {
       setPasskeyLoading(false);
     }
@@ -231,20 +268,19 @@ export default function AuthPage() {
           {/* Login Options */}
           <div className="w-full space-y-3 sm:space-y-4">
             {/* Facebook Button */}
-            <LoginSocialFacebook 
-            appId={FACEBOOK_APP_ID} 
-            fields="name,email,picture"
-            version="v19.0"
-            scope={fbScopes}
-            onResolve={handleFacebookLogin} onReject={(e) => {
-              console.log({e});
-              toast.error("Facebook Login failed");
-            }}>
+            {/* <LoginSocialFacebook
+              appId={FACEBOOK_APP_ID}
+              fields="name,email,picture"
+              version="v19.0"
+              scope={fbScopes}
+              onResolve={handleFacebookLogin} onReject={(e) => {
+                console.log({ e });
+                toast.error("Facebook Login failed");
+              }}>
               <button
                 disabled={isLoading || !acceptedTerms}
                 className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
               >
-                {/* bg-[#1877F2] hover:bg-[#166FE5] text-white */}
                 {isLoading ? (
                   <span className="loading loading-spinner"></span>
                 ) : (
@@ -254,7 +290,22 @@ export default function AuthPage() {
                   </>
                 )}
               </button>
-            </LoginSocialFacebook>
+            </LoginSocialFacebook> */}
+            {/* UPDATED Facebook Button */}
+            <button
+              onClick={initiateFacebookLogin}
+              disabled={isLoading || !acceptedTerms}
+              className="btn btn-md sm:btn-lg w-full btn-info hover:bg-info/10 hover:text-base-content"
+            >
+              {isLoading ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                <>
+                  <FacebookIcon className="w-4 h-4 sm:w-6 sm:h-6" />
+                  <span className="text-xs sm:text-base">Continue with Facebook</span>
+                </>
+              )}
+            </button>
 
             {/* Divider */}
             <div className="flex items-center gap-2 sm:gap-4 text-base-content/50 text-xs">

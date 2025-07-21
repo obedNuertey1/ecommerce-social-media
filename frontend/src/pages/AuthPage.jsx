@@ -26,6 +26,7 @@ const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 const CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
 const REDIRECT_URI = `${ORIGIN}${import.meta.env.VITE_GOOGLE_REDIRECT_URI}`;
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID;
+const FACEBOOK_APP_SECRET = import.meta.env.VITE_FACEBOOK_APP_SECRET;
 const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
 const HASH_SPLIT_POINT = import.meta.env.VITE_HASH_SPLIT_POINT;
 
@@ -42,8 +43,8 @@ export default function AuthPage() {
   const { passkey: passkeyStoreData, updatePasskey, setPasskey:setPasskeyStoreData, resetPasskey, fetchPasskeys2 } = usePasskeyStore();
   const navigate = useNavigate();
 
-  const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
-  // const fbScopes = "";
+  // const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
+  const fbScopes = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
 
   const handleFacebookLogin = (response) => {
     setIsLoading(true);

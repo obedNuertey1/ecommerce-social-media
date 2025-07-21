@@ -76,6 +76,7 @@ export default function AuthPage() {
 
   // const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
   // const fbScopes = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
+  const FB_SCOPES = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
 
   const handleFacebookLogin = async () => {
     setIsLoading(true);

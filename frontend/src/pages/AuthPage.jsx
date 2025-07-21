@@ -46,22 +46,94 @@ export default function AuthPage() {
   // const fbScopes = "pages_show_list,pages_manage_posts,pages_read_engagement,pages_read_user_content,instagram_basic,instagram_content_publish";
   const fbScopes = "pages_show_list,pages_manage_posts,instagram_basic,instagram_content_publish,business_management";
 
-  const handleFacebookLogin = (response) => {
-    setIsLoading(true);
-    console.log({ response })
-    localStorage.setItem("facebookResponse", JSON.stringify(response));
-    if (!acceptedTerms) {
-      toast.error("You must accept the terms to continue");
-      setIsLoading(false);
-      return;
-    }
-    localStorage.setItem("facebookAuthToken", JSON.stringify(response.data));
+  // Changes starts here
 
-    setIsLoading(false);
-    // Existing Facebook logic
-    localStorage.setItem("facebookAuthCallbackActivated", "true");
-    window.location.href = "/facebook/auth/callback/";
+  const [fbLoginError, setFbLoginError] = useState(null);
+
+    // NEW: Token exchange function for v19.0
+  const exchangeToken = async (shortLivedToken) => {
+    try {
+      const { data } = await axios.get(
+        `https://graph.facebook.com/v19.0/oauth/access_token`, // Use v19.0
+        {
+          params: {
+            grant_type: 'fb_exchange_token',
+            client_id: FACEBOOK_APP_ID,
+            client_secret: FACEBOOK_APP_SECRET,
+            fb_exchange_token: shortLivedToken,
+          },
+        }
+      );
+      return data.access_token;
+    } catch (error) {
+      console.error('Token exchange failed:', error);
+      throw new Error('Failed to obtain long-lived token');
+    }
   };
+
+    const handleFacebookLogin = async (response) => {
+    setIsLoading(true);
+    setFbLoginError(null);
+    
+    try {
+      if (!acceptedTerms) {
+        toast.error("You must accept the terms to continue");
+        return;
+      }
+
+      const shortLivedToken = response.data.accessToken;
+      
+      // 1. Exchange for long-lived token using v19.0
+      const longLivedToken = await exchangeToken(shortLivedToken);
+      
+      // 2. Store credentials
+      const facebookData = {
+        token: longLivedToken,
+        expiresAt: Date.now() + (60 * 24 * 60 * 60 * 1000) // 60 days
+      };
+      
+      const encryptedData = await encryptData(
+        JSON.stringify(facebookData), 
+        ENCRYPT_DECRYPT_KEY
+      );
+      
+      localStorage.setItem("facebookAuth", encryptedData);
+      toast.success("Facebook & Instagram connected!");
+      
+      // 3. Continue to callback page
+      localStorage.setItem("facebookAuthCallbackActivated", "true");
+      window.location.href = "/facebook/auth/callback/";
+      
+    } catch (error) {
+      console.error("Facebook login failed:", error);
+      setFbLoginError(
+        error.message || "Failed to connect to Facebook & Instagram"
+      );
+      toast.error("Connection failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  // Changes ends here
+
+  // const handleFacebookLogin = (response) => {
+  //   setIsLoading(true);
+  //   console.log({ response })
+  //   localStorage.setItem("facebookResponse", JSON.stringify(response));
+  //   if (!acceptedTerms) {
+  //     toast.error("You must accept the terms to continue");
+  //     setIsLoading(false);
+  //     return;
+  //   }
+  //   localStorage.setItem("facebookAuthToken", JSON.stringify(response.data));
+
+  //   setIsLoading(false);
+  //   // Existing Facebook logic
+  //   localStorage.setItem("facebookAuthCallbackActivated", "true");
+  //   window.location.href = "/facebook/auth/callback/";
+  // };
 
   const handlePasskeyLogin = async (e) => {
     e.preventDefault();

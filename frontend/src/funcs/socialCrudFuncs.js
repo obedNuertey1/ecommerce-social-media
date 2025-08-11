@@ -1,161 +1,277 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const endpointVersion = "v19.0"
-// const endpointVersion = "v23.0"
+const endpointVersion = "v23.0"; // Updated to latest version
 
-//–– Get Page ID, Instagram ID & PAGE ACCESS TOKEN ––//
-async function getPageAndIgIds(userToken) {
-    // 1. Get managed pages + PAGE ACCESS TOKEN
-    const { data: pages } = await axios.get(
-        `https://graph.facebook.com/${endpointVersion}/me/accounts`,
-        { params: { access_token: userToken } }
-    );
-    
-    if (!pages.data?.length) throw new Error('No pages found');
-    const page = pages.data[0];
-    const pageId = page.id;
-    const pageAccessToken = page.access_token; // CRITICAL
+// Enhanced function to get business assets
+async function getBusinessAssets(userToken) {
+    try {
+        // 1. Get managed pages and business ID
+        const { data: pages } = await axios.get(
+            `https://graph.facebook.com/${endpointVersion}/me/accounts`,
+            { 
+                params: { 
+                    access_token: userToken,
+                    fields: 'id,access_token,business,instagram_business_account' 
+                } 
+            }
+        );
+        
+        if (!pages.data?.length) throw new Error('No pages found');
+        const page = pages.data[0];
+        const pageId = page.id;
+        const pageAccessToken = page.access_token;
+        const businessId = page.business?.id;
+        const igBusinessId = page.instagram_business_account?.id;
 
-    // 2. Get linked Instagram account (Professional/Business)
-    const { data: pageInfo } = await axios.get(
-        `https://graph.facebook.com/${endpointVersion}/${pageId}`,
-        {
-            params: {
-                fields: 'instagram_business_account',
-                access_token: userToken,
-            },
-        }
-    );
-    const igBusiness = pageInfo.instagram_business_account;
-    if (!igBusiness?.id) throw new Error('No linked Instagram account');
+        if (!businessId) throw new Error('No business account found');
+        if (!igBusinessId) throw new Error('No linked Instagram account');
 
-    return { pageId, igBusinessId: igBusiness.id, pageAccessToken }; // Include token
+        return { 
+            pageId, 
+            igBusinessId, 
+            pageAccessToken,
+            businessId
+        };
+    } catch (error) {
+        console.error('Failed to get business assets:', error.response?.data || error.message);
+        throw new Error('Business asset retrieval failed');
+    }
 }
 
-//–– CREATE POST ––//
-export const createSocialMediaPost = async (
-    userToken, // Renamed from fbLongLivedAccessToken
-    caption,
-    mediaUrl, // For Instagram
-    description = "", // Optional for Facebook
-    link = "" // Optional for Facebook
-) => {
-    const { pageId, igBusinessId, pageAccessToken } = await getPageAndIgIds(userToken);
-
-    // 1. Post to Facebook Page (use PAGE token)
-    const fbRes = await axios.post(
-        `https://graph.facebook.com/${endpointVersion}/${pageId}/feed`,
-        null,
-        {
-            params: {
-                message: `${caption}\n\n${description}`,
-                link: link || mediaUrl, // Fallback to mediaUrl
-                access_token: pageAccessToken, // USE PAGE TOKEN
+// Create product catalog (v23.0)
+export const createProductCatalog = async (userToken, catalogName = 'My Product Catalog') => {
+    try {
+        // Get business ID
+        const { businessId } = await getBusinessAssets(userToken);
+        
+        // Create catalog
+        const catalogRes = await axios.post(
+            `https://graph.facebook.com/${endpointVersion}/${businessId}/owned_product_catalogs`,
+            {
+                name: catalogName,
+                vertical: 'commerce',
+                flight_api_features_enabled: true // Required for v23.0
             },
-        }
-    );
+            { params: { access_token: userToken } }
+        );
+        
+        return catalogRes.data.id;
+    } catch (error) {
+        console.error('Catalog creation failed:', error.response?.data || error.message);
+        throw new Error('Failed to create product catalog');
+    }
+};
 
-    // 2. Post to Instagram (REQUIRES PAGE TOKEN)
-    // 2a. Create media container
-    const igUpload = await axios.post(
-        `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media`,
-        null,
-        {
-            params: {
+// Add product to catalog (v23.0)
+export const addProductToCatalog = async (userToken, catalogId, productData) => {
+    try {
+        // Required fields for v23.0
+        const requiredProduct = {
+            ...productData,
+            commerce_tax_category: 'PHYSICAL_GOODS', // New required field
+            inventory: productData.inventory || 1 // Default inventory
+        };
+
+        const productRes = await axios.post(
+            `https://graph.facebook.com/${endpointVersion}/${catalogId}/products`,
+            requiredProduct,
+            { 
+                params: { 
+                    access_token: userToken,
+                    app_id: 'YOUR_APP_ID' // Add your Facebook App ID
+                } 
+            }
+        );
+        
+        return productRes.data.id;
+    } catch (error) {
+        console.error('Product creation failed:', error.response?.data || error.message);
+        throw new Error('Failed to add product to catalog');
+    }
+};
+
+// Create social media post with product tagging (v23.0)
+export const createSocialMediaPost = async (
+    userToken,
+    caption,
+    mediaUrl,
+    options = {}
+) => {
+    const { 
+        description = "", 
+        link = "", 
+        productId = null,
+        shouldPost = true 
+    } = options;
+
+    const { pageId, igBusinessId, pageAccessToken } = await getBusinessAssets(userToken);
+
+    // Create Facebook post if shouldPost is true
+    let facebookPostId = null;
+    if (shouldPost) {
+        const fbParams = {
+            message: `${caption}\n\n${description}`,
+            access_token: pageAccessToken,
+        };
+
+        // Add product tag if productId provided
+        if (productId) {
+            fbParams.tags = [{ 
+                tag_uid: productId, // Changed parameter in v23.0
+                tag_text: 'Product',
+                x: 0.5,
+                y: 0.5
+            }];
+        } else {
+            fbParams.link = link || mediaUrl;
+        }
+
+        try {
+            const fbRes = await axios.post(
+                `https://graph.facebook.com/${endpointVersion}/${pageId}/feed`,
+                fbParams, // Changed parameter position in v23.0
+            );
+            facebookPostId = fbRes.data.id;
+        } catch (error) {
+            console.error('Facebook post failed:', error.response?.data || error.message);
+        }
+    }
+
+    // Create Instagram post if shouldPost is true
+    let instagramPostId = null;
+    if (shouldPost) {
+        try {
+            const containerParams = {
                 image_url: mediaUrl,
                 caption: caption,
-                access_token: pageAccessToken, // USE PAGE TOKEN
-            },
-        }
-    );
-    const creationId = igUpload.data.id;
+                access_token: pageAccessToken,
+            };
 
-    // 2b. Publish the container
-    const igPublish = await axios.post(
-        `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media_publish`,
-        null,
-        {
-            params: {
-                creation_id: creationId,
-                access_token: pageAccessToken, // USE PAGE TOKEN
-            },
+            // Add product tag if productId provided
+            if (productId) {
+                containerParams.shopping_metadata = JSON.stringify({
+                    product_tags: [{
+                        product_id: productId,
+                        merchant_id: pageId, // New required field in v23.0
+                        x: 0.5,
+                        y: 0.5
+                    }]
+                });
+            }
+
+            // Create media container
+            const igUpload = await axios.post(
+                `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media`,
+                containerParams // Changed parameter position in v23.0
+            );
+            
+            const creationId = igUpload.data.id;
+
+            // Publish container
+            const igPublish = await axios.post(
+                `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media_publish`,
+                { creation_id: creationId },
+                { params: { access_token: pageAccessToken } }
+            );
+            
+            instagramPostId = igPublish.data.id;
+        } catch (error) {
+            console.error('Instagram post failed:', error.response?.data || error.message);
         }
-    );
+    }
 
     return {
-        facebookPostId: fbRes.data.id,
-        instagramPostId: igPublish.data.id,
-        pageAccessToken // Return for future operations
+        facebookPostId,
+        instagramPostId,
+        pageAccessToken
     };
 };
 
+// Catalog management functions
+export const getCatalogProducts = async (userToken, catalogId) => {
+    const res = await axios.get(
+        `https://graph.facebook.com/${endpointVersion}/${catalogId}/products`,
+        { 
+            params: { 
+                access_token: userToken, 
+                fields: 'id,name,product_group{id}',
+                limit: 200
+            } 
+        }
+    );
+    return res.data.data;
+};
 
-//–– READ ––//
-export const readSocialMediaPost = async (fbLongLivedAccessToken, postId) => {
-    // Try Facebook first
+export const updateProduct = async (userToken, productId, productData) => {
+    const res = await axios.post(
+        `https://graph.facebook.com/${endpointVersion}/${productId}`,
+        productData,
+        { params: { access_token: userToken } }
+    );
+    return res.data.success;
+};
+
+export const deleteProduct = async (userToken, productId) => {
+    const res = await axios.delete(
+        `https://graph.facebook.com/${endpointVersion}/${productId}`,
+        { params: { access_token: userToken } }
+    );
+    return res.data.success;
+};
+
+// Existing functions updated for v23.0
+export const readSocialMediaPost = async (accessToken, postId) => {
     try {
-        const fb = await axios.get(
+        const response = await axios.get(
             `https://graph.facebook.com/${endpointVersion}/${postId}`,
             {
                 params: {
                     fields: 'id,message,permalink_url,created_time',
-                    access_token: fbLongLivedAccessToken,
+                    access_token: accessToken,
                 },
             }
-        )
-        return { platform: 'facebook', data: fb.data }
+        );
+        return { platform: 'facebook', data: response.data };
     } catch (fbErr) {
-        // If not FB, try Instagram
-        const ig = await axios.get(
-            `https://graph.facebook.com/${endpointVersion}/${postId}`,
-            {
-                params: {
-                    fields: 'id,caption,media_url,permalink,timestamp',
-                    access_token: fbLongLivedAccessToken,
-                },
-            }
-        )
-        return { platform: 'instagram', data: ig.data }
+        try {
+            const response = await axios.get(
+                `https://graph.facebook.com/${endpointVersion}/${postId}`,
+                {
+                    params: {
+                        fields: 'id,caption,media_url,permalink,timestamp',
+                        access_token: accessToken,
+                    },
+                }
+            );
+            return { platform: 'instagram', data: response.data };
+        } catch (igErr) {
+            throw new Error('Post not found on either platform');
+        }
     }
-}
+};
 
-//–– UPDATE ––//
-// Facebook: you can only edit the message text. Instagram: no edit—delete & re-create.
 export const updateSocialMediaPost = async (
-    fbLongLivedAccessToken,
+    accessToken,
     postId,
     caption,
-    description,
-    mediaUrl
+    description
 ) => {
-    // Determine platform by attempting FB edit
     try {
         const res = await axios.post(
             `https://graph.facebook.com/${endpointVersion}/${postId}`,
-            null,
-            {
-                params: {
-                    message: `${caption}\n\n${description}`,
-                    access_token: fbLongLivedAccessToken,
-                },
-            }
-        )
-        return { platform: 'facebook', success: res.data.success }
+            { message: `${caption}\n\n${description}` },
+            { params: { access_token: accessToken } }
+        );
+        return { platform: 'facebook', success: res.data.success };
     } catch {
-        // Instagram doesn’t support edit
-        throw new Error(
-            'Instagram posts cannot be updated via API. Please delete and re-create.'
-        )
+        throw new Error('Only Facebook posts can be updated');
     }
-}
+};
 
-//–– DELETE ––//
-export const deleteSocialMediaPost = async (fbLongLivedAccessToken, postId) => {
+export const deleteSocialMediaPost = async (accessToken, postId) => {
     const res = await axios.delete(
         `https://graph.facebook.com/${endpointVersion}/${postId}`,
-        {
-            params: { access_token: fbLongLivedAccessToken },
-        }
-    )
-    return { success: res.data.success }
-}
+        { params: { access_token: accessToken } }
+    );
+    return { success: res.data.success };
+};

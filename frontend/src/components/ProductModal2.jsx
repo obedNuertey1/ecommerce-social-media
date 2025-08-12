@@ -203,9 +203,9 @@ function ProductModal2() {
                                             <span className="label-text text-base font-medium">Price</span>
                                         </label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
+                                            {/* <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
                                                 <DollarSignIcon className="size-5" />
-                                            </div>
+                                            </div> */}
                                             <input
                                                 type="number"
                                                 placeholder="0.00"

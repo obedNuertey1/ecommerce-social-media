@@ -124,15 +124,30 @@ export const useProductStore = create((set, get)=>({
         try{
             const {formData} = get();
             formData.price = (Number(formData.price)).toFixed(2);
+            // create catalogue on facebook and instagram and get the catalogueId
+            let catalogue = null;
+            if(formData.isNewCatalogue){
+                catalogue = await createProductCatalog(LONG_LIVED_META_ACCESS_TOKEN, formData.catalogueName);
+            }
+            console.log({catalogue});
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
             const mediaToDrive = formData.media.map((media)=>media.file);
             const mediaUploadRes = await googleDrive.uploadFilesToDrive(GOOGLE_DRIVE_NAME, formData.name, mediaToDrive);
+            // upload product to facebook and instagram and get the productId
+            // if upload to facebook and instagram posts is true
+            // upload product to facebook and instagram posts and get the postid
             const data = {
                 name: formData.name,
                 price: formData.price,
                 description: formData.description,
                 ...mediaUploadRes
+                // facebookProductPostId,
+                // instagramProductPostId,
+                // facebookCatalogueId,
+                // instagramCatalogueId,
+                // facebookProductId,
+                // instagramProductId,
             }
             const mediaIds = JSON.parse(mediaUploadRes.mediaIds).map((media)=>media.id);
             const {

@@ -27,7 +27,7 @@ export const useProductStore = create((set, get)=>({
     product: null,
     formData: {name: "", price: "", description: "", image: '', media: [], catalogueId: "", isNewCatalogue: false, newCatalogueName: "", inventoryQuantity: "", currency: "", color: "", size: "", brand: "", category: "", material: "", availability: "", condition: "", shipping_weight: "", shipping_weight_unit: "", custom_label_0: ""},
     setFormData: (formData)=>set({formData}),
-    resetFormData: ()=>set({formData: {name: "", price: "", description: "", image: '', media: []}}),
+    resetFormData: ()=>set({formData: {name: "", price: "", description: "", image: '', media: [], catalogueId: "", isNewCatalogue: false, newCatalogueName: "", inventoryQuantity: "", currency: "", color: "", size: "", brand: "", category: "", material: "", availability: "", condition: "", shipping_weight: "", shipping_weight_unit: "", custom_label_0: ""}}),
     updateProduct: async (id, gapi, imagesToDelete)=>{
         set({loading: true});
         try{
@@ -125,17 +125,17 @@ export const useProductStore = create((set, get)=>({
             const {formData} = get();
             formData.price = (Number(formData.price)).toFixed(2);
             // create catalogue on facebook and instagram and get the catalogueId
-            let catalogue = null;
+            let catalogueId = null;
             if(formData.isNewCatalogue){
-                catalogue = await createProductCatalog(LONG_LIVED_META_ACCESS_TOKEN, formData.catalogueName);
+                catalogueId = await createProductCatalog(LONG_LIVED_META_ACCESS_TOKEN, formData.catalogueName);
             }
-            console.log({catalogue});
+            console.log({catalogueId});
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
             const mediaToDrive = formData.media.map((media)=>media.file);
             const mediaUploadRes = await googleDrive.uploadFilesToDrive(GOOGLE_DRIVE_NAME, formData.name, mediaToDrive);
             // upload product to facebook and instagram and get the productId
-            const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, catalogue.id, {
+            const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, catalogueId, {
                 name: formData.name,
                 price: formData.price,
                 description: formData.description,

@@ -6,6 +6,17 @@ import { getProductCatalogs } from "../funcs/socialCrudFuncs";
 
 const token = import.meta.env.VITE_FACEBOOK_LONG_LIVED_TOKEN;
 
+// List of all currencies (ISO 4217)
+const CURRENCIES = [
+  "USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "CNY", "INR", "MXN", 
+  "BRL", "RUB", "KRW", "SGD", "HKD", "NZD", "SEK", "NOK", "DKK", "ZAR",
+  "TRY", "PLN", "THB", "IDR", "HUF", "CZK", "ILS", "CLP", "PHP", "AED",
+  "SAR", "MYR", "RON", "BGN", "HRK", "ISK", "UAH", "COP", "PEN", "VND"
+];
+
+// Shipping weight units
+const WEIGHT_UNITS = ["lb", "kg", "oz", "g"];
+
 function ProductModal2() {
     const { addProduct, formData, setFormData, resetFormData, loading } = useProductStore();
     const { gapi } = useGoogleAuthContext();
@@ -13,6 +24,17 @@ function ProductModal2() {
     // NEW STATE FOR CATALOGUES
     const [catalogues, setCatalogues] = useState([]);
     const [loadingCatalogues, setLoadingCatalogues] = useState(false);
+
+    // Initialize formData with default values
+    useEffect(() => {
+        setFormData({
+            ...formData,
+            currency: formData.currency || "USD",
+            availability: formData.availability || "in stock",
+            condition: formData.condition || "new",
+            shipping_weight_unit: formData.shipping_weight_unit || "lb"
+        });
+    }, []);
 
     // NEW: FETCH CATALOGUES WHEN COMPONENT LOADS
     useEffect(() => {
@@ -47,7 +69,6 @@ function ProductModal2() {
 
     const handleMediaUpload = useCallback((e) => {
         const files = Array.from(e.target.files);
-        // console.log("Array.from(e.target.files)=",files)
         const remainingSlots = 8 - formData.media.length;
         const newFiles = files.slice(0, remainingSlots).map(file => ({
             file,
@@ -63,7 +84,6 @@ function ProductModal2() {
         // Reset the input so the same file can be selected again if needed
         e.target.value = "";
     }, [formData, setFormData]);
-    // console.log({formData})
 
     const handleRemoveMedia = useCallback((mediaId) => {
         const mediaToRemove = formData.media.find(m => m.id === mediaId);
@@ -77,7 +97,7 @@ function ProductModal2() {
 
     return (
         <dialog id="my_modal_2" className="modal">
-            <div className="modal-box">
+            <div className="modal-box max-h-[90vh] overflow-y-auto">
                 <form method="dialog">
                     <button onClick={resetFormData} className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                 </form>
@@ -135,46 +155,246 @@ function ProductModal2() {
                                 )}
                             </div>
                         </div>
-                        {/* Existing fields */}
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text text-base font-medium">Product Name</span>
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
-                                    <Package2Icon className="size-5" />
+                        
+                        {/* Product Information Section */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Left Column */}
+                            <div className="space-y-6">
+                                {/* Product Name */}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text text-base font-medium">Product Name</span>
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
+                                            <Package2Icon className="size-5" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter product name"
+                                            className="input input-bordered w-full pl-10 py-3 focus:input-primary transition-colors"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
-                                <input
-                                    type="text"
-                                    placeholder="Enter product name"
-                                    className="input input-bordered w-full pl-10 py-3 focus:input-primary transition-colors"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                />
+
+                                {/* Price and Currency */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Price</span>
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
+                                                <DollarSignIcon className="size-5" />
+                                            </div>
+                                            <input
+                                                type="number"
+                                                placeholder="0.00"
+                                                min="0"
+                                                step="0.01"
+                                                className="input input-bordered w-full pl-10 py-3 focus:input-primary transition-colors"
+                                                value={formData.price}
+                                                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Currency</span>
+                                        </label>
+                                        <select
+                                            className="select select-bordered w-full py-3"
+                                            value={formData.currency || "USD"}
+                                            onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                                        >
+                                            {CURRENCIES.map(currency => (
+                                                <option key={currency} value={currency}>
+                                                    {currency}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Brand and Category */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Brand</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., Samsung"
+                                            className="input input-bordered w-full py-3"
+                                            value={formData.brand || ""}
+                                            onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Category</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., Electronics/Phones"
+                                            className="input input-bordered w-full py-3"
+                                            value={formData.category || ""}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Availability and Condition */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Availability</span>
+                                        </label>
+                                        <select
+                                            className="select select-bordered w-full py-3"
+                                            value={formData.availability || "in stock"}
+                                            onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
+                                        >
+                                            <option value="in stock">In Stock</option>
+                                            <option value="out of stock">Out of Stock</option>
+                                            <option value="preorder">Preorder</option>
+                                            <option value="available for order">Available for Order</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Condition</span>
+                                        </label>
+                                        <select
+                                            className="select select-bordered w-full py-3"
+                                            value={formData.condition || "new"}
+                                            onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                                        >
+                                            <option value="new">New</option>
+                                            <option value="refurbished">Refurbished</option>
+                                            <option value="used">Used</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Right Column */}
+                            <div className="space-y-6">
+                                {/* Inventory */}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text text-base font-medium">Inventory Quantity</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="e.g., 25"
+                                        className="input input-bordered w-full py-3"
+                                        value={formData.inventory || ""}
+                                        onChange={(e) => setFormData({ ...formData, inventory: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Color and Size */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Color</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., Phantom Black"
+                                            className="input input-bordered w-full py-3"
+                                            value={formData.color || ""}
+                                            onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Size</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., 512GB"
+                                            className="input input-bordered w-full py-3"
+                                            value={formData.size || ""}
+                                            onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Material */}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text text-base font-medium">Material</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g., Glass, Aluminum"
+                                        className="input input-bordered w-full py-3"
+                                        value={formData.material || ""}
+                                        onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                                    />
+                                </div>
+
+                                {/* Shipping Weight */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Shipping Weight</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            placeholder="e.g., 0.45"
+                                            className="input input-bordered w-full py-3"
+                                            value={formData.shipping_weight || ""}
+                                            onChange={(e) => setFormData({ ...formData, shipping_weight: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Weight Unit</span>
+                                        </label>
+                                        <select
+                                            className="select select-bordered w-full py-3"
+                                            value={formData.shipping_weight_unit || "lb"}
+                                            onChange={(e) => setFormData({ ...formData, shipping_weight_unit: e.target.value })}
+                                        >
+                                            {WEIGHT_UNITS.map(unit => (
+                                                <option key={unit} value={unit}>
+                                                    {unit}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Custom Label */}
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text text-base font-medium">Custom Label</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g., Flagship"
+                                        className="input input-bordered w-full py-3"
+                                        value={formData.custom_label_0 || ""}
+                                        onChange={(e) => setFormData({ ...formData, custom_label_0: e.target.value })}
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text text-base font-medium">Price</span>
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
-                                    <DollarSignIcon className="size-5" />
-                                </div>
-                                <input
-                                    type="number"
-                                    placeholder="0.00"
-                                    min="0"
-                                    step="0.01"
-                                    className="input input-bordered w-full pl-10 py-3 focus:input-primary transition-colors"
-                                    value={formData.price}
-                                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        {/* New Description Field */}
+                        {/* Description Field */}
                         <div className="form-control">
                             <label className="label">
                                 <span className="label-text text-base font-medium">Description</span>

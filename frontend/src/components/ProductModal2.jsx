@@ -1,47 +1,49 @@
 import { PlusCircleIcon, Package2Icon, DollarSignIcon, ImageIcon, XIcon } from "lucide-react";
 import { useProductStore } from "../store/useProductStore";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
+import { getProductCatalogs } from "../funcs/socialCrudFuncs";
+
+const token = import.meta.env.VITE_FACEBOOK_LONG_LIVED_TOKEN;
 
 function ProductModal2() {
     const { addProduct, formData, setFormData, resetFormData, loading } = useProductStore();
-    const {gapi} = useGoogleAuthContext();
+    const { gapi } = useGoogleAuthContext();
 
-    //     // NEW STATE FOR CATALOGUES
-    // const [catalogues, setCatalogues] = useState([]);
-    // const [loadingCatalogues, setLoadingCatalogues] = useState(false);
+    // NEW STATE FOR CATALOGUES
+    const [catalogues, setCatalogues] = useState([]);
+    const [loadingCatalogues, setLoadingCatalogues] = useState(false);
 
-    // // NEW: FETCH CATALOGUES WHEN COMPONENT LOADS
-    // useEffect(() => {
-    //     const fetchCatalogues = async () => {
-    //         if (gapi) {
-    //             try {
-    //                 setLoadingCatalogues(true);
-    //                 const token = gapi.auth.getToken()?.access_token;
-    //                 if (token) {
-    //                     const catalogList = await getProductCatalogs(token);
-    //                     setCatalogues(catalogList);
-    //                 }
-    //             } catch (error) {
-    //                 console.error("Failed to fetch catalogues:", error);
-    //             } finally {
-    //                 setLoadingCatalogues(false);
-    //             }
-    //         }
-    //     };
-        
-    //     fetchCatalogues();
-    // }, [gapi]);
+    // NEW: FETCH CATALOGUES WHEN COMPONENT LOADS
+    useEffect(() => {
+        const fetchCatalogues = async () => {
+            if (gapi) {
+                try {
+                    setLoadingCatalogues(true);
+                    if (token) {
+                        const catalogList = await getProductCatalogs(token);
+                        setCatalogues(catalogList);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch catalogues:", error);
+                } finally {
+                    setLoadingCatalogues(false);
+                }
+            }
+        };
 
-    // // NEW: HANDLE CATALOGUE SELECTION
-    // const handleCatalogueChange = useCallback((e) => {
-    //     const { value } = e.target;
-    //     setFormData({
-    //         ...formData,
-    //         catalogueId: value === "new" ? "" : value,
-    //         isNewCatalogue: value === "new"
-    //     });
-    // }, [formData, setFormData]);
+        fetchCatalogues();
+    }, [gapi]);
+
+    // NEW: HANDLE CATALOGUE SELECTION
+    const handleCatalogueChange = useCallback((e) => {
+        const { value } = e.target;
+        setFormData({
+            ...formData,
+            catalogueId: value === "new" ? "" : value,
+            isNewCatalogue: value === "new"
+        });
+    }, [formData, setFormData]);
 
     const handleMediaUpload = useCallback((e) => {
         const files = Array.from(e.target.files);
@@ -85,6 +87,54 @@ function ProductModal2() {
                     addProduct(gapi);
                 }} className="space-y-6">
                     <div className="grid gap-6">
+                        {/* NEW CATALOGUE SECTION */}
+                        <div className="form-control">
+                            <label className="label">
+                                <span className="label-text text-base font-medium">Product Catalogue</span>
+                            </label>
+                            <div className="flex flex-col gap-3">
+                                {loadingCatalogues ? (
+                                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                                        <span className="loading loading-spinner loading-xs"></span>
+                                        Loading catalogues...
+                                    </div>
+                                ) : (
+                                    <>
+                                        <select
+                                            className="select select-bordered w-full"
+                                            value={formData.catalogueId || ""}
+                                            onChange={handleCatalogueChange}
+                                        >
+                                            <option value="">Select a catalogue</option>
+                                            {catalogues.map(catalogue => (
+                                                <option key={catalogue.id} value={catalogue.id}>
+                                                    {catalogue.name} ({catalogue.product_count || 0} products)
+                                                </option>
+                                            ))}
+                                            <option value="new">+ Create New Catalogue</option>
+                                        </select>
+
+                                        {formData.isNewCatalogue && (
+                                            <div className="mt-2">
+                                                <label className="label">
+                                                    <span className="label-text text-sm font-medium">New Catalogue Name</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g., 'Summer Collection'"
+                                                    className="input input-bordered w-full py-2 text-sm"
+                                                    value={formData.newCatalogueName || ""}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        newCatalogueName: e.target.value
+                                                    })}
+                                                />
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </div>
                         {/* Existing fields */}
                         <div className="form-control">
                             <label className="label">

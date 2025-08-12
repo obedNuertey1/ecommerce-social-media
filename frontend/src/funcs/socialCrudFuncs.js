@@ -3,48 +3,52 @@ import axios from 'axios';
 const endpointVersion = "v23.0";
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID_2;
 
-// Unified function to get business assets
+// Unified function to get business assets (updated for long-lived tokens)
 async function getBusinessAssets(token) {
     try {
-        // Try as page token first
-        try {
-            const pageInfo = await axios.get(
-                `https://graph.facebook.com/${endpointVersion}/me`,
-                {
-                    params: {
-                        access_token: token,
-                        fields: 'id,instagram_business_account,business'
-                    }
+        // Always try to get pages first (works for user tokens)
+        const { data: pagesData } = await axios.get(
+            `https://graph.facebook.com/${endpointVersion}/me/accounts`,
+            {
+                params: {
+                    access_token: token,
+                    fields: 'id,access_token,instagram_business_account,business'
                 }
-            );
+            }
+        );
 
-            return {
-                pageId: pageInfo.data.id,
-                igBusinessId: pageInfo.data.instagram_business_account?.id,
-                businessId: pageInfo.data.business?.id,
-                pageAccessToken: token
-            };
-        } catch (pageError) {
-            // Fallback to user token approach
-            const { data: pages } = await axios.get(
-                `https://graph.facebook.com/${endpointVersion}/me/accounts`,
-                {
-                    params: {
-                        access_token: token,
-                        fields: 'id,access_token,instagram_business_account,business'
-                    }
-                }
-            );
-
-            if (!pages.data?.length) throw new Error('No pages found');
-            const page = pages.data[0];
+        if (pagesData.data?.length) {
+            const page = pagesData.data[0];
             return {
                 pageId: page.id,
                 igBusinessId: page.instagram_business_account?.id,
                 businessId: page.business?.id,
-                pageAccessToken: page.access_token
+                pageAccessToken: page.access_token  // Use page token from response
             };
         }
+
+        // If no pages found, try direct token as page token
+        const pageInfo = await axios.get(
+            `https://graph.facebook.com/${endpointVersion}/me`,
+            {
+                params: {
+                    access_token: token,
+                    fields: 'id,instagram_business_account,business,category'
+                }
+            }
+        );
+
+        // Verify it's a page (has category field)
+        if (!pageInfo.data.category) {
+            throw new Error('Token is not a valid page token');
+        }
+
+        return {
+            pageId: pageInfo.data.id,
+            igBusinessId: pageInfo.data.instagram_business_account?.id,
+            businessId: pageInfo.data.business?.id,
+            pageAccessToken: token  // Use original token as page token
+        };
     } catch (error) {
         console.error('Asset retrieval failed:', error.response?.data || error.message);
         throw new Error('Failed to get business assets');

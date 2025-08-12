@@ -1,7 +1,7 @@
 export const schemas = [
     { sheetName: "Sheet1", shape: ["ID", "Name", "Price", "Description", "Location"] },
     { sheetName: "Accounts", shape: ["UserID", "Username", "Email", "Password"] },
-    { sheetName: "Products", shape: ["name", "price", "description", "mediaFolderId", "mediaIds", "facebookPostId", "instagramPostId", "threadsPostId", "analytics", "biddable", "bidderEmail", "bidDate"]}
+    { sheetName: "Products", shape: ["name", "price", "description", "mediaFolderId", "mediaIds", "facebookPostId", "facebookProductId", "facebookCatalogueId", "instagramPostId", "instagramProductId", "instagramCatalogueId", "threadsPostId", "analytics", "biddable", "bidderEmail", "bidDate"]}
     ,
     { sheetName: "Orders", shape: ["phone", "items", "total", "orderId", "status"]}
     ,

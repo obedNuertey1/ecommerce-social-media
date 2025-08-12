@@ -7,6 +7,42 @@ function ProductModal2() {
     const { addProduct, formData, setFormData, resetFormData, loading } = useProductStore();
     const {gapi} = useGoogleAuthContext();
 
+    //     // NEW STATE FOR CATALOGUES
+    // const [catalogues, setCatalogues] = useState([]);
+    // const [loadingCatalogues, setLoadingCatalogues] = useState(false);
+
+    // // NEW: FETCH CATALOGUES WHEN COMPONENT LOADS
+    // useEffect(() => {
+    //     const fetchCatalogues = async () => {
+    //         if (gapi) {
+    //             try {
+    //                 setLoadingCatalogues(true);
+    //                 const token = gapi.auth.getToken()?.access_token;
+    //                 if (token) {
+    //                     const catalogList = await getProductCatalogs(token);
+    //                     setCatalogues(catalogList);
+    //                 }
+    //             } catch (error) {
+    //                 console.error("Failed to fetch catalogues:", error);
+    //             } finally {
+    //                 setLoadingCatalogues(false);
+    //             }
+    //         }
+    //     };
+        
+    //     fetchCatalogues();
+    // }, [gapi]);
+
+    // // NEW: HANDLE CATALOGUE SELECTION
+    // const handleCatalogueChange = useCallback((e) => {
+    //     const { value } = e.target;
+    //     setFormData({
+    //         ...formData,
+    //         catalogueId: value === "new" ? "" : value,
+    //         isNewCatalogue: value === "new"
+    //     });
+    // }, [formData, setFormData]);
+
     const handleMediaUpload = useCallback((e) => {
         const files = Array.from(e.target.files);
         // console.log("Array.from(e.target.files)=",files)

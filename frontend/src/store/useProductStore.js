@@ -25,9 +25,9 @@ export const useProductStore = create((set, get)=>({
     error: null,
     loading: false,
     product: null,
-    formData: {name: "", price: "", description: "", image: '', media: [], catalogueId: "", isNewCatalogue: false, newCatalogueName: ""},
+    formData: {name: "", price: "", description: "", image: '', media: [], catalogueId: "", isNewCatalogue: false, newCatalogueName: "", inventoryQuantity: "", currency: "", color: "", size: "", brand: "", category: "", material: "", availability: "", condition: "", shipping_weight: "", shipping_weight_unit: "", custom_label_0: ""},
     setFormData: (formData)=>set({formData}),
-    resetFormData: ()=>set({formData: {name: "", price: "", description: "", image: '', media: []}}),
+    resetFormData: ()=>set({formData: {name: "", price: "", description: "", image: '', media: [], catalogueId: "", isNewCatalogue: false, newCatalogueName: "", inventoryQuantity: "", currency: "", color: "", size: "", brand: "", category: "", material: "", availability: "", condition: "", shipping_weight: "", shipping_weight_unit: "", custom_label_0: ""}}),
     updateProduct: async (id, gapi, imagesToDelete)=>{
         set({loading: true});
         try{
@@ -135,6 +135,14 @@ export const useProductStore = create((set, get)=>({
             const mediaToDrive = formData.media.map((media)=>media.file);
             const mediaUploadRes = await googleDrive.uploadFilesToDrive(GOOGLE_DRIVE_NAME, formData.name, mediaToDrive);
             // upload product to facebook and instagram and get the productId
+            const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, catalogue.id, {
+                name: formData.name,
+                price: formData.price,
+                description: formData.description,
+                image: mediaUploadRes.imageId,
+                url: mediaUploadRes.imageUrl,
+                media: mediaUploadRes.mediaIds
+            });
             // if upload to facebook and instagram posts is true
             // upload product to facebook and instagram posts and get the postid
             const data = {

@@ -8,11 +8,28 @@ const token = import.meta.env.VITE_FACEBOOK_LONG_LIVED_TOKEN;
 
 // List of all currencies (ISO 4217)
 const CURRENCIES = [
-  "USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF", "CNY", "INR", "MXN", 
-  "BRL", "RUB", "KRW", "SGD", "HKD", "NZD", "SEK", "NOK", "DKK", "ZAR",
-  "TRY", "PLN", "THB", "IDR", "HUF", "CZK", "ILS", "CLP", "PHP", "AED",
-  "SAR", "MYR", "RON", "BGN", "HRK", "ISK", "UAH", "COP", "PEN", "VND"
+    "AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG",
+    "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND",
+    "BOB", "BOV", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD",
+    "CDF", "CHE", "CHF", "CHW", "CLF", "CLP", "CNY", "COP", "COU",
+    "CRC", "CUC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD",
+    "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "GBP", "GEL", "GHS",
+    "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG",
+    "HUF", "IDR", "ILS", "INR", "IQD", "IRR", "ISK", "JMD", "JOD",
+    "JPY", "KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD",
+    "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL",
+    "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK",
+    "MXN", "MXV", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR",
+    "NZD", "OMR", "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG",
+    "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG",
+    "SEK", "SGD", "SHP", "SLL", "SOS", "SRD", "SSP", "STN", "SVC",
+    "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD",
+    "TWD", "TZS", "UAH", "UGX", "USD", "USN", "UYI", "UYU", "UYW",
+    "UZS", "VES", "VND", "VUV", "WST", "XAF", "XAG", "XAU", "XBA",
+    "XBB", "XBC", "XBD", "XCD", "XDR", "XOF", "XPD", "XPF", "XPT",
+    "XSU", "XTS", "XUA", "XXX", "YER", "ZAR", "ZMW", "ZWL"
 ];
+
 
 // Shipping weight units
 const WEIGHT_UNITS = ["lb", "kg", "oz", "g"];
@@ -155,7 +172,7 @@ function ProductModal2() {
                                 )}
                             </div>
                         </div>
-                        
+
                         {/* Product Information Section */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Left Column */}
@@ -282,7 +299,7 @@ function ProductModal2() {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Right Column */}
                             <div className="space-y-6">
                                 {/* Inventory */}
@@ -295,8 +312,8 @@ function ProductModal2() {
                                         min="0"
                                         placeholder="e.g., 25"
                                         className="input input-bordered w-full py-3"
-                                        value={formData.inventory || ""}
-                                        onChange={(e) => setFormData({ ...formData, inventory: e.target.value })}
+                                        value={formData.inventoryQuantity || ""}
+                                        onChange={(e) => setFormData({ ...formData, inventoryQuantity: e.target.value })}
                                     />
                                 </div>
 

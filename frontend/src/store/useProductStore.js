@@ -5,11 +5,14 @@ import {GoogleDriveAPI, GoogleSheetsAPI} from "../lib/googleLibs";
 import {schemas} from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData } from "../funcs/essentialFuncs";
+import {addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct} from "../funcs/socialCrudFuncs";
+
 
 const productSchema = schemas.find((schema)=>schema.sheetName==="Products");
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 const GOOGLE_DRIVE_NAME = import.meta.env.VITE_GOOGLE_DRIVE_NAME;
 const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
+const META_ACCESS_TOKEN = import.meta.env.VITE_META_PAGE_TOKEN;
 
 const passkeyName = localStorage.getItem("passkeyName");
 const passkey = localStorage.getItem("passkey");

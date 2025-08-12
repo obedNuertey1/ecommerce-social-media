@@ -27,7 +27,7 @@ export const useProductStore = create((set, get)=>({
     product: null,
     formData: {name: "", price: "", description: "", image: '', media: [], catalogueId: "", isNewCatalogue: false, newCatalogueName: "", inventoryQuantity: "", currency: "", color: "", size: "", brand: "", category: "", material: "", availability: "", condition: "", shipping_weight: "", shipping_weight_unit: "", custom_label_0: ""},
     setFormData: (formData)=>set({formData}),
-    resetFormData: ()=>set({formData: {name: "", price: "", description: "", image: '', media: [], catalogueId: "", isNewCatalogue: false, newCatalogueName: "", inventoryQuantity: "", currency: "", color: "", size: "", brand: "", category: "", material: "", availability: "", condition: "", shipping_weight: "", shipping_weight_unit: "", custom_label_0: ""}}),
+    resetFormData: ()=>set({formData: {name: "", price: "", description: "", image: '', media: []}}),
     updateProduct: async (id, gapi, imagesToDelete)=>{
         set({loading: true});
         try{

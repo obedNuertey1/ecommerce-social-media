@@ -43,15 +43,15 @@ function ProductModal2() {
     const [loadingCatalogues, setLoadingCatalogues] = useState(false);
 
     // Initialize formData with default values
-    useEffect(() => {
-        setFormData({
-            ...formData,
-            currency: formData.currency || "USD",
-            availability: formData.availability || "in stock",
-            condition: formData.condition || "new",
-            shipping_weight_unit: formData.shipping_weight_unit || "lb"
-        });
-    }, []);
+    // useEffect(() => {
+    //     setFormData({
+    //         ...formData,
+    //         currency: formData.currency || "USD",
+    //         availability: formData.availability || "in stock",
+    //         condition: formData.condition || "new",
+    //         shipping_weight_unit: formData.shipping_weight_unit || "lb"
+    //     });
+    // }, []);
 
     // NEW: FETCH CATALOGUES WHEN COMPONENT LOADS
     useEffect(() => {

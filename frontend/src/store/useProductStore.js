@@ -135,7 +135,8 @@ export const useProductStore = create((set, get)=>({
             const mediaToDrive = formData.media.map((media)=>media.file);
             const mediaUploadRes = await googleDrive.uploadFilesToDrive(GOOGLE_DRIVE_NAME, formData.name, mediaToDrive);
             // upload product to facebook and instagram and get the productId
-            // const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, catalogueId, {
+            const productCatalogueId = formData.catalogueId || catalogueId;
+            // const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, {
             //     name: formData.name,
             //     price: formData.price,
             //     description: formData.description,
@@ -161,7 +162,7 @@ export const useProductStore = create((set, get)=>({
                 shipping_weight_unit: formData.shipping_weight_unit,
                 custom_label: formData.custom_label_0,
                 inventoryQuantity: formData.inventoryQuantity,
-                productCatalogueId: formData.catalogueId || catalogueId,
+                productCatalogueId: productCatalogueId,
                 ...mediaUploadRes
                 // facebookProductPostId,
                 // instagramProductPostId,

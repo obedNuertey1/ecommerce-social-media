@@ -159,7 +159,7 @@ export const useProductStore = create((set, get)=>({
                 condition: formData.condition,
                 shipping_weight: formData.shipping_weight,
                 shipping_weight_unit: formData.shipping_weight_unit,
-                custom_label_0: formData.custom_label_0,
+                custom_label: formData.custom_label_0,
                 inventoryQuantity: formData.inventoryQuantity,
                 productCatalogueId: formData.catalogueId || catalogueId,
                 ...mediaUploadRes

@@ -247,7 +247,7 @@ function ProductModal2() {
                                     <div className="form-control">
                                         <label className="label">
                                             <span className="label-text text-base font-medium">Tax Category</span>
-                                            <span className="label-text-alt text-red-500">* Required</span>
+                                            <span className="label-text-alt text-red-500">* Req</span>
                                         </label>
                                         <select
                                             required
@@ -457,7 +457,7 @@ function ProductModal2() {
                                         <input
                                             type="number"
                                             min="0"
-                                            step="0.01"
+                                            step="1"
                                             placeholder="Discounted price"
                                             className="input input-bordered w-full"
                                             value={formData.sale_price || ""}

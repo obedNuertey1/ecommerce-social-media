@@ -215,6 +215,9 @@ export const useProductStore = create((set, get) => ({
             const mediaUploadRes = await googleDrive.uploadFilesToDrive(GOOGLE_DRIVE_NAME, formData.name, mediaToDrive);
 
             const mediaIds = JSON.parse(mediaUploadRes.mediaIds).map((media) => media.id);
+            const retailId = (function generateRetailerId() {
+                return 'prod-' + Math.random().toString(36).substr(2, 9);
+            })();
             // upload product to facebook and instagram and get the productId
             const productCatalogueId = formData.catalogueId || catalogueId;
             const productData = {
@@ -250,8 +253,10 @@ export const useProductStore = create((set, get) => ({
                 ...(formData.custom_label_2 && { custom_label_2: formData.custom_label_2 }),
                 ...(formData.custom_label_3 && { custom_label_3: formData.custom_label_3 }),
                 ...(formData.custom_label_4 && { custom_label_4: formData.custom_label_4 }),
-                commerce_tax_category: formData.commerce_tax_category
+                commerce_tax_category: formData.commerce_tax_category,
+                retail_id: retailId
             }
+            productData["retail_id"] = retailId
             const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, productData);
             console.log({ product });
             // if upload to facebook and instagram posts is true

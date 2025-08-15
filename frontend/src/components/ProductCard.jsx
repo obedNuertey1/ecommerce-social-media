@@ -39,7 +39,7 @@ function ProductCard({ product }) {
                 <h2 className="card-title">
                     {product.name}
                 </h2>
-                <p className="text-2xl font-bold text-primary">${Number(product.price).toFixed(2)}</p>
+                <p className="text-2xl font-bold text-primary">{product?.currency}{Number(product.price).toFixed(2)}</p>
                 <div className="card-actions justify-between">
                     <div className="flex flex-row justify-start items-center gap-2">
                         <Link aria-disabled={analyticsIsActive} to={`/product/${product.id}/analytics/`} className={`btn ${analyticsIsActive ? "btn-disabled" : "btn-primary"} btn-sm btn-outline`}>

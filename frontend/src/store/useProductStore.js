@@ -188,8 +188,7 @@ export const useProductStore = create((set, get) => ({
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
             const product = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id);
-            set({ formData: { 
-                // name: product.name, price: product.price, description: product.description, image: product.image, media: product.media 
+            set({ formData: {  
                 ...product
             }, error: null, product: product, loading: false });
             return;

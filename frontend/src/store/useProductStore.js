@@ -233,7 +233,7 @@ export const useProductStore = create((set, get) => ({
                 ...(formData.category && { google_product_category: formData.category }),
                 ...(formData.material && { material: formData.material }),
                 // NEW FIELDS
-                ...(formData.sale_price_effective_date && { sale_price: `${Number(formData.sale_price).toFixed(2)} ${formData.currency}` }),
+                ...(formData.sale_price_effective_date && { sale_price: `${Number(formData.sale_price).toFixed(2)}` }),
                 ...(formData.sale_price_effective_date && { sale_price_effective_date: formData.sale_price_effective_date }),
                 ...(formData.gtin && { gtin: formData.gtin }),
                 ...(formData.mpn && { mpn: formData.mpn }),

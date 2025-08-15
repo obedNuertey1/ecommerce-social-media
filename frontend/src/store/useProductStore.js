@@ -1,14 +1,15 @@
-import {create} from "zustand";
+// frontend\src\store\useProductStore.js
+import { create } from "zustand";
 import axios from "axios";
-import {toast} from "react-hot-toast";
-import {GoogleDriveAPI, GoogleSheetsAPI} from "../lib/googleLibs";
-import {schemas} from "../schemas/initSheetSchema";
+import { toast } from "react-hot-toast";
+import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
+import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData } from "../funcs/essentialFuncs";
-import {addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct} from "../funcs/socialCrudFuncs";
+import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct } from "../funcs/socialCrudFuncs";
 
 
-const productSchema = schemas.find((schema)=>schema.sheetName==="Products");
+const productSchema = schemas.find((schema) => schema.sheetName === "Products");
 const GOOGLE_SPREADSHEET_NAME = import.meta.env.VITE_GOOGLE_SPREADSHEET_NAME;
 const GOOGLE_DRIVE_NAME = import.meta.env.VITE_GOOGLE_DRIVE_NAME;
 const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
@@ -20,35 +21,111 @@ const passkey = localStorage.getItem("passkey");
 
 const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "";
 
-export const useProductStore = create((set, get)=>({
+export const useProductStore = create((set, get) => ({
     products: [],
     error: null,
     loading: false,
     product: null,
-    formData: {name: "", price: "", description: "", image: '', media: [], catalogueId: "", isNewCatalogue: false, newCatalogueName: "", inventoryQuantity: "", currency: "USD", color: "", size: "", brand: "", category: "", material: "", availability: "in stock", condition: "new", shipping_weight: "", shipping_weight_unit: "lb", custom_label_0: ""},
-    setFormData: (formData)=>set({formData}),
-    resetFormData: ()=>set({formData: {name: "", price: "", description: "", image: '', media: [], catalogueId: "", isNewCatalogue: false, newCatalogueName: "", inventoryQuantity: "", currency: "USD", color: "", size: "", brand: "", category: "", material: "", availability: "in stock", condition: "new", shipping_weight: "", shipping_weight_unit: "lb", custom_label_0: ""}}),
-    updateProduct: async (id, gapi, imagesToDelete)=>{
-        set({loading: true});
-        try{
+    formData: {
+        name: "",
+        price: "",
+        description: "",
+        image: '',
+        media: [],
+        catalogueId: "",
+        isNewCatalogue: false,
+        newCatalogueName: "",
+        inventoryQuantity: "",
+        currency: "USD",
+        color: "",
+        size: "",
+        brand: "",
+        category: "",
+        material: "",
+        availability: "in stock",
+        condition: "new",
+        shipping_weight: "",
+        shipping_weight_unit: "lb",
+        custom_label_0: "",
+        // NEW FIELDS
+        sale_price: "",
+        sale_price_effective_date: "",
+        gtin: "",
+        mpn: "",
+        gender: "",
+        age_group: "",
+        pattern: "",
+        size_type: "",
+        size_system: "",
+        product_type: "",
+        tax: "",
+        custom_label_1: "",
+        custom_label_2: "",
+        custom_label_3: "",
+        custom_label_4: ""
+    },
+    setFormData: (formData) => set({ formData }),
+    resetFormData: () => set({
+        formData: {
+            name: "",
+            price: "",
+            description: "",
+            image: '',
+            media: [],
+            catalogueId: "",
+            isNewCatalogue: false,
+            newCatalogueName: "",
+            inventoryQuantity: "",
+            currency: "USD",
+            color: "",
+            size: "",
+            brand: "",
+            category: "",
+            material: "",
+            availability: "in stock",
+            condition: "new",
+            shipping_weight: "",
+            shipping_weight_unit: "lb",
+            custom_label_0: "",
+            // NEW FIELDS
+            sale_price: "",
+            sale_price_effective_date: "",
+            gtin: "",
+            mpn: "",
+            gender: "",
+            age_group: "",
+            pattern: "",
+            size_type: "",
+            size_system: "",
+            product_type: "",
+            tax: "",
+            custom_label_1: "",
+            custom_label_2: "",
+            custom_label_3: "",
+            custom_label_4: ""
+        }
+    }),
+    updateProduct: async (id, gapi, imagesToDelete) => {
+        set({ loading: true });
+        try {
             const spreadsheetName = GOOGLE_SPREADSHEET_NAME;
             const sheetName = "Products";
-            const {formData, product} = get();
-            const newImagesToAdd = formData.media.filter((blob)=>blob?.operation === "add");
-            const imagesToUpdate = formData.media.filter((blob)=>(blob?.operation === "update"));
-            const getAllMediaInFolder = formData.media.map((blob)=>{
-                    if(blob?.operation === "update" || !blob.hasOwnProperty("operation")){
-                        // console.log({blob})
-                        const mediaId = product.mediaIds.find((media)=>media?.id == blob?.id);
-                        return {
-                            id: mediaId.id,
-                            name: mediaId.name,
-                            mimeType: mediaId.mimeType
-                        }
+            const { formData, product } = get();
+            const newImagesToAdd = formData.media.filter((blob) => blob?.operation === "add");
+            const imagesToUpdate = formData.media.filter((blob) => (blob?.operation === "update"));
+            const getAllMediaInFolder = formData.media.map((blob) => {
+                if (blob?.operation === "update" || !blob.hasOwnProperty("operation")) {
+                    // console.log({blob})
+                    const mediaId = product.mediaIds.find((media) => media?.id == blob?.id);
+                    return {
+                        id: mediaId.id,
+                        name: mediaId.name,
+                        mimeType: mediaId.mimeType
                     }
-                    return null;
+                }
+                return null;
             })
-            .filter((media)=>media !== null);
+                .filter((media) => media !== null);
             // console.log({newImagesToAdd, imagesToUpdate, imagesToDelete, product
             //     , getAllMediaInFolder
             // });
@@ -62,7 +139,7 @@ export const useProductStore = create((set, get)=>({
             // // delete media from the product's folder
             const deleteRes = await googleDrive.deleteMultipleFilesFromFolder(imagesToDelete);
 
-            if(product.name !== formData.name){
+            if (product.name !== formData.name) {
                 const folderRenameRes = await googleDrive.renameFolder(product.mediaFolderId, formData.name);
             }
             const newMediaIds = [...getAllMediaInFolder, ...drive];
@@ -78,7 +155,7 @@ export const useProductStore = create((set, get)=>({
 
             const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
 
-            if(passkey){
+            if (passkey) {
                 createLogs("Modified", `
                 ${passkeyName} updated a product
                 with name ${updatedRow.name}
@@ -90,60 +167,88 @@ export const useProductStore = create((set, get)=>({
             // await axios.put(`${BASE_URL}/api/products/${id}`, formData);
             await get().fetchProduct(id, gapi);
             toast.success("Product updated successfully");
-        }catch(e){
+        } catch (e) {
             console.log(`Error updating product: ${e}`);
             toast.error("Something went wrong");
-        }finally{
-            set({loading: false});
+        } finally {
+            set({ loading: false });
         }
     },
-    fetchProduct: async (id, gapi, retries=10, error=null)=>{
-        if(retries === 0){
-            if(error){
-                set({error: error, product: null, loading: false})
+    fetchProduct: async (id, gapi, retries = 10, error = null) => {
+        if (retries === 0) {
+            if (error) {
+                set({ error: error, product: null, loading: false })
             }
             return;
         }
-        set({loading: true});
-        const {promise, cancel} = cancellableWaiting(1000);
-        try{
+        set({ loading: true });
+        const { promise, cancel } = cancellableWaiting(1000);
+        try {
             const googleSheet = new GoogleSheetsAPI(gapi);
             const product = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id);
-            set({formData: {name: product.name, price: product.price, description: product.description, image: product.image, media: product.media}, error: null, product: product, loading: false});
+            set({ formData: { name: product.name, price: product.price, description: product.description, image: product.image, media: product.media }, error: null, product: product, loading: false });
             return;
-        }catch(e){
-            console.warn(`Attempts ${Math.abs(11 - retries)} failed:`,e);
+        } catch (e) {
+            console.warn(`Attempts ${Math.abs(11 - retries)} failed:`, e);
             error = "Something went wrong";
             await promise;
             await get().fetchProduct(id, gapi, retries - 1, error);
             cancel();
         }
     },
-    addProduct: async (gapi)=>{
-        set({loading: true});
-        try{
-            const {formData} = get();
+    addProduct: async (gapi) => {
+        set({ loading: true });
+        try {
+            const { formData } = get();
             formData.price = (Number(formData.price)).toFixed(2);
             // create catalogue on facebook and instagram and get the catalogueId
             let catalogueId = null;
-            if(formData.isNewCatalogue){
+            if (formData.isNewCatalogue) {
                 catalogueId = await createProductCatalog(LONG_LIVED_META_ACCESS_TOKEN, formData.catalogueName);
             }
-            console.log({catalogueId});
+            console.log({ catalogueId });
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
-            const mediaToDrive = formData.media.map((media)=>media.file);
+            const mediaToDrive = formData.media.map((media) => media.file);
             const mediaUploadRes = await googleDrive.uploadFilesToDrive(GOOGLE_DRIVE_NAME, formData.name, mediaToDrive);
+
+            const mediaIds = JSON.parse(mediaUploadRes.mediaIds).map((media) => media.id);
             // upload product to facebook and instagram and get the productId
             const productCatalogueId = formData.catalogueId || catalogueId;
-            // const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, {
-            //     name: formData.name,
-            //     price: formData.price,
-            //     description: formData.description,
-            //     image: mediaUploadRes.imageId,
-            //     url: mediaUploadRes.imageUrl,
-            //     media: mediaUploadRes.mediaIds
-            // });
+            const productData = {
+                name: formData.name,
+                price: `${Number(formData.price).toFixed(2)} ${formData.currency}`,
+                description: formData.description,
+                url: "https://www.vicanalytica.com",
+                ...(mediaIds.length > 0 && { image_url: `https://lh3.googleusercontent.com/d/${mediaIds[0]}=s800` }),
+                ...(mediaIds?.length > 1 && { additional_image_urls: mediaIds.slice(1).map(id => `https://lh3.googleusercontent.com/d/${id}=s800`) }),
+                ...(formData.availability && { availability: formData.availability }),
+                ...(formData.condition && { condition: formData.condition }),
+                ...(formData.shipping_weight && { shipping_weight_value: parseFloat(formData.shipping_weight), shipping_weight_unit: formData.shipping_weight_unit }),
+                ...(formData.custom_label_0 && { custom_label_0: formData.custom_label_0 }),
+                ...(formData.inventoryQuantity && { inventory: parseInt(formData.inventoryQuantity, 10) || 0 }),
+                ...(formData.brand && { brand: formData.brand }),
+                ...(formData.category && { google_product_category: formData.category }),
+                ...(formData.material && { material: formData.material }),
+                // NEW FIELDS
+                ...(formData.sale_price_effective_date && { sale_price: `${Number(formData.sale_price).toFixed(2)} ${formData.currency}` }),
+                ...(formData.sale_price_effective_date && { sale_price_effective_date: formData.sale_price_effective_date }),
+                ...(formData.gtin && { gtin: formData.gtin }),
+                ...(formData.mpn && { mpn: formData.mpn }),
+                ...(formData.gender && { gender: formData.gender }),
+                ...(formData.age_group && { age_group: formData.age_group }),
+                ...(formData.pattern && { pattern: formData.pattern }),
+                ...(formData.size_type && { size_type: formData.size_type }),
+                ...(formData.size_system && { size_system: formData.size_system }),
+                ...(formData.product_type && { product_type: formData.product_type }),
+                ...(formData.tax && { tax: formData.tax }),
+                ...(formData.custom_label_1 && { custom_label_1: formData.custom_label_1 }),
+                ...(formData.custom_label_2 && { custom_label_2: formData.custom_label_2 }),
+                ...(formData.custom_label_3 && { custom_label_3: formData.custom_label_3 }),
+                ...(formData.custom_label_4 && { custom_label_4: formData.custom_label_4 }),
+            }
+            const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, productData);
+            console.log({ product });
             // if upload to facebook and instagram posts is true
             // upload product to facebook and instagram posts and get the postid
             const data = {
@@ -163,7 +268,23 @@ export const useProductStore = create((set, get)=>({
                 custom_label: formData.custom_label_0,
                 inventoryQuantity: formData.inventoryQuantity,
                 productCatalogueId: productCatalogueId,
-                ...mediaUploadRes
+                ...mediaUploadRes,
+                // New fields
+                sale_price: formData.sale_price,
+                sale_price_effective_date: formData.sale_price_effective_date,
+                gtin: formData.gtin,
+                mpn: formData.mpn,
+                gender: formData.gender,
+                age_group: formData.age_group,
+                pattern: formData.pattern,
+                size_type: formData.size_type,
+                size_system: formData.size_system,
+                product_type: formData.product_type,
+                tax: formData.tax,
+                custom_label_1: formData.custom_label_1,
+                custom_label_2: formData.custom_label_2,
+                custom_label_3: formData.custom_label_3,
+                custom_label_4: formData.custom_label_4,
                 // facebookProductPostId,
                 // instagramProductPostId,
                 // facebookCatalogueId,
@@ -171,18 +292,18 @@ export const useProductStore = create((set, get)=>({
                 // facebookProductId,
                 // instagramProductId,
             }
-            const mediaIds = JSON.parse(mediaUploadRes.mediaIds).map((media)=>media.id);
+
             const {
-facebookLongLivedAccessToken} = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Auth", 2);
+                facebookLongLivedAccessToken } = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Auth", 2);
             const decryptFacebookLongLivedAccessToken = await decryptData(facebookLongLivedAccessToken, ENCRYPT_DECRYPT_KEY);
-            console.log({decryptFacebookLongLivedAccessToken, facebookLongLivedAccessToken})
+            console.log({ decryptFacebookLongLivedAccessToken, facebookLongLivedAccessToken })
 
             // decryptFacebookLongLivedAccessToken, mediaIds
-            console.log({decryptFacebookLongLivedAccessToken, mediaIds});
+            console.log({ decryptFacebookLongLivedAccessToken, mediaIds });
 
             await googleSheet.appendRowInPage(GOOGLE_SPREADSHEET_NAME, productSchema.sheetName, data, productSchema.shape);
 
-            if(passkey){
+            if (passkey) {
                 createLogs("Created", `
                 ${passkeyName} created a new product
                 with name ${data.name}
@@ -191,58 +312,58 @@ facebookLongLivedAccessToken} = await googleSheet.getRowByIndexByName(GOOGLE_SPR
                 with ${JSON.parse(data.mediaIds).length} media files`)
             }
 
-            set({formData: {name: "", price: "", description: "", image: "", media: []}, error: null});
+            set({ formData: { name: "", price: "", description: "", image: "", media: [] }, error: null });
             document.getElementById("my_modal_2").close();
             toast.success("Product added successfully");
-            
+
             await get().fetchProducts(gapi);
-        }catch(e){
+        } catch (e) {
             console.log(`Error adding product: ${e}`);
             toast.error("Something went wrong");
-        }finally{
-            set({loading: false});
+        } finally {
+            set({ loading: false });
         }
     },
-    deleteProduct: async (id, gapi, mediaFolderId)=>{
-        set({loading: true});
-        try{
+    deleteProduct: async (id, gapi, mediaFolderId) => {
+        set({ loading: true });
+        try {
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
             // First Delete folder containing the media from google drive if this is successfull
             const driveResult = await googleDrive.deleteFolderAndContents(mediaFolderId);
             // Delete row from google sheet using the spreadSheetName, sheetName, and rowIndex
             // console.log({index: id})
-            const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id-1);
-            if(passkey){
+            const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
+            if (passkey) {
                 createLogs("Deleted", `${passkeyName} deleted a product with id ${id}`)
             }
 
-            set((prev)=>(
-                {products: prev.products.filter((product)=>product.id !== id)}
+            set((prev) => (
+                { products: prev.products.filter((product) => product.id !== id) }
             ));
             toast.success("Product deleted successfully");
-        }catch(e){
+        } catch (e) {
             console.log(`Error deleting product: ${e}`);
             toast.error("Something went wrong");
-        }finally{
-            set({loading: false});
+        } finally {
+            set({ loading: false });
         }
     },
-    fetchProducts: async (gapi, retries = 10, error=null)=>{
-        if(retries === 0){
-            if(error){
-                set({error: error, products: [], loading: false})
+    fetchProducts: async (gapi, retries = 10, error = null) => {
+        if (retries === 0) {
+            if (error) {
+                set({ error: error, products: [], loading: false })
             }
             return;
         }
-        set({loading: true});
-        const {promise, cancel} = cancellableWaiting(1000);
-        try{
+        set({ loading: true });
+        const { promise, cancel } = cancellableWaiting(1000);
+        try {
             const googleSheet = new GoogleSheetsAPI(gapi);
             const products = await googleSheet.getSpreadsheetValuesByName(GOOGLE_SPREADSHEET_NAME, "Products");
-            set({products: products.reverse(), error: null, loading: false});
+            set({ products: products.reverse(), error: null, loading: false });
             return;
-        }catch(e){
+        } catch (e) {
             console.warn(`Attempts ${Math.abs(11 - retries)} failed:`, e);
             error = "Something went wrong";
             await promise;

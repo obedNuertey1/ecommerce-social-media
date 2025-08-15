@@ -1,3 +1,4 @@
+// frontend\src\components\ProductModal2.jsx
 import { PlusCircleIcon, Package2Icon, DollarSignIcon, ImageIcon, XIcon } from "lucide-react";
 import { useProductStore } from "../store/useProductStore";
 import { useCallback, useEffect, useState } from "react";
@@ -33,6 +34,12 @@ const CURRENCIES = [
 
 // Shipping weight units
 const WEIGHT_UNITS = ["lb", "kg", "oz", "g"];
+
+// New constants
+const GENDER_OPTIONS = ["", "male", "female", "unisex"];
+const AGE_GROUP_OPTIONS = ["", "newborn", "infant", "toddler", "kids", "adult"];
+const SIZE_TYPE_OPTIONS = ["", "regular", "petite", "plus", "big and tall", "maternity"];
+const SIZE_SYSTEM_OPTIONS = ["", "US", "UK", "EU", "AU", "BR", "CN", "IT", "JP", "MEX", "FR", "DE"];
 
 function ProductModal2() {
     const { addProduct, formData, setFormData, resetFormData, loading } = useProductStore();
@@ -410,6 +417,212 @@ function ProductModal2() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* NEW ADVANCED FIELDS SECTION */}
+                        <details className="collapse collapse-arrow bg-base-200">
+                            <summary className="collapse-title text-xl font-medium">Advanced Product Details</summary>
+                            <div className="collapse-content grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                {/* Left Column */}
+                                <div className="space-y-6">
+                                    {/* Sale Price */}
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Sale Price</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            placeholder="Discounted price"
+                                            className="input input-bordered w-full"
+                                            value={formData.sale_price || ""}
+                                            onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
+                                        />
+                                    </div>
+
+                                    {/* Sale Price Effective Date */}
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Sale Period</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="YYYY-MM-DD/YYYY-MM-DD"
+                                            className="input input-bordered w-full"
+                                            value={formData.sale_price_effective_date || ""}
+                                            onChange={(e) => setFormData({ ...formData, sale_price_effective_date: e.target.value })}
+                                        />
+                                    </div>
+
+                                    {/* GTIN & MPN */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text text-base font-medium">GTIN</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                placeholder="Global Trade Item Number"
+                                                className="input input-bordered w-full"
+                                                value={formData.gtin || ""}
+                                                onChange={(e) => setFormData({ ...formData, gtin: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text text-base font-medium">MPN</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                placeholder="Manufacturer Part Number"
+                                                className="input input-bordered w-full"
+                                                value={formData.mpn || ""}
+                                                onChange={(e) => setFormData({ ...formData, mpn: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Gender & Age Group */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text text-base font-medium">Gender</span>
+                                            </label>
+                                            <select
+                                                className="select select-bordered w-full"
+                                                value={formData.gender || ""}
+                                                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                            >
+                                                {GENDER_OPTIONS.map(option => (
+                                                    <option key={option} value={option}>
+                                                        {option || "Select"}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text text-base font-medium">Age Group</span>
+                                            </label>
+                                            <select
+                                                className="select select-bordered w-full"
+                                                value={formData.age_group || ""}
+                                                onChange={(e) => setFormData({ ...formData, age_group: e.target.value })}
+                                            >
+                                                {AGE_GROUP_OPTIONS.map(option => (
+                                                    <option key={option} value={option}>
+                                                        {option || "Select"}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right Column */}
+                                <div className="space-y-6">
+                                    {/* Pattern */}
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Pattern</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., Striped"
+                                            className="input input-bordered w-full"
+                                            value={formData.pattern || ""}
+                                            onChange={(e) => setFormData({ ...formData, pattern: e.target.value })}
+                                        />
+                                    </div>
+
+                                    {/* Size Type & System */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text text-base font-medium">Size Type</span>
+                                            </label>
+                                            <select
+                                                className="select select-bordered w-full"
+                                                value={formData.size_type || ""}
+                                                onChange={(e) => setFormData({ ...formData, size_type: e.target.value })}
+                                            >
+                                                {SIZE_TYPE_OPTIONS.map(option => (
+                                                    <option key={option} value={option}>
+                                                        {option || "Select"}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text text-base font-medium">Size System</span>
+                                            </label>
+                                            <select
+                                                className="select select-bordered w-full"
+                                                value={formData.size_system || ""}
+                                                onChange={(e) => setFormData({ ...formData, size_system: e.target.value })}
+                                            >
+                                                {SIZE_SYSTEM_OPTIONS.map(option => (
+                                                    <option key={option} value={option}>
+                                                        {option || "Select"}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Product Type */}
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Product Type</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., Electronics > Phones"
+                                            className="input input-bordered w-full"
+                                            value={formData.product_type || ""}
+                                            onChange={(e) => setFormData({ ...formData, product_type: e.target.value })}
+                                        />
+                                    </div>
+
+                                    {/* Tax */}
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Tax Information</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g., US:CA:9.5:y"
+                                            className="input input-bordered w-full"
+                                            value={formData.tax || ""}
+                                            onChange={(e) => setFormData({ ...formData, tax: e.target.value })}
+                                        />
+                                    </div>
+
+                                    {/* Additional Custom Labels */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {[1, 2, 3, 4].map(num => (
+                                            <div className="form-control" key={num}>
+                                                <label className="label">
+                                                    <span className="label-text text-base font-medium">Custom Label {num}</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    placeholder={`Label ${num}`}
+                                                    className="input input-bordered w-full"
+                                                    value={formData[`custom_label_${num}`] || ""}
+                                                    onChange={(e) => setFormData({
+                                                        ...formData,
+                                                        [`custom_label_${num}`]: e.target.value
+                                                    })}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+
 
                         {/* Description Field */}
                         <div className="form-control">

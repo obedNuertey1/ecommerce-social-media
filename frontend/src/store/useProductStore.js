@@ -62,7 +62,8 @@ export const useProductStore = create((set, get) => ({
         custom_label_1: "",
         custom_label_2: "",
         custom_label_3: "",
-        custom_label_4: ""
+        custom_label_4: "",
+        commerce_tax_category: ""
     },
     setFormData: (formData) => set({ formData }),
     resetFormData: () => set({
@@ -102,7 +103,8 @@ export const useProductStore = create((set, get) => ({
             custom_label_1: "",
             custom_label_2: "",
             custom_label_3: "",
-            custom_label_4: ""
+            custom_label_4: "",
+            commerce_tax_category: ""
         }
     }),
     updateProduct: async (id, gapi, imagesToDelete) => {
@@ -248,6 +250,7 @@ export const useProductStore = create((set, get) => ({
                 ...(formData.custom_label_2 && { custom_label_2: formData.custom_label_2 }),
                 ...(formData.custom_label_3 && { custom_label_3: formData.custom_label_3 }),
                 ...(formData.custom_label_4 && { custom_label_4: formData.custom_label_4 }),
+                commerce_tax_category: formData.commerce_tax_category
             }
             const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, productData);
             console.log({ product });

@@ -184,7 +184,7 @@ export const addProductToCatalog = async (userToken, catalogId, productData) => 
     try {
         const requiredProduct = {
             ...productData,
-            commerce_tax_category: 'PHYSICAL_GOODS',
+            // commerce_tax_category: 'PHYSICAL_GOODS',
             inventory: productData.inventory || 1
         };
 

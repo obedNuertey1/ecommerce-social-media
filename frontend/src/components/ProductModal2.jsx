@@ -4,6 +4,7 @@ import { useProductStore } from "../store/useProductStore";
 import { useCallback, useEffect, useState } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 import { getProductCatalogs } from "../funcs/socialCrudFuncs";
+import { commerceTaxCategories } from "../static/commerceTaxCategories";
 
 const token = import.meta.env.VITE_FACEBOOK_LONG_LIVED_TOKEN;
 
@@ -237,6 +238,29 @@ function ProductModal2() {
                                             {CURRENCIES.map(currency => (
                                                 <option key={currency} value={currency}>
                                                     {currency}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text text-base font-medium">Tax Category</span>
+                                            <span className="label-text-alt text-red-500">* Required</span>
+                                        </label>
+                                        <select
+                                            required
+                                            className="select select-bordered w-full py-3"
+                                            value={formData.commerce_tax_category || ""}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                commerce_tax_category: e.target.value
+                                            })}
+                                        >
+                                            <option value="">Select tax category</option>
+                                            {COMMERCE_TAX_CATEGORIES.map(({ label, value }) => (
+                                                <option key={value} value={value}>
+                                                    {label}
                                                 </option>
                                             ))}
                                         </select>

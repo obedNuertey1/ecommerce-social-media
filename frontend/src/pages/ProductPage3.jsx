@@ -270,7 +270,7 @@ function ProductPage3() {
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
-                                            {formData?.currency}
+                                            {formData?.currency}{" "}
                                         </div>
                                         <input
                                             disabled={updatableAccess}

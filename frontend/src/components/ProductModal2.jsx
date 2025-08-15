@@ -4,7 +4,7 @@ import { useProductStore } from "../store/useProductStore";
 import { useCallback, useEffect, useState } from "react";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 import { getProductCatalogs } from "../funcs/socialCrudFuncs";
-import { commerceTaxCategories } from "../static/commerceTaxCategories";
+import { commerceTaxCategories as COMMERCE_TAX_CATEGORIES } from "../static/commerceTaxCategories";
 
 const token = import.meta.env.VITE_FACEBOOK_LONG_LIVED_TOKEN;
 
@@ -234,6 +234,7 @@ function ProductModal2() {
                                             className="select select-bordered w-full py-3"
                                             value={formData.currency || "USD"}
                                             onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                                            required
                                         >
                                             {CURRENCIES.map(currency => (
                                                 <option key={currency} value={currency}>
@@ -662,7 +663,7 @@ function ProductModal2() {
                         </div>
 
                         {/* Media Upload Section */}
-                        <div className="form-control">
+                        <div className={`form-control ${formData.media.length === 0 ? 'border border-red-500 rounded-lg p-2' : ''}`}>
                             <label className="label">
                                 <span className="label-text text-base font-medium">Product Media (max 8)</span>
                             </label>
@@ -715,6 +716,11 @@ function ProductModal2() {
                                     </div>
                                 )}
                             </div>
+                            {formData.media.length === 0 && (
+                                <div className="text-red-500 text-sm mt-2">
+                                    At least one media file is required
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -723,7 +729,7 @@ function ProductModal2() {
                             <button onClick={resetFormData} className="btn btn-ghost">Cancel</button>
                         </form>
                         <button
-                            disabled={!formData.name || !formData.price || !formData.media}
+                            disabled={!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media.length === 0) || !formData.inventoryQuantity || !formData.currency}
                             type="submit"
                             className="btn btn-md btn-primary"
                         >

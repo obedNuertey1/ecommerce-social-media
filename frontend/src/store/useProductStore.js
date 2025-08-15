@@ -218,7 +218,7 @@ export const useProductStore = create((set, get) => ({
             const productData = {
                 name: formData.name,
                 // price: `${Number(formData.price).toFixed(2)} ${formData.currency}`,
-                price: `${Number(formData.price).toFixed(2)}`,
+                price: Number(formData.price),
                 currency: formData.currency,
                 description: formData.description,
                 url: "https://www.vicanalytica.com",
@@ -233,7 +233,7 @@ export const useProductStore = create((set, get) => ({
                 ...(formData.category && { google_product_category: formData.category }),
                 ...(formData.material && { material: formData.material }),
                 // NEW FIELDS
-                ...(formData.sale_price_effective_date && { sale_price: `${Number(formData.sale_price).toFixed(2)}` }),
+                ...(formData.sale_price_effective_date && { sale_price: Number(formData.sale_price) }),
                 ...(formData.sale_price_effective_date && { sale_price_effective_date: formData.sale_price_effective_date }),
                 ...(formData.gtin && { gtin: formData.gtin }),
                 ...(formData.mpn && { mpn: formData.mpn }),

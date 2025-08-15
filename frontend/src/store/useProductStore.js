@@ -217,7 +217,9 @@ export const useProductStore = create((set, get) => ({
             const productCatalogueId = formData.catalogueId || catalogueId;
             const productData = {
                 name: formData.name,
-                price: `${Number(formData.price).toFixed(2)} ${formData.currency}`,
+                // price: `${Number(formData.price).toFixed(2)} ${formData.currency}`,
+                price: `${Number(formData.price).toFixed(2)}`,
+                currency: formData.currency,
                 description: formData.description,
                 url: "https://www.vicanalytica.com",
                 ...(mediaIds.length > 0 && { image_url: `https://lh3.googleusercontent.com/d/${mediaIds[0]}=s800` }),

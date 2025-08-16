@@ -649,6 +649,7 @@ class GoogleSheetsAPI {
      */
     insertRowAtIndex(spreadsheetId, sheetName, rowData, rowIndex) {
         const accessToken = this.gapi.auth.getToken().access_token;
+        console.log("line 1192 in GoogleSheetsAPI.js", { spreadsheetId, sheetName, rowData, rowIndex });
         return this.getSheetIdByName(spreadsheetId, sheetName)
             .then((sheetId) => {
                 const payload = {
@@ -1178,7 +1179,6 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
                 throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
             }
             const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
-            console.log("Error on line 1181 in GoogleSheetsAPI.js", { spreadsheetId });
 
             // Convert the data object into an array based on the schema order.
             const rowData = schema.map(key => {
@@ -1189,6 +1189,8 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
                 }
                 return value;
             });
+
+            console.log("Error on line 1192 in GoogleSheetsAPI.js");
 
             // Append the row to the "Settings" sheet.
             // Assume you have defined appendRow which wraps appendSpreadsheetValues.

@@ -1190,7 +1190,6 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
                 return value;
             });
 
-            console.log("Error on line 1192 in GoogleSheetsAPI.js");
 
             // Append the row to the "Settings" sheet.
             // Assume you have defined appendRow which wraps appendSpreadsheetValues.
@@ -1384,6 +1383,7 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
      */
     insertRowAtIndex(spreadsheetId, sheetName, rowData, rowIndex) {
         const accessToken = this.gapi.auth.getToken().access_token;
+        console.log("Line 1386 is being fired", {spreadsheetId, sheetName, rowData, rowIndex})
         return this.getSheetIdByName(spreadsheetId, sheetName)
             .then((sheetId) => {
                 const payload = {

@@ -797,7 +797,8 @@ function ProductPage3() {
                                 Delete Product
                             </button>
                             <button
-                                disabled={updatableAccess || (!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media.filter(m => !m.markedForDeletion).length === 0) || !formData.inventoryQuantity || !formData.currency)}
+                                disabled={updatableAccess || (!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media?.length === 0) 
+                                    || !formData.inventoryQuantity || !formData.currency)}
                                 type="submit"
                                 className="btn btn-md btn-primary"
                             >

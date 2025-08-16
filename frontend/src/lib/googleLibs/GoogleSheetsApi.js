@@ -1178,6 +1178,7 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
                 throw new Error(`Spreadsheet with name "${spreadsheetName}" not found.`);
             }
             const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+            console.log("Error on line 1181 in GoogleSheetsAPI.js", { spreadsheetId });
 
             // Convert the data object into an array based on the schema order.
             const rowData = schema.map(key => {

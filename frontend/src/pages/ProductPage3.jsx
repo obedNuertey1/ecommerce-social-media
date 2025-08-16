@@ -107,47 +107,110 @@ function ProductPage3() {
         });
     }, [formData, setFormData]);
 
-    const handleMediaUpload = useCallback((e) => {
-        if (creatableAccess) return;
-        const files = Array.from(e.target.files);
-        const remainingSlots = 8 - formData.media.length;
-        const newFiles = files.slice(0, remainingSlots).map(file => ({
-            file,
-            mediaUrl: URL.createObjectURL(file),
-            id: Math.random().toString(36).substr(2, 9),
-            operation: "add"
-        }));
+    // const handleMediaUpload = useCallback((e) => {
+    //     if (creatableAccess) return;
+    //     const files = Array.from(e.target.files);
+    //     const remainingSlots = 8 - formData.media.length;
+    //     const newFiles = files.slice(0, remainingSlots).map(file => ({
+    //         file,
+    //         mediaUrl: URL.createObjectURL(file),
+    //         id: Math.random().toString(36).substr(2, 9),
+    //         operation: "add",
+    //         mimeType: file.type
+    //     }));
 
-        setFormData({
-            ...formData,
-            media: [...formData.media, ...newFiles]
-        });
+    //     setFormData({
+    //         ...formData,
+    //         media: [...formData.media, ...newFiles]
+    //     });
 
-        // Reset the input so the same file can be selected again if needed
-        e.target.value = "";
-    }, [formData, setFormData, creatableAccess]);
+    //     // Reset the input so the same file can be selected again if needed
+    //     e.target.value = "";
+    // }, [formData, setFormData, creatableAccess]);
 
-    const handleRemoveMedia = useCallback((mediaId) => {
-        const mediaToRemove = formData.media.find(m => m.id === mediaId);
-        if (mediaToRemove) {
-            // If this media was added in this session, just remove it
-            if (mediaToRemove.operation === "add") {
-                setFormData({
-                    ...formData,
-                    media: formData.media.filter(m => m.id !== mediaId)
-                });
-            } else {
-                // Mark for deletion and keep in list as "to be deleted"
-                setMediaToDelete(prev => [...prev, mediaToRemove]);
-                setFormData({
-                    ...formData,
-                    media: formData.media.map(m => 
-                        m.id === mediaId ? {...m, markedForDeletion: true} : m
-                    )
-                });
-            }
+    // const handleRemoveMedia = useCallback((mediaId) => {
+    //     const mediaToRemove = formData.media.find(m => m.id === mediaId);
+    //     if (mediaToRemove) {
+    //         // If this media was added in this session, just remove it
+    //         if (mediaToRemove.operation === "add") {
+    //             setFormData({
+    //                 ...formData,
+    //                 media: formData.media.filter(m => m.id !== mediaId)
+    //             });
+    //         } else {
+    //             // Mark for deletion and keep in list as "to be deleted"
+    //             setMediaToDelete(prev => [...prev, mediaToRemove]);
+    //             setFormData({
+    //                 ...formData,
+    //                 media: formData.media.map(m => 
+    //                     m.id === mediaId ? {...m, markedForDeletion: true} : m
+    //                 )
+    //             });
+    //         }
+    //     }
+    // }, [formData, setFormData]);
+
+    const handleReplaceMedia = useCallback((mediaId, index) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*, video/*';
+    input.onchange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const updatedMedia = formData.media.map(media => {
+                if (media.id === mediaId) {
+                    return {
+                        ...media,
+                        file,
+                        mediaUrl: URL.createObjectURL(file),
+                        mimeType: file.type,
+                        operation: media.operation === 'add' ? 'add' : 'update'
+                    };
+                }
+                return media;
+            });
+            
+            setFormData({ ...formData, media: updatedMedia });
         }
-    }, [formData, setFormData]);
+    };
+    input.click();
+}, [formData, setFormData]);
+
+const handleRemoveMedia = useCallback((mediaId) => {
+    const mediaToRemove = formData.media.find(m => m.id === mediaId);
+    if (mediaToRemove) {
+        // Remove from formData
+        const newMedia = formData.media.filter(m => m.id !== mediaId);
+        setFormData({ ...formData, media: newMedia });
+        
+        // Add to deletion queue if not new media
+        if (mediaToRemove.operation !== 'add') {
+            setMediaToDelete(prev => [...prev, mediaToRemove]);
+        }
+    }
+}, [formData, setFormData]);
+
+const handleMediaUpload = useCallback((e) => {
+    if (creatableAccess) return;
+    const files = Array.from(e.target.files);
+    const remainingSlots = 8 - formData.media.length;
+    
+    const newFiles = files.slice(0, remainingSlots).map(file => ({
+        file,
+        mediaUrl: URL.createObjectURL(file),
+        id: Math.random().toString(36).substr(2, 9),
+        operation: "add",
+        mimeType: file.type
+    }));
+
+    setFormData({
+        ...formData,
+        media: [...formData.media, ...newFiles]
+    });
+
+    // Reset input
+    e.target.value = "";
+}, [formData, setFormData, creatableAccess]);
 
     if (error) {
         return (
@@ -723,7 +786,78 @@ function ProductPage3() {
                             </div>
 
                             {/* Media Upload Section */}
+                            {/* Media Upload Section */}
                             <div className={`form-control ${formData.media.length === 0 ? 'border border-red-500 rounded-lg p-2' : ''}`}>
+                                <label className="label">
+                                    <span className="label-text text-base font-medium">Product Media (max 8)</span>
+                                </label>
+                                <div className="flex flex-wrap gap-4">
+                                    {formData.media.map((media, index) => (
+                                        <div key={media.id} className="relative group w-24 h-24">
+                                            {media.mimeType?.startsWith('video/') || media.file?.type?.startsWith('video/') ? (
+                                                <video className="w-full h-full object-cover rounded-lg border">
+                                                    <source src={media.mediaUrl} type={media.mimeType || media.file?.type} />
+                                                </video>
+                                            ) : (
+                                                <img
+                                                    src={media.mediaUrl}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-cover rounded-lg border"
+                                                />
+                                            )}
+                                            {/* Mark the first image as thumbnail */}
+                                            {index === 0 && (media.mimeType?.startsWith('image/') || media.file?.type?.startsWith('image/')) && (
+                                                <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-xs px-1 rounded-tl">
+                                                    Thumbnail
+                                                </div>
+                                            )}
+                                            
+                                            {/* Media Action Buttons */}
+                                            <div className="absolute inset-0 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleReplaceMedia(media.id, index)}
+                                                    className="btn btn-xs btn-circle btn-primary"
+                                                >
+                                                    <EditIcon className="w-3 h-3" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveMedia(media.id)}
+                                                    className="btn btn-xs btn-circle btn-error"
+                                                >
+                                                    <XIcon className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {formData.media.length < 8 && (
+                                        <div className="w-24 h-24">
+                                            <label
+                                                htmlFor="media-upload"
+                                                className={`btn btn-outline w-full h-full flex flex-col items-center justify-center cursor-pointer p-0 rounded-lg border-dashed hover:border-primary ${creatableAccess ? 'btn-disabled pointer-events-none opacity-75' : ''}`}
+                                            >
+                                                <PlusCircleIcon className="w-8 h-8 mb-1" />
+                                                <span className="text-xs">Add Media</span>
+                                            </label>
+                                            <input
+                                                id="media-upload"
+                                                type="file"
+                                                multiple
+                                                accept="image/*, video/*"
+                                                className="hidden"
+                                                onChange={handleMediaUpload}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                                {formData.media.length === 0 && (
+                                    <div className="text-red-500 text-sm mt-2">
+                                        At least one media file is required
+                                    </div>
+                                )}
+                            </div>
+                            {/* <div className={`form-control ${formData.media.length === 0 ? 'border border-red-500 rounded-lg p-2' : ''}`}>
                                 <label className="label">
                                     <span className="label-text text-base font-medium">Product Media (max 8)</span>
                                 </label>
@@ -742,7 +876,7 @@ function ProductPage3() {
                                                         className="w-full h-full object-cover rounded-lg border"
                                                     />
                                                 )}
-                                                {/* Mark the first image as thumbnail */}
+                                                
                                                 {index === 0 && (media.mimeType?.startsWith('image/') || media.file?.type?.startsWith('image/')) && (
                                                     <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-xs px-1 rounded-tl">
                                                         Thumbnail
@@ -783,7 +917,7 @@ function ProductPage3() {
                                         At least one media file is required
                                     </div>
                                 )}
-                            </div>
+                            </div> */}
                         </div>
 
                         <div className="modal-action">

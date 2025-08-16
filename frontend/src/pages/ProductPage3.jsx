@@ -1,4 +1,3 @@
-// frontend\src\pages\ProductPage3.jsx
 // frontend/src/pages/ProductPage3.jsx
 import { ArrowLeftIcon, PlusCircleIcon, SaveIcon, Package2Icon, DollarSignIcon, ImageIcon, Trash2Icon, EditIcon, ChevronLeftIcon, ChevronRightIcon, TextIcon, XIcon } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -798,8 +797,19 @@ function ProductPage3() {
                                 Delete Product
                             </button>
                             <button
-                                disabled={updatableAccess || (!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media?.length === 0) 
-                                    || !formData.inventoryQuantity || !formData.currency)}
+                                // disabled={updatableAccess || (!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media?.length === 0) 
+                                //     || !formData.inventoryQuantity || !formData.currency)}
+                                    disabled={
+        updatableAccess || 
+        !formData.name || 
+        !formData.price || 
+        !formData.commerce_tax_category || 
+        (formData.media.filter(m => !m.markedForDeletion).length === 0) || 
+        formData.inventoryQuantity === "" || 
+        formData.inventoryQuantity === null || 
+        formData.inventoryQuantity === undefined || 
+        !formData.currency
+    }
                                 type="submit"
                                 className="btn btn-md btn-primary"
                             >

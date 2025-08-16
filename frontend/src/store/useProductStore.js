@@ -131,6 +131,7 @@ export const useProductStore = create((set, get) => ({
             // console.log({newImagesToAdd, imagesToUpdate, imagesToDelete, product
             //     , getAllMediaInFolder
             // });
+            console.log("Update product works on line 134");
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
             // console.log({folderId: product.mediaFolderId});

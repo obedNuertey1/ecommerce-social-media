@@ -813,7 +813,7 @@ const handleMediaUpload = useCallback((e) => {
                                             )}
                                             
                                             {/* Media Action Buttons */}
-                                            <div className="absolute inset-0 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity">
+                                            <div className="absolute inset-0 flex items-center justify-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity">
                                                 <button
                                                     type="button"
                                                     onClick={() => handleReplaceMedia(media.id, index)}

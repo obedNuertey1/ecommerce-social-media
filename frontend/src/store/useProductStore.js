@@ -5,7 +5,7 @@ import { toast } from "react-hot-toast";
 import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
-import { createLogs, decryptData } from "../funcs/essentialFuncs";
+import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
 import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct } from "../funcs/socialCrudFuncs";
 
 
@@ -148,13 +148,13 @@ export const useProductStore = create((set, get) => ({
             const newMediaIds = [...getAllMediaInFolder, ...drive];
 
             // construct the spreadsheet row
-            const updatedRow = {
+            const updatedRow = replaceNulls({
                 ...product,
                 mediaIds: newMediaIds,
                 name: formData.name,
                 price: formData.price,
                 description: formData.description
-            }
+            })
 
             console.log({updatedRow, productSchemaShape: productSchema.shape})
 

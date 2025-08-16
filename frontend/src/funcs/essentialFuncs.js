@@ -25,6 +25,20 @@ export const objectDifference = async (arr1, arr2) => {
     return result;
 }
 
+export function replaceNulls(obj) {
+    if (Array.isArray(obj)) {
+        return obj.map(item => replaceNulls(item));
+    } else if (obj !== null && typeof obj === "object") {
+        return Object.fromEntries(
+            Object.entries(obj).map(([key, value]) => [key, replaceNulls(value)])
+        );
+    } else if (obj === null) {
+        return ""; // replace null with the string "null"
+    } else {
+        return obj;
+    }
+}
+
 export const textToSpeech = (text, lang = "en-US", pitch = 1, rate = 1, voice = 0, volume = 1) => {
     function loadVoices() {
         const voices = window.speechSynthesis.getVoices();

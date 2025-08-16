@@ -756,7 +756,7 @@ class GoogleSheetsAPI {
         .then((sheetId) => {
             // Convert rowIndex to number and adjust for zero-based indexing
             const numericIndex = parseInt(rowIndex);
-            const startIndex = numericIndex - 1; // Convert to zero-based
+            const startIndex = numericIndex; // Convert to zero-based
             
             const payload = {
                 requests: [
@@ -766,7 +766,7 @@ class GoogleSheetsAPI {
                                 sheetId: sheetId,
                                 dimension: "ROWS",
                                 startIndex: startIndex,
-                                endIndex: startIndex + 1, // Insert one row
+                                endIndex: startIndex, // Insert one row
                             },
                             inheritFromBefore: true,
                         },

@@ -695,6 +695,54 @@ class GoogleSheetsAPI {
             });
     }
 
+    insertRowAtIndex2(spreadsheetId, sheetName, rowData, rowIndex) {
+        const accessToken = this.gapi.auth.getToken().access_token;
+        console.log("line 1192 in GoogleSheetsAPI.js", { spreadsheetId, sheetName, rowData, rowIndex });
+        return this.getSheetIdByName(spreadsheetId, sheetName)
+            .then((sheetId) => {
+                const payload = {
+                    requests: [
+                        {
+                            insertDimension: {
+                                range: {
+                                    sheetId: sheetId,
+                                    dimension: "ROWS",
+                                    // startIndex: rowIndex - 1,
+                                    startIndex: rowIndex,
+                                    endIndex: rowIndex,
+                                },
+                                inheritFromBefore: true,
+                            },
+                        },
+                    ],
+                };
+
+                return fetch(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${accessToken}`,
+                        },
+                        body: JSON.stringify(payload),
+                    }
+                );
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Error inserting row: " + response.statusText);
+                }
+                return response.json();
+            })
+            .then(() => {
+                // Now update the newly inserted row with rowData.
+                const lastColumnLetter = String.fromCharCode("A".charCodeAt(0) + rowData.length - 1);
+                const range = `${sheetName}!A${rowIndex}:${lastColumnLetter}${rowIndex}`;
+                return this.updateSpreadsheetValues(spreadsheetId, range, [rowData]);
+            });
+    }
+
     /**
      * Updates an entire row at the given row index (1-indexed) with rowData.
      *
@@ -777,58 +825,58 @@ class GoogleSheetsAPI {
  * @param {string} sheetName        the name of the tab
  * @param {number[]} idsToDelete    array of numeric IDs to delete
  */
-async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
-    // 1) Find spreadsheet and sheet ID
-    const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
-    if (!spreadsheet) throw new Error(`Spreadsheet "${spreadsheetName}" not found.`);
-    const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
-    const sheetId = await this.getSheetIdByName(spreadsheetId, sheetName);
+    async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
+        // 1) Find spreadsheet and sheet ID
+        const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
+        if (!spreadsheet) throw new Error(`Spreadsheet "${spreadsheetName}" not found.`);
+        const spreadsheetId = spreadsheet.spreadsheetId || spreadsheet.id;
+        const sheetId = await this.getSheetIdByName(spreadsheetId, sheetName);
 
-    // 2) Convert row numbers to zero-based indices and sort descending
-    const rowIndices = [...new Set(idsToDelete)]  // Remove duplicates
-        .map(rowNum => rowNum - 1)                 // Convert to zero-based index
-        .sort((a, b) => b - a);                    // Sort descending for safe deletion
+        // 2) Convert row numbers to zero-based indices and sort descending
+        const rowIndices = [...new Set(idsToDelete)]  // Remove duplicates
+            .map(rowNum => rowNum - 1)                 // Convert to zero-based index
+            .sort((a, b) => b - a);                    // Sort descending for safe deletion
 
-    if (rowIndices.length === 0) {
-        console.warn('No valid row numbers provided; nothing to delete.');
-        return;
-    }
+        if (rowIndices.length === 0) {
+            console.warn('No valid row numbers provided; nothing to delete.');
+            return;
+        }
 
-    // 3) Create batch delete requests
-    const requests = rowIndices.map(index => ({
-        deleteDimension: {
-            range: {
-                sheetId,
-                dimension: 'ROWS',
-                startIndex: index,
-                endIndex: index + 1
+        // 3) Create batch delete requests
+        const requests = rowIndices.map(index => ({
+            deleteDimension: {
+                range: {
+                    sheetId,
+                    dimension: 'ROWS',
+                    startIndex: index,
+                    endIndex: index + 1
+                }
             }
-        }
-    }));
+        }));
 
-    // 4) Execute batch update
-    const accessToken = this.gapi.auth.getToken().access_token;
-    const batchRes = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`
-            },
-            body: JSON.stringify({ requests })
-        }
-    );
+        // 4) Execute batch update
+        const accessToken = this.gapi.auth.getToken().access_token;
+        const batchRes = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({ requests })
+            }
+        );
 
-    if (!batchRes.ok) {
-        const error = await batchRes.json();
-        throw new Error(`Error deleting rows: ${error.error.message}`);
+        if (!batchRes.ok) {
+            const error = await batchRes.json();
+            throw new Error(`Error deleting rows: ${error.error.message}`);
+        }
+
+        const result = await batchRes.json();
+        console.log(`Deleted ${rowIndices.length} rows`);
+        return result;
     }
-
-    const result = await batchRes.json();
-    console.log(`Deleted ${rowIndices.length} rows`);
-    return result;
-}
     // async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
     //     // 1) find your spreadsheet and sheetId
     //     const spreadsheet = await this.getSpreadsheetByName(spreadsheetName);
@@ -1197,7 +1245,7 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
             // const response = await this.updateRowAtIndex(spreadsheetId, "Settings", rowData, rowIndex);
             // if(!response){
             // }
-            const response2 = await this.insertRowAtIndex(spreadsheetId, sheetName, rowData, rowIndex);
+            const response2 = await this.insertRowAtIndex2(spreadsheetId, sheetName, rowData, rowIndex);
             // console.log("Settings row appended:", response2);
             return response2;
             // console.log("Settings row appended:", response);
@@ -1383,7 +1431,7 @@ async deleteRowsByIdList(spreadsheetName, sheetName, idsToDelete) {
      */
     insertRowAtIndex(spreadsheetId, sheetName, rowData, rowIndex) {
         const accessToken = this.gapi.auth.getToken().access_token;
-        console.log("Line 1386 is being fired", {spreadsheetId, sheetName, rowData, rowIndex})
+        console.log("Line 1386 is being fired", { spreadsheetId, sheetName, rowData, rowIndex })
         return this.getSheetIdByName(spreadsheetId, sheetName)
             .then((sheetId) => {
                 const payload = {

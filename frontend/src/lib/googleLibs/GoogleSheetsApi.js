@@ -743,6 +743,70 @@ class GoogleSheetsAPI {
             });
     }
 
+    insertRowAtIndex3(spreadsheetId, sheetName, rowData, rowIndex) {
+    const accessToken = this.gapi.auth.getToken().access_token;
+    console.log("line 1192 in GoogleSheetsAPI.js insertRowAtIndex2", { 
+        spreadsheetId, 
+        sheetName, 
+        rowData, 
+        rowIndex 
+    });
+    
+    return this.getSheetIdByName(spreadsheetId, sheetName)
+        .then((sheetId) => {
+            // Convert rowIndex to number and adjust for zero-based indexing
+            const numericIndex = parseInt(rowIndex);
+            const startIndex = numericIndex - 1; // Convert to zero-based
+            
+            const payload = {
+                requests: [
+                    {
+                        insertDimension: {
+                            range: {
+                                sheetId: sheetId,
+                                dimension: "ROWS",
+                                startIndex: startIndex,
+                                endIndex: startIndex + 1, // Insert one row
+                            },
+                            inheritFromBefore: true,
+                        },
+                    },
+                ],
+            };
+
+            return fetch(
+                `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify(payload),
+                }
+            );
+        })
+        .then((response) => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`Error inserting row: ${response.status} ${response.statusText} - ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(() => {
+            // Use the original rowIndex for A1 notation (1-based)
+            const range = `${sheetName}!A${rowIndex}`;
+            
+            // Write data to the new row
+            return this.updateSpreadsheetValues(
+                spreadsheetId, 
+                range, 
+                [rowData]
+            );
+        });
+}
+
     /**
      * Updates an entire row at the given row index (1-indexed) with rowData.
      *
@@ -1245,7 +1309,7 @@ class GoogleSheetsAPI {
             // const response = await this.updateRowAtIndex(spreadsheetId, "Settings", rowData, rowIndex);
             // if(!response){
             // }
-            const response2 = await this.insertRowAtIndex2(spreadsheetId, sheetName, rowData, rowIndex);
+            const response2 = await this.insertRowAtIndex3(spreadsheetId, sheetName, rowData, rowIndex);
             // console.log("Settings row appended:", response2);
             return response2;
             // console.log("Settings row appended:", response);

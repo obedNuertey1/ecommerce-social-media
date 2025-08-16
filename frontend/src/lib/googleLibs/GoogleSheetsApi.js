@@ -697,7 +697,7 @@ class GoogleSheetsAPI {
 
     insertRowAtIndex2(spreadsheetId, sheetName, rowData, rowIndex) {
         const accessToken = this.gapi.auth.getToken().access_token;
-        console.log("line 1192 in GoogleSheetsAPI.js", { spreadsheetId, sheetName, rowData, rowIndex });
+        console.log("line 1192 in GoogleSheetsAPI.js insertRowAtIndex2", { spreadsheetId, sheetName, rowData, rowIndex });
         return this.getSheetIdByName(spreadsheetId, sheetName)
             .then((sheetId) => {
                 const payload = {

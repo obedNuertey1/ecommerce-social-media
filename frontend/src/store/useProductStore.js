@@ -279,7 +279,7 @@ export const useProductStore = create((set, get) => ({
                 shipping_weight_unit: formData.shipping_weight_unit,
                 custom_label_0: formData.custom_label_0,
                 inventoryQuantity: formData.inventoryQuantity,
-                productCatalogueId: productCatalogueId,
+                catalogueId: productCatalogueId,
                 ...mediaUploadRes,
                 // New fields
                 sale_price: formData.sale_price,

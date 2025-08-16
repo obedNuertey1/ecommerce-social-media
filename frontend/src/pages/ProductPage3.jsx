@@ -8,6 +8,7 @@ import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 import { toast } from "react-hot-toast";
 import { privilegeAccess, createLogs } from "../funcs/essentialFuncs";
 import { commerceTaxCategories as COMMERCE_TAX_CATEGORIES } from "../static/commerceTaxCategories";
+import { getProductCatalogs } from "../funcs/socialCrudFuncs";
 
 // List of all currencies (ISO 4217)
 const CURRENCIES = [

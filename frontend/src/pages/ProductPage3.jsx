@@ -60,7 +60,7 @@ function ProductPage3() {
 
     useEffect(() => {
         fetchProduct(id, gapi);
-    }, [id, fetchProduct, gapi]);
+    }, [id, fetchProduct]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -71,9 +71,10 @@ function ProductPage3() {
                 createLogs("Accessed", `${passkeyName} entered the ${formData.name} Product Page`)
                 pageLoadedRef.current = true;
             }
-        };
+        }
         pageLoaded();
-    }, [formData.name]);
+        return () => { };
+    }, []);
 
     // NEW: FETCH CATALOGUES WHEN COMPONENT LOADS
     useEffect(() => {
@@ -94,90 +95,59 @@ function ProductPage3() {
         };
 
         fetchCatalogues();
-    }, [gapi, token]);
+    }, [gapi]);
 
     // NEW: HANDLE CATALOGUE SELECTION
     const handleCatalogueChange = useCallback((e) => {
         const { value } = e.target;
-        setFormData(prev => ({
-            ...prev,
+        setFormData({
+            ...formData,
             catalogueId: value === "new" ? "" : value,
             isNewCatalogue: value === "new"
+        });
+    }, [formData, setFormData]);
+
+    const handleMediaUpload = useCallback((e) => {
+        if (creatableAccess) return;
+        const files = Array.from(e.target.files);
+        const remainingSlots = 8 - formData.media.length;
+        const newFiles = files.slice(0, remainingSlots).map(file => ({
+            file,
+            mediaUrl: URL.createObjectURL(file),
+            id: Math.random().toString(36).substr(2, 9),
+            operation: "add"
         }));
-    }, [setFormData]);
 
-    const handleDeleteImage = (index, blob) => {
-        const newImages = formData.media.filter((_, i) => i !== index);
-        setFormData({ ...formData, media: newImages });
-        
-        if(blob?.operation !== "add" || !blob?.operation){
-            setMediaToDelete(prev => [...prev, blob]);
-        }
+        setFormData({
+            ...formData,
+            media: [...formData.media, ...newFiles]
+        });
 
-        if (currentImageIndex >= newImages.length) {
-            setCurrentImageIndex(Math.max(0, newImages.length - 1));
-        }
-    };
+        // Reset the input so the same file can be selected again if needed
+        e.target.value = "";
+    }, [formData, setFormData, creatableAccess]);
 
-    const handleFileUpload = async (file, index, fileId=null) => {
-        if(formData.media.length >= 8){
-            toast.error("You can upload up to 8 media");
-            return;
-        }
-
-        if(index !== undefined 
-            && (!formData.media[index]?.operation || formData.media[index]?.operation === "update")
-        ){
-            // Update existing image
-            const newMedia = [...formData.media];
-            newMedia[index] = {
-                id: fileId,
-                mediaUrl: URL.createObjectURL(file),
-                mimeType: file.type,
-                file: file,
-                operation: "update"
-            };
-            setFormData({...formData, media: newMedia});
-        }else if(index !== undefined && (!formData.media[index]?.operation || formData.media[index]?.operation === "add")){
-            const newMedia = [...formData.media];
-            newMedia[index] = {
-                id: fileId,
-                mediaUrl: URL.createObjectURL(file),
-                mimeType: file.type,
-                file: file,
-                operation: "add"
-            };
-            setFormData({...formData, media: newMedia});
-        }
-        else{
-            // Add new image
-            const freshMedia = {
-                id: Math.random().toString(36).substr(2, 9),
-                mediaUrl: URL.createObjectURL(file),
-                mimeType: file.type,
-                file: file,
-                operation: "add"
-            };
-            
-            setFormData({
-                ...formData,
-                media: [...formData.media, freshMedia]
-            });
-        }
-    };
-
-    const handleChangeImage = async (index, blobId) => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*, video/*';
-        input.onchange = (e) => {
-            const file = e.target.files ? e.target.files[0] : undefined;
-            if (file) {
-                handleFileUpload(file, index, blobId);
+    const handleRemoveMedia = useCallback((mediaId) => {
+        const mediaToRemove = formData.media.find(m => m.id === mediaId);
+        if (mediaToRemove) {
+            // If this media was added in this session, just remove it
+            if (mediaToRemove.operation === "add") {
+                setFormData({
+                    ...formData,
+                    media: formData.media.filter(m => m.id !== mediaId)
+                });
+            } else {
+                // Mark for deletion and keep in list as "to be deleted"
+                setMediaToDelete(prev => [...prev, mediaToRemove]);
+                setFormData({
+                    ...formData,
+                    media: formData.media.map(m => 
+                        m.id === mediaId ? {...m, markedForDeletion: true} : m
+                    )
+                });
             }
-        };
-        input.click();
-    };
+        }
+    }, [formData, setFormData]);
 
     if (error) {
         return (
@@ -751,104 +721,68 @@ function ProductPage3() {
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 ></textarea>
                             </div>
-                        </div>
 
-                        {/* Image Carousel */}
-                        <div className="relative rounded-box overflow-hidden shadow-lg aspect-square w-full">
-                            {formData.media?.length > 0 ? (
-                                <>
-                                    <div className="flex transition-transform duration-300 ease-in-out h-full"
-                                        style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
-                                        {formData.media.map((blob, index) => (
-                                            <div key={index} className="w-full flex-shrink-0 relative h-full">
-                                                {blob.mimeType?.startsWith('video/') || blob.file?.type?.startsWith('video/') ? (
-                                                    <video className="w-full h-full object-cover" controls>
-                                                        <source src={blob.mediaUrl} type={blob.mimeType || blob.file?.type} />
+                            {/* Media Upload Section */}
+                            <div className={`form-control ${formData.media.length === 0 ? 'border border-red-500 rounded-lg p-2' : ''}`}>
+                                <label className="label">
+                                    <span className="label-text text-base font-medium">Product Media (max 8)</span>
+                                </label>
+                                <div className="flex flex-wrap gap-4">
+                                    {formData.media.map((media, index) => (
+                                        media.markedForDeletion ? null : (
+                                            <div key={media.id} className="relative group w-24 h-24">
+                                                {media.mimeType?.startsWith('video/') || media.file?.type?.startsWith('video/') ? (
+                                                    <video className="w-full h-full object-cover rounded-lg border">
+                                                        <source src={media.mediaUrl || media.preview} type={media.mimeType || media.file?.type} />
                                                     </video>
                                                 ) : (
-                                                    <img 
-                                                        src={blob.mediaUrl} 
-                                                        className="w-full h-full object-cover" 
-                                                        alt={formData.name} 
+                                                    <img
+                                                        src={media.mediaUrl || media.preview}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover rounded-lg border"
                                                     />
                                                 )}
-                                                <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                                                    {index + 1}/{formData.media.length}
-                                                </div>
-                                                <div className="absolute top-4 right-4 flex gap-2">
-                                                    <button
-                                                        disabled={updatableAccess}
-                                                        onClick={() => handleChangeImage(index, blob.id)}
-                                                        className="btn btn-sm btn-circle btn-primary"
-                                                    >
-                                                        <EditIcon className="size-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteImage(index, blob)}
-                                                        disabled={deletableAccess}
-                                                        className="btn btn-sm btn-circle btn-error"
-                                                    >
-                                                        <Trash2Icon className="size-4" />
-                                                    </button>
-                                                </div>
+                                                {/* Mark the first image as thumbnail */}
+                                                {index === 0 && (media.mimeType?.startsWith('image/') || media.file?.type?.startsWith('image/')) && (
+                                                    <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-xs px-1 rounded-tl">
+                                                        Thumbnail
+                                                    </div>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveMedia(media.id)}
+                                                    className="btn btn-xs btn-circle absolute -top-2 -right-2 bg-error border-error hover:bg-error/80 text-white"
+                                                >
+                                                    <XIcon className="w-3 h-3" />
+                                                </button>
                                             </div>
-                                        ))}
-                                    </div>
-                                    <button
-                                        onClick={() => setCurrentImageIndex(prev => 
-                                            (prev - 1 + formData.media.length) % formData.media.length
-                                        )}
-                                        className="btn btn-sm btn-circle btn-neutral absolute left-4 top-1/2 -translate-y-1/2"
-                                    >
-                                        <ChevronLeftIcon className="size-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => setCurrentImageIndex(prev => 
-                                            (prev + 1) % formData.media.length
-                                        )}
-                                        className="btn btn-sm btn-circle btn-neutral absolute right-4 top-1/2 -translate-y-1/2"
-                                    >
-                                        <ChevronRightIcon className="size-4" />
-                                    </button>
-                                </>
-                            ) : (
-                                <div className="w-full h-full bg-base-200 flex items-center justify-center">
-                                    <span className="text-base-content/50">No images</span>
+                                        )
+                                    ))}
+                                    {formData.media.filter(m => !m.markedForDeletion).length < 8 && (
+                                        <div className="w-24 h-24">
+                                            <label
+                                                htmlFor="media-upload"
+                                                className={`btn btn-outline w-full h-full flex flex-col items-center justify-center cursor-pointer p-0 rounded-lg border-dashed hover:border-primary ${creatableAccess ? 'btn-disabled pointer-events-none opacity-75' : ''}`}
+                                            >
+                                                <PlusCircleIcon className="w-8 h-8 mb-1" />
+                                                <span className="text-xs">Add Media</span>
+                                            </label>
+                                            <input
+                                                id="media-upload"
+                                                type="file"
+                                                multiple
+                                                accept="image/*, video/*"
+                                                className="hidden"
+                                                onChange={handleMediaUpload}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Media Upload */}
-                        <div className="form-control">
-                            <label className="label">
-                                <span className="label-text text-base font-medium">Upload Media</span>
-                            </label>
-                            <div className="flex gap-2">
-                                <input
-                                    type="file"
-                                    accept="image/*, video/*"
-                                    onChange={(e) => {
-                                        if (creatableAccess) return;
-                                        const files = Array.from(e.target.files || []);
-                                        files.forEach(file => {
-                                            handleFileUpload(file);
-                                        });
-                                    }}
-                                    className="hidden"
-                                    id="file-upload"
-                                    multiple
-                                    disabled={creatableAccess}
-                                />
-                                <label
-                                    htmlFor="file-upload"
-                                    className={`btn btn-primary w-full flex items-center justify-center gap-2 ${
-                                        creatableAccess ? 'btn-disabled pointer-events-none opacity-75' : ''
-                                    }`}
-                                    aria-disabled={creatableAccess}
-                                >
-                                    <PlusCircleIcon className="size-5" />
-                                    Upload Media
-                                </label>
+                                {formData.media.filter(m => !m.markedForDeletion).length === 0 && (
+                                    <div className="text-red-500 text-sm mt-2">
+                                        At least one media file is required
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -863,11 +797,23 @@ function ProductPage3() {
                                 Delete Product
                             </button>
                             <button
-                                disabled={updatableAccess || 
-                                    !formData.name || 
-                                    !formData.price || 
-                                    !formData.description || 
-                                    formData.media?.length === 0}
+                                    disabled={
+        updatableAccess || 
+        !formData.name || 
+        !formData.price || 
+        !formData.commerce_tax_category || 
+        (formData.media.filter(m => !m.markedForDeletion).length === 0) || 
+        formData.inventoryQuantity === "" || 
+        formData.inventoryQuantity === null || 
+        formData.inventoryQuantity === undefined || 
+        !formData.currency
+    }
+
+    // disabled={updatableAccess || 
+    //                                 !formData.name || 
+    //                                 !formData.price || 
+    //                                 !formData.description || 
+    //                                 formData.media?.length === 0}
                                 type="submit"
                                 className="btn btn-md btn-primary"
                             >
@@ -889,6 +835,9 @@ function ProductPage3() {
 }
 
 export default ProductPage3;
+
+
+
 
 
 // // frontend/src/pages/ProductPage3.jsx
@@ -953,7 +902,7 @@ export default ProductPage3;
 
 //     useEffect(() => {
 //         fetchProduct(id, gapi);
-//     }, [id, fetchProduct]);
+//     }, [id, fetchProduct, gapi]);
 
 //     useEffect(() => {
 //         window.scrollTo(0, 0);
@@ -964,10 +913,9 @@ export default ProductPage3;
 //                 createLogs("Accessed", `${passkeyName} entered the ${formData.name} Product Page`)
 //                 pageLoadedRef.current = true;
 //             }
-//         }
+//         };
 //         pageLoaded();
-//         return () => { };
-//     }, []);
+//     }, [formData.name]);
 
 //     // NEW: FETCH CATALOGUES WHEN COMPONENT LOADS
 //     useEffect(() => {
@@ -988,59 +936,90 @@ export default ProductPage3;
 //         };
 
 //         fetchCatalogues();
-//     }, [gapi]);
+//     }, [gapi, token]);
 
 //     // NEW: HANDLE CATALOGUE SELECTION
 //     const handleCatalogueChange = useCallback((e) => {
 //         const { value } = e.target;
-//         setFormData({
-//             ...formData,
+//         setFormData(prev => ({
+//             ...prev,
 //             catalogueId: value === "new" ? "" : value,
 //             isNewCatalogue: value === "new"
-//         });
-//     }, [formData, setFormData]);
-
-//     const handleMediaUpload = useCallback((e) => {
-//         if (creatableAccess) return;
-//         const files = Array.from(e.target.files);
-//         const remainingSlots = 8 - formData.media.length;
-//         const newFiles = files.slice(0, remainingSlots).map(file => ({
-//             file,
-//             mediaUrl: URL.createObjectURL(file),
-//             id: Math.random().toString(36).substr(2, 9),
-//             operation: "add"
 //         }));
+//     }, [setFormData]);
 
-//         setFormData({
-//             ...formData,
-//             media: [...formData.media, ...newFiles]
-//         });
-
-//         // Reset the input so the same file can be selected again if needed
-//         e.target.value = "";
-//     }, [formData, setFormData, creatableAccess]);
-
-//     const handleRemoveMedia = useCallback((mediaId) => {
-//         const mediaToRemove = formData.media.find(m => m.id === mediaId);
-//         if (mediaToRemove) {
-//             // If this media was added in this session, just remove it
-//             if (mediaToRemove.operation === "add") {
-//                 setFormData({
-//                     ...formData,
-//                     media: formData.media.filter(m => m.id !== mediaId)
-//                 });
-//             } else {
-//                 // Mark for deletion and keep in list as "to be deleted"
-//                 setMediaToDelete(prev => [...prev, mediaToRemove]);
-//                 setFormData({
-//                     ...formData,
-//                     media: formData.media.map(m => 
-//                         m.id === mediaId ? {...m, markedForDeletion: true} : m
-//                     )
-//                 });
-//             }
+//     const handleDeleteImage = (index, blob) => {
+//         const newImages = formData.media.filter((_, i) => i !== index);
+//         setFormData({ ...formData, media: newImages });
+        
+//         if(blob?.operation !== "add" || !blob?.operation){
+//             setMediaToDelete(prev => [...prev, blob]);
 //         }
-//     }, [formData, setFormData]);
+
+//         if (currentImageIndex >= newImages.length) {
+//             setCurrentImageIndex(Math.max(0, newImages.length - 1));
+//         }
+//     };
+
+//     const handleFileUpload = async (file, index, fileId=null) => {
+//         if(formData.media.length >= 8){
+//             toast.error("You can upload up to 8 media");
+//             return;
+//         }
+
+//         if(index !== undefined 
+//             && (!formData.media[index]?.operation || formData.media[index]?.operation === "update")
+//         ){
+//             // Update existing image
+//             const newMedia = [...formData.media];
+//             newMedia[index] = {
+//                 id: fileId,
+//                 mediaUrl: URL.createObjectURL(file),
+//                 mimeType: file.type,
+//                 file: file,
+//                 operation: "update"
+//             };
+//             setFormData({...formData, media: newMedia});
+//         }else if(index !== undefined && (!formData.media[index]?.operation || formData.media[index]?.operation === "add")){
+//             const newMedia = [...formData.media];
+//             newMedia[index] = {
+//                 id: fileId,
+//                 mediaUrl: URL.createObjectURL(file),
+//                 mimeType: file.type,
+//                 file: file,
+//                 operation: "add"
+//             };
+//             setFormData({...formData, media: newMedia});
+//         }
+//         else{
+//             // Add new image
+//             const freshMedia = {
+//                 id: Math.random().toString(36).substr(2, 9),
+//                 mediaUrl: URL.createObjectURL(file),
+//                 mimeType: file.type,
+//                 file: file,
+//                 operation: "add"
+//             };
+            
+//             setFormData({
+//                 ...formData,
+//                 media: [...formData.media, freshMedia]
+//             });
+//         }
+//     };
+
+//     const handleChangeImage = async (index, blobId) => {
+//         const input = document.createElement('input');
+//         input.type = 'file';
+//         input.accept = 'image/*, video/*';
+//         input.onchange = (e) => {
+//             const file = e.target.files ? e.target.files[0] : undefined;
+//             if (file) {
+//                 handleFileUpload(file, index, blobId);
+//             }
+//         };
+//         input.click();
+//     };
 
 //     if (error) {
 //         return (
@@ -1614,68 +1593,104 @@ export default ProductPage3;
 //                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
 //                                 ></textarea>
 //                             </div>
+//                         </div>
 
-//                             {/* Media Upload Section */}
-//                             <div className={`form-control ${formData.media.length === 0 ? 'border border-red-500 rounded-lg p-2' : ''}`}>
-//                                 <label className="label">
-//                                     <span className="label-text text-base font-medium">Product Media (max 8)</span>
-//                                 </label>
-//                                 <div className="flex flex-wrap gap-4">
-//                                     {formData.media.map((media, index) => (
-//                                         media.markedForDeletion ? null : (
-//                                             <div key={media.id} className="relative group w-24 h-24">
-//                                                 {media.mimeType?.startsWith('video/') || media.file?.type?.startsWith('video/') ? (
-//                                                     <video className="w-full h-full object-cover rounded-lg border">
-//                                                         <source src={media.mediaUrl || media.preview} type={media.mimeType || media.file?.type} />
+//                         {/* Image Carousel */}
+//                         <div className="relative rounded-box overflow-hidden shadow-lg aspect-square w-full">
+//                             {formData.media?.length > 0 ? (
+//                                 <>
+//                                     <div className="flex transition-transform duration-300 ease-in-out h-full"
+//                                         style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
+//                                         {formData.media.map((blob, index) => (
+//                                             <div key={index} className="w-full flex-shrink-0 relative h-full">
+//                                                 {blob.mimeType?.startsWith('video/') || blob.file?.type?.startsWith('video/') ? (
+//                                                     <video className="w-full h-full object-cover" controls>
+//                                                         <source src={blob.mediaUrl} type={blob.mimeType || blob.file?.type} />
 //                                                     </video>
 //                                                 ) : (
-//                                                     <img
-//                                                         src={media.mediaUrl || media.preview}
-//                                                         alt="Preview"
-//                                                         className="w-full h-full object-cover rounded-lg border"
+//                                                     <img 
+//                                                         src={blob.mediaUrl} 
+//                                                         className="w-full h-full object-cover" 
+//                                                         alt={formData.name} 
 //                                                     />
 //                                                 )}
-//                                                 {/* Mark the first image as thumbnail */}
-//                                                 {index === 0 && (media.mimeType?.startsWith('image/') || media.file?.type?.startsWith('image/')) && (
-//                                                     <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-xs px-1 rounded-tl">
-//                                                         Thumbnail
-//                                                     </div>
-//                                                 )}
-//                                                 <button
-//                                                     type="button"
-//                                                     onClick={() => handleRemoveMedia(media.id)}
-//                                                     className="btn btn-xs btn-circle absolute -top-2 -right-2 bg-error border-error hover:bg-error/80 text-white"
-//                                                 >
-//                                                     <XIcon className="w-3 h-3" />
-//                                                 </button>
+//                                                 <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+//                                                     {index + 1}/{formData.media.length}
+//                                                 </div>
+//                                                 <div className="absolute top-4 right-4 flex gap-2">
+//                                                     <button
+//                                                         disabled={updatableAccess}
+//                                                         onClick={() => handleChangeImage(index, blob.id)}
+//                                                         className="btn btn-sm btn-circle btn-primary"
+//                                                     >
+//                                                         <EditIcon className="size-4" />
+//                                                     </button>
+//                                                     <button
+//                                                         onClick={() => handleDeleteImage(index, blob)}
+//                                                         disabled={deletableAccess}
+//                                                         className="btn btn-sm btn-circle btn-error"
+//                                                     >
+//                                                         <Trash2Icon className="size-4" />
+//                                                     </button>
+//                                                 </div>
 //                                             </div>
-//                                         )
-//                                     ))}
-//                                     {formData.media.filter(m => !m.markedForDeletion).length < 8 && (
-//                                         <div className="w-24 h-24">
-//                                             <label
-//                                                 htmlFor="media-upload"
-//                                                 className={`btn btn-outline w-full h-full flex flex-col items-center justify-center cursor-pointer p-0 rounded-lg border-dashed hover:border-primary ${creatableAccess ? 'btn-disabled pointer-events-none opacity-75' : ''}`}
-//                                             >
-//                                                 <PlusCircleIcon className="w-8 h-8 mb-1" />
-//                                                 <span className="text-xs">Add Media</span>
-//                                             </label>
-//                                             <input
-//                                                 id="media-upload"
-//                                                 type="file"
-//                                                 multiple
-//                                                 accept="image/*, video/*"
-//                                                 className="hidden"
-//                                                 onChange={handleMediaUpload}
-//                                             />
-//                                         </div>
-//                                     )}
-//                                 </div>
-//                                 {formData.media.filter(m => !m.markedForDeletion).length === 0 && (
-//                                     <div className="text-red-500 text-sm mt-2">
-//                                         At least one media file is required
+//                                         ))}
 //                                     </div>
-//                                 )}
+//                                     <button
+//                                         onClick={() => setCurrentImageIndex(prev => 
+//                                             (prev - 1 + formData.media.length) % formData.media.length
+//                                         )}
+//                                         className="btn btn-sm btn-circle btn-neutral absolute left-4 top-1/2 -translate-y-1/2"
+//                                     >
+//                                         <ChevronLeftIcon className="size-4" />
+//                                     </button>
+//                                     <button
+//                                         onClick={() => setCurrentImageIndex(prev => 
+//                                             (prev + 1) % formData.media.length
+//                                         )}
+//                                         className="btn btn-sm btn-circle btn-neutral absolute right-4 top-1/2 -translate-y-1/2"
+//                                     >
+//                                         <ChevronRightIcon className="size-4" />
+//                                     </button>
+//                                 </>
+//                             ) : (
+//                                 <div className="w-full h-full bg-base-200 flex items-center justify-center">
+//                                     <span className="text-base-content/50">No images</span>
+//                                 </div>
+//                             )}
+//                         </div>
+
+//                         {/* Media Upload */}
+//                         <div className="form-control">
+//                             <label className="label">
+//                                 <span className="label-text text-base font-medium">Upload Media</span>
+//                             </label>
+//                             <div className="flex gap-2">
+//                                 <input
+//                                     type="file"
+//                                     accept="image/*, video/*"
+//                                     onChange={(e) => {
+//                                         if (creatableAccess) return;
+//                                         const files = Array.from(e.target.files || []);
+//                                         files.forEach(file => {
+//                                             handleFileUpload(file);
+//                                         });
+//                                     }}
+//                                     className="hidden"
+//                                     id="file-upload"
+//                                     multiple
+//                                     disabled={creatableAccess}
+//                                 />
+//                                 <label
+//                                     htmlFor="file-upload"
+//                                     className={`btn btn-primary w-full flex items-center justify-center gap-2 ${
+//                                         creatableAccess ? 'btn-disabled pointer-events-none opacity-75' : ''
+//                                     }`}
+//                                     aria-disabled={creatableAccess}
+//                                 >
+//                                     <PlusCircleIcon className="size-5" />
+//                                     Upload Media
+//                                 </label>
 //                             </div>
 //                         </div>
 
@@ -1690,19 +1705,11 @@ export default ProductPage3;
 //                                 Delete Product
 //                             </button>
 //                             <button
-//                                 // disabled={updatableAccess || (!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media?.length === 0) 
-//                                 //     || !formData.inventoryQuantity || !formData.currency)}
-//                                     disabled={
-//         updatableAccess || 
-//         !formData.name || 
-//         !formData.price || 
-//         !formData.commerce_tax_category || 
-//         (formData.media.filter(m => !m.markedForDeletion).length === 0) || 
-//         formData.inventoryQuantity === "" || 
-//         formData.inventoryQuantity === null || 
-//         formData.inventoryQuantity === undefined || 
-//         !formData.currency
-//     }
+//                                 disabled={updatableAccess || 
+//                                     !formData.name || 
+//                                     !formData.price || 
+//                                     !formData.description || 
+//                                     formData.media?.length === 0}
 //                                 type="submit"
 //                                 className="btn btn-md btn-primary"
 //                             >
@@ -1724,7 +1731,6 @@ export default ProductPage3;
 // }
 
 // export default ProductPage3;
-
 
 
 

@@ -156,6 +156,8 @@ export const useProductStore = create((set, get) => ({
                 description: formData.description
             }
 
+            console.log({updateRow, productSchemaShape: productSchema.shape})
+
             const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
 
             if (passkey) {

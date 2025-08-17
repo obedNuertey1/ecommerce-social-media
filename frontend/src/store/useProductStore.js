@@ -159,7 +159,7 @@ export const useProductStore = create((set, get) => ({
             console.log({updatedRow, productSchemaShape: productSchema.shape})
 
             const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
-            
+            console.log("Stops here at 162")
             // Prepare the data
             const metaProductData = {
                 name: updatedRow.name,
@@ -203,9 +203,10 @@ export const useProductStore = create((set, get) => ({
                 commerce_tax_category: updatedRow.commerce_tax_category,
                 retailer_id: updatedRow.retailer_id
             }
+            console.log("Stops here at 206")
             // Update facebook product
             await updateMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, updatedRow.productId, metaProductData);
-
+            console.log("Stops here at 208")
             if (passkey) {
                 createLogs("Modified", `
                 ${passkeyName} updated a product

@@ -278,8 +278,14 @@ export const useProductStore = create((set, get) => ({
                 currency: formData.currency,
                 description: formData.description,
                 url: "https://www.vicanalytica.com",
-                ...(mediaIds.length > 0 && { image_url: `https://lh3.googleusercontent.com/d/${mediaIds[0]}=s800` }),
-                ...(mediaIds?.length > 1 && { additional_image_urls: mediaIds.slice(1).map(id => `https://lh3.googleusercontent.com/d/${id}=s800`) }),
+                ...(mediaIds.length > 0 && { image_url: 
+                    `https://drive.google.com/uc?export=view&id=${mediaIds[0]}`
+                    // `https://lh3.googleusercontent.com/d/${mediaIds[0]}=s800`
+                 }),
+                ...(mediaIds?.length > 1 && { additional_image_urls: mediaIds.slice(1).map(id => 
+                    `https://drive.google.com/uc?export=view&id=${id}`
+                    // `https://lh3.googleusercontent.com/d/${id}=s800`
+                ) }),
                 ...(formData.availability && { availability: formData.availability }),
                 ...(formData.condition && { condition: formData.condition }),
                 ...(formData.shipping_weight && { shipping_weight_value: parseFloat(formData.shipping_weight), shipping_weight_unit: formData.shipping_weight_unit }),

@@ -134,13 +134,17 @@ export const useProductStore = create((set, get) => ({
             console.log("Update product works on line 134");
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
-            // console.log({folderId: product.mediaFolderId});
+            console.log({folderId: product.mediaFolderId});
+            console.log({folderIdForm: formData.mediaFolderId});
             // // update media in the product's folder
             const updateRes = await googleDrive.replaceMultipleFilesInFolder(product.mediaFolderId, imagesToUpdate);
+            console.log("Stops here at 141");
             // // add new media to the prouduct's folder
             const drive = await googleDrive.addMultipleFilesToFolder(product.mediaFolderId, newImagesToAdd);
+            console.log("Stops here at 144")
             // // delete media from the product's folder
             const deleteRes = await googleDrive.deleteMultipleFilesFromFolder(imagesToDelete);
+            console.log("Stops here at 147");
 
             if (product.name !== formData.name) {
                 const folderRenameRes = await googleDrive.renameFolder(product.mediaFolderId, formData.name);

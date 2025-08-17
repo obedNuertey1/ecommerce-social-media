@@ -131,20 +131,16 @@ export const useProductStore = create((set, get) => ({
             // console.log({newImagesToAdd, imagesToUpdate, imagesToDelete, product
             //     , getAllMediaInFolder
             // });
-            console.log("Update product works on line 134");
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
             console.log({folderId: product.mediaFolderId});
             console.log({folderIdForm: formData.mediaFolderId});
             // // update media in the product's folder
             const updateRes = await googleDrive.replaceMultipleFilesInFolder(product.mediaFolderId, imagesToUpdate);
-            console.log("Stops here at 141");
             // // add new media to the prouduct's folder
             const drive = await googleDrive.addMultipleFilesToFolder(product.mediaFolderId, newImagesToAdd);
-            console.log("Stops here at 144")
             // // delete media from the product's folder
             const deleteRes = await googleDrive.deleteMultipleFilesFromFolder(imagesToDelete);
-            console.log("Stops here at 147");
 
             if (product.name !== formData.name) {
                 const folderRenameRes = await googleDrive.renameFolder(product.mediaFolderId, formData.name);
@@ -163,8 +159,8 @@ export const useProductStore = create((set, get) => ({
             console.log({updatedRow, productSchemaShape: productSchema.shape})
 
             const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
-            console.log("Stops here at 166")
             // Prepare the data
+             // `https://lh3.googleusercontent.com/d/${updatedRow.mediaIds[0]}=s800` 
             const metaProductData = {
                 name: updatedRow.name,
                 // price: `${Number(formData.price).toFixed(2)} ${formData.currency}`,
@@ -174,11 +170,9 @@ export const useProductStore = create((set, get) => ({
                 url: "https://www.vicanalytica.com",
                 ...(updatedRow.mediaIds.length > 0 && { image_url: 
                     `https://drive.google.com/uc?export=view&id=${updatedRow.mediaIds[0].id}`
-                    // `https://lh3.googleusercontent.com/d/${updatedRow.mediaIds[0]}=s800` 
                 }),
                 ...(updatedRow.mediaIds?.length > 1 && { additional_image_urls: updatedRow.mediaIds.slice(1).map(id => 
-                    `https://drive.google.com/uc?export=view&id=${item.id}`
-                    // `https://lh3.googleusercontent.com/d/${id}=s800`
+                    `https://drive.google.com/uc?export=view&id=${id}`
                 ) }),
                 ...(updatedRow.availability && { availability: updatedRow.availability }),
                 ...(updatedRow.condition && { condition: updatedRow.condition }),

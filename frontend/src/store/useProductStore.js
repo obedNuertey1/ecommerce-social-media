@@ -168,8 +168,14 @@ export const useProductStore = create((set, get) => ({
                 currency: updatedRow.currency,
                 description: updatedRow.description,
                 url: "https://www.vicanalytica.com",
-                ...(updatedRow.mediaIds.length > 0 && { image_url: `https://lh3.googleusercontent.com/d/${updatedRow.mediaIds[0]}=s800` }),
-                ...(updatedRow.mediaIds?.length > 1 && { additional_image_urls: updatedRow.mediaIds.slice(1).map(id => `https://lh3.googleusercontent.com/d/${id}=s800`) }),
+                ...(updatedRow.mediaIds.length > 0 && { image_url: 
+                    `https://drive.google.com/uc?export=view&id=${updatedRow.mediaIds[0].id}`
+                    // `https://lh3.googleusercontent.com/d/${updatedRow.mediaIds[0]}=s800` 
+                }),
+                ...(updatedRow.mediaIds?.length > 1 && { additional_image_urls: updatedRow.mediaIds.slice(1).map(id => 
+                    `https://drive.google.com/uc?export=view&id=${item.id}`
+                    // `https://lh3.googleusercontent.com/d/${id}=s800`
+                ) }),
                 ...(updatedRow.availability && { availability: updatedRow.availability }),
                 ...(updatedRow.condition && { condition: updatedRow.condition }),
                 ...(updatedRow.shipping_weight && { shipping_weight_value: parseFloat(updatedRow.shipping_weight), shipping_weight_unit: updatedRow.shipping_weight_unit }),

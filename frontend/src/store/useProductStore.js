@@ -163,7 +163,7 @@ export const useProductStore = create((set, get) => ({
             console.log({updatedRow, productSchemaShape: productSchema.shape})
 
             const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
-            console.log("Stops here at 162")
+            console.log("Stops here at 166")
             // Prepare the data
             const metaProductData = {
                 name: updatedRow.name,

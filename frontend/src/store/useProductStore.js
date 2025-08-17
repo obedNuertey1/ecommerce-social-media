@@ -395,7 +395,7 @@ export const useProductStore = create((set, get) => ({
             // console.log({index: id})
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
 
-            await deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, )
+            await deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, metaProductId);
 
             if (passkey) {
                 createLogs("Deleted", `${passkeyName} deleted a product with id ${id}`)

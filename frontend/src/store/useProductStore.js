@@ -6,7 +6,7 @@ import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
-import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct } from "../funcs/socialCrudFuncs";
+import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct } from "../funcs/socialCrudFuncs";
 
 
 const productSchema = schemas.find((schema) => schema.sheetName === "Products");
@@ -384,7 +384,7 @@ export const useProductStore = create((set, get) => ({
             set({ loading: false });
         }
     },
-    deleteProduct: async (id, gapi, mediaFolderId) => {
+    deleteProduct: async (id, gapi, mediaFolderId, metaProductId) => {
         set({ loading: true });
         try {
             const googleDrive = new GoogleDriveAPI(gapi);
@@ -394,6 +394,9 @@ export const useProductStore = create((set, get) => ({
             // Delete row from google sheet using the spreadSheetName, sheetName, and rowIndex
             // console.log({index: id})
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
+
+            await deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, )
+
             if (passkey) {
                 createLogs("Deleted", `${passkeyName} deleted a product with id ${id}`)
             }

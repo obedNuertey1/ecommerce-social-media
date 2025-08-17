@@ -230,7 +230,7 @@ const handleMediaUpload = useCallback((e) => {
 
     const handleDelete = async () => {
         if (confirm("Are you sure you want to delete this product?")) {
-            await deleteProduct(id, gapi, product.mediaFolderId);
+            await deleteProduct(id, gapi, product.mediaFolderId, formData.productId);
             resetFormData();
             navigate("/");
         }

@@ -6,7 +6,7 @@ import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
-import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct } from "../funcs/socialCrudFuncs";
+import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct } from "../funcs/socialCrudFuncs";
 
 
 const productSchema = schemas.find((schema) => schema.sheetName === "Products");
@@ -159,6 +159,46 @@ export const useProductStore = create((set, get) => ({
             console.log({updatedRow, productSchemaShape: productSchema.shape})
 
             const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
+            
+            // Prepare the data
+            const metaProductData = {
+                name: updatedRow.name,
+                // price: `${Number(formData.price).toFixed(2)} ${formData.currency}`,
+                price: Number(updatedRow.price)*100,
+                currency: updatedRow.currency,
+                description: updatedRow.description,
+                url: "https://www.vicanalytica.com",
+                ...(updatedRow.mediaIds.length > 0 && { image_url: `https://lh3.googleusercontent.com/d/${updatedRow.mediaIds[0]}=s800` }),
+                ...(updatedRow.mediaIds?.length > 1 && { additional_image_urls: updatedRow.mediaIds.slice(1).map(id => `https://lh3.googleusercontent.com/d/${id}=s800`) }),
+                ...(updatedRow.availability && { availability: updatedRow.availability }),
+                ...(updatedRow.condition && { condition: updatedRow.condition }),
+                ...(updatedRow.shipping_weight && { shipping_weight_value: parseFloat(updatedRow.shipping_weight), shipping_weight_unit: updatedRow.shipping_weight_unit }),
+                ...(updatedRow.custom_label_0 && { custom_label_0: updatedRow.custom_label_0 }),
+                ...(updatedRow.inventoryQuantity && { inventory: parseInt(updatedRow.inventoryQuantity, 10) || 0 }),
+                ...(updatedRow.brand && { brand: updatedRow.brand }),
+                ...(updatedRow.category && { google_product_category: updatedRow.category }),
+                ...(updatedRow.material && { material: updatedRow.material }),
+                // NEW FIELDS
+                ...(updatedRow.sale_price_effective_date && { sale_price: Number(updatedRow.sale_price)*100 }),
+                ...(updatedRow.sale_price_effective_date && { sale_price_effective_date: updatedRow.sale_price_effective_date }),
+                ...(updatedRow.gtin && { gtin: updatedRow.gtin }),
+                ...(updatedRow.mpn && { mpn: updatedRow.mpn }),
+                ...(updatedRow.gender && { gender: updatedRow.gender }),
+                ...(updatedRow.age_group && { age_group: updatedRow.age_group }),
+                ...(updatedRow.pattern && { pattern: updatedRow.pattern }),
+                ...(updatedRow.size_type && { size_type: updatedRow.size_type }),
+                ...(updatedRow.size_system && { size_system: updatedRow.size_system }),
+                ...(updatedRow.product_type && { product_type: updatedRow.product_type }),
+                ...(updatedRow.tax && { tax: updatedRow.tax }),
+                ...(updatedRow.custom_label_1 && { custom_label_1: updatedRow.custom_label_1 }),
+                ...(updatedRow.custom_label_2 && { custom_label_2: updatedRow.custom_label_2 }),
+                ...(updatedRow.custom_label_3 && { custom_label_3: updatedRow.custom_label_3 }),
+                ...(updatedRow.custom_label_4 && { custom_label_4: updatedRow.custom_label_4 }),
+                commerce_tax_category: updatedRow.commerce_tax_category,
+                retailer_id: updatedRow.retailer_id
+            }
+            // Update facebook product
+            await updateMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, updatedRow.productId, metaProductData);
 
             if (passkey) {
                 createLogs("Modified", `
@@ -261,7 +301,8 @@ export const useProductStore = create((set, get) => ({
                 commerce_tax_category: formData.commerce_tax_category,
                 retailer_id: retailId
             }
-            productData["retailer_id"] = retailId
+            // productData["retailer_id"] = retailId
+            // productData = {...productData, retailer_id: retailId}
             const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, productData);
             console.log({ product });
             // if upload to facebook and instagram posts is true
@@ -300,7 +341,10 @@ export const useProductStore = create((set, get) => ({
                 custom_label_2: formData.custom_label_2,
                 custom_label_3: formData.custom_label_3,
                 custom_label_4: formData.custom_label_4,
-                commerce_tax_category: formData.commerce_tax_category
+                commerce_tax_category: formData.commerce_tax_category,
+                productId: product,
+                retailer_id: retailId
+                
                 // facebookProductPostId,
                 // instagramProductPostId,
                 // facebookCatalogueId,

@@ -157,24 +157,27 @@ export const useProductStore = create((set, get) => ({
                 description: formData.description
             })
 
-            console.log({updatedRow, productSchemaShape: productSchema.shape})
+            console.log({ updatedRow, productSchemaShape: productSchema.shape })
 
             const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
             // Prepare the data
-             // `https://lh3.googleusercontent.com/d/${updatedRow.mediaIds[0]}=s800` 
+            // `https://lh3.googleusercontent.com/d/${updatedRow.mediaIds[0]}=s800` 
             const metaProductData = {
                 name: updatedRow.name,
                 // price: `${Number(formData.price).toFixed(2)} ${formData.currency}`,
-                price: Number(updatedRow.price)*100,
+                price: Number(updatedRow.price) * 100,
                 currency: updatedRow.currency,
                 description: updatedRow.description,
                 url: "https://www.vicanalytica.com",
-                ...(updatedRow.mediaIds.length > 0 && { image_url: 
-                    `https://drive.google.com/uc?export=view&id=${updatedRow.mediaIds[0].id}`
+                ...(updatedRow.mediaIds.length > 0 && {
+                    image_url:
+                        `https://drive.google.com/uc?export=view&id=${updatedRow.mediaIds[0].id}`
                 }),
-                ...(updatedRow.mediaIds?.length > 1 && { additional_image_urls: updatedRow.mediaIds.slice(1).map(id => 
-                    `https://drive.google.com/uc?export=view&id=${id}`
-                ) }),
+                ...(updatedRow.mediaIds?.length > 1 && {
+                    additional_image_urls: updatedRow.mediaIds.slice(1).map(id =>
+                        `https://drive.google.com/uc?export=view&id=${id}`
+                    )
+                }),
                 ...(updatedRow.availability && { availability: updatedRow.availability }),
                 ...(updatedRow.condition && { condition: updatedRow.condition }),
                 ...(updatedRow.shipping_weight && { shipping_weight_value: parseFloat(updatedRow.shipping_weight), shipping_weight_unit: updatedRow.shipping_weight_unit }),
@@ -184,7 +187,7 @@ export const useProductStore = create((set, get) => ({
                 ...(updatedRow.category && { google_product_category: updatedRow.category }),
                 ...(updatedRow.material && { material: updatedRow.material }),
                 // NEW FIELDS
-                ...(updatedRow.sale_price_effective_date && { sale_price: Number(updatedRow.sale_price)*100 }),
+                ...(updatedRow.sale_price_effective_date && { sale_price: Number(updatedRow.sale_price) * 100 }),
                 ...(updatedRow.sale_price_effective_date && { sale_price_effective_date: updatedRow.sale_price_effective_date }),
                 ...(updatedRow.gtin && { gtin: updatedRow.gtin }),
                 ...(updatedRow.mpn && { mpn: updatedRow.mpn }),
@@ -237,9 +240,11 @@ export const useProductStore = create((set, get) => ({
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
             const product = await googleSheet.getRowByIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id);
-            set({ formData: {  
-                ...product
-            }, error: null, product: product, loading: false });
+            set({
+                formData: {
+                    ...product
+                }, error: null, product: product, loading: false
+            });
             return;
         } catch (e) {
             console.warn(`Attempts ${Math.abs(11 - retries)} failed:`, e);
@@ -274,18 +279,21 @@ export const useProductStore = create((set, get) => ({
             const productData = {
                 name: formData.name,
                 // price: `${Number(formData.price).toFixed(2)} ${formData.currency}`,
-                price: Number(formData.price)*100,
+                price: Number(formData.price) * 100,
                 currency: formData.currency,
                 description: formData.description,
                 url: "https://www.vicanalytica.com",
-                ...(mediaIds.length > 0 && { image_url: 
-                    `https://drive.google.com/uc?export=view&id=${mediaIds[0]}`
+                ...(mediaIds.length > 0 && {
+                    image_url:
+                        `https://drive.google.com/uc?export=view&id=${mediaIds[0]}`
                     // `https://lh3.googleusercontent.com/d/${mediaIds[0]}=s800`
-                 }),
-                ...(mediaIds?.length > 1 && { additional_image_urls: mediaIds.slice(1).map(id => 
-                    `https://drive.google.com/uc?export=view&id=${id}`
-                    // `https://lh3.googleusercontent.com/d/${id}=s800`
-                ) }),
+                }),
+                ...(mediaIds?.length > 1 && {
+                    additional_image_urls: mediaIds.slice(1).map(id =>
+                        `https://drive.google.com/uc?export=view&id=${id}`
+                        // `https://lh3.googleusercontent.com/d/${id}=s800`
+                    )
+                }),
                 ...(formData.availability && { availability: formData.availability }),
                 ...(formData.condition && { condition: formData.condition }),
                 ...(formData.shipping_weight && { shipping_weight_value: parseFloat(formData.shipping_weight), shipping_weight_unit: formData.shipping_weight_unit }),
@@ -295,7 +303,7 @@ export const useProductStore = create((set, get) => ({
                 ...(formData.category && { google_product_category: formData.category }),
                 ...(formData.material && { material: formData.material }),
                 // NEW FIELDS
-                ...(formData.sale_price_effective_date && { sale_price: Number(formData.sale_price)*100 }),
+                ...(formData.sale_price_effective_date && { sale_price: Number(formData.sale_price) * 100 }),
                 ...(formData.sale_price_effective_date && { sale_price_effective_date: formData.sale_price_effective_date }),
                 ...(formData.gtin && { gtin: formData.gtin }),
                 ...(formData.mpn && { mpn: formData.mpn }),
@@ -316,7 +324,9 @@ export const useProductStore = create((set, get) => ({
             // productData["retailer_id"] = retailId
             // productData = {...productData, retailer_id: retailId}
             const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, productData);
-            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://lh3.googleusercontent.com/d/${mediaIds[0]}=s800`, {
+            // Add 5-second delay to allow Facebook processing
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://drive.google.com/uc?export=view&id=${mediaIds[0]}`, {
                 description: formData.description,
                 link: "https://www.vicanalytica.com",
                 productId: product
@@ -362,7 +372,7 @@ export const useProductStore = create((set, get) => ({
                 productId: product,
                 retailer_id: retailId,
                 postId
-                
+
                 // facebookProductPostId,
                 // instagramProductPostId,
                 // facebookCatalogueId,

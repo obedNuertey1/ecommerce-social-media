@@ -6,7 +6,7 @@ import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
-import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost } from "../funcs/socialCrudFuncs";
+import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails } from "../funcs/socialCrudFuncs";
 
 
 const productSchema = schemas.find((schema) => schema.sheetName === "Products");
@@ -324,6 +324,10 @@ export const useProductStore = create((set, get) => ({
             // productData["retailer_id"] = retailId
             // productData = {...productData, retailer_id: retailId}
             const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, productData);
+
+            console.log("Line 327");
+            const productDetails = await getProductDetails(LONG_LIVED_META_ACCESS_TOKEN, product);
+            console.log({product, productDetails});
             // Add 5-second delay to allow Facebook processing
             await new Promise(resolve => setTimeout(resolve, 5000));
             const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://drive.google.com/uc?export=view&id=${mediaIds[0]}`, {

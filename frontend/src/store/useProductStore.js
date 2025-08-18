@@ -330,7 +330,10 @@ export const useProductStore = create((set, get) => ({
             // console.log({product, productDetails});
             // Add 5-second delay to allow Facebook processing
             await new Promise(resolve => setTimeout(resolve, 5000));
-            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://drive.google.com/thumbnail?id=${mediaIds[0]}&sz=w1000`, {
+            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, 
+                // `https://drive.google.com/thumbnail?id=${mediaIds[0]}&sz=w1000`
+                `https://lh3.googleusercontent.com/d/${mediaIds[0]}=s800`
+                , {
                 description: formData.description,
                 link: "https://www.vicanalytica.com",
                 productId: product,

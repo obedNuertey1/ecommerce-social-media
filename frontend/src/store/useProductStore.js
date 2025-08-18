@@ -6,7 +6,7 @@ import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
-import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct } from "../funcs/socialCrudFuncs";
+import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost } from "../funcs/socialCrudFuncs";
 
 
 const productSchema = schemas.find((schema) => schema.sheetName === "Products");
@@ -133,8 +133,8 @@ export const useProductStore = create((set, get) => ({
             // });
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
-            console.log({folderId: product.mediaFolderId});
-            console.log({folderIdForm: formData.mediaFolderId});
+            // console.log({folderId: product.mediaFolderId});
+            // console.log({folderIdForm: formData.mediaFolderId});
             // // update media in the product's folder
             const updateRes = await googleDrive.replaceMultipleFilesInFolder(product.mediaFolderId, imagesToUpdate);
             // // add new media to the prouduct's folder
@@ -315,7 +315,12 @@ export const useProductStore = create((set, get) => ({
             // productData["retailer_id"] = retailId
             // productData = {...productData, retailer_id: retailId}
             const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, productData);
-            console.log({ product });
+            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://drive.google.com/uc?export=view&id=${mediaIds[0]}`, {
+                description: formData.description,
+                link: "https://www.vicanalytica.com",
+                productId: product
+            })
+            // console.log({ product });
             // if upload to facebook and instagram posts is true
             // upload product to facebook and instagram posts and get the postid
             const data = {
@@ -354,7 +359,8 @@ export const useProductStore = create((set, get) => ({
                 custom_label_4: formData.custom_label_4,
                 commerce_tax_category: formData.commerce_tax_category,
                 productId: product,
-                retailer_id: retailId
+                retailer_id: retailId,
+                postId
                 
                 // facebookProductPostId,
                 // instagramProductPostId,

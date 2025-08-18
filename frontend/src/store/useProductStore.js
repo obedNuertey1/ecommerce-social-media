@@ -15,6 +15,7 @@ const GOOGLE_DRIVE_NAME = import.meta.env.VITE_GOOGLE_DRIVE_NAME;
 const ENCRYPT_DECRYPT_KEY = import.meta.env.VITE_ENCRYPT_DECRYPT_KEY;
 const META_ACCESS_TOKEN = import.meta.env.VITE_META_PAGE_TOKEN;
 const LONG_LIVED_META_ACCESS_TOKEN = import.meta.env.VITE_FACEBOOK_LONG_LIVED_TOKEN;
+const FACEBOOK_PAGE_ID = import.meta.env.FACEBOOK_PAGE_ID;
 
 const passkeyName = localStorage.getItem("passkeyName");
 const passkey = localStorage.getItem("passkey");
@@ -315,7 +316,7 @@ export const useProductStore = create((set, get) => ({
             // productData["retailer_id"] = retailId
             // productData = {...productData, retailer_id: retailId}
             const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, productData);
-            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://drive.google.com/uc?export=view&id=${mediaIds[0]}`, {
+            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://lh3.googleusercontent.com/d/${mediaIds[0]}=s800`, {
                 description: formData.description,
                 link: "https://www.vicanalytica.com",
                 productId: product

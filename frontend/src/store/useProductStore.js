@@ -332,7 +332,7 @@ export const useProductStore = create((set, get) => ({
             await new Promise(resolve => setTimeout(resolve, 5000));
             const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, 
                 // `https://drive.google.com/thumbnail?id=${mediaIds[0]}&sz=w1000`
-                `https://lh3.googleusercontent.com/d/${mediaIds[0]}=s800`
+                mediaIds.map((elem)=>`https://lh3.googleusercontent.com/d/${elem}=s800`)
                 , {
                 description: formData.description,
                 link: "https://www.vicanalytica.com",

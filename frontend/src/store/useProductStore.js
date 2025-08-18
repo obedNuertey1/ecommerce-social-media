@@ -325,12 +325,12 @@ export const useProductStore = create((set, get) => ({
             // productData = {...productData, retailer_id: retailId}
             const product = await addProductToCatalog(LONG_LIVED_META_ACCESS_TOKEN, productCatalogueId, productData);
 
-            console.log("Line 327");
-            const productDetails = await getProductDetails(LONG_LIVED_META_ACCESS_TOKEN, product);
-            console.log({product, productDetails});
+            // console.log("Line 327");
+            // const productDetails = await getProductDetails(LONG_LIVED_META_ACCESS_TOKEN, product);
+            // console.log({product, productDetails});
             // Add 5-second delay to allow Facebook processing
             await new Promise(resolve => setTimeout(resolve, 5000));
-            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://drive.google.com/uc?export=view&id=${mediaIds[0]}`, {
+            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://drive.google.com/thumbnail?id=${mediaIds[0]}&sz=w1000`, {
                 description: formData.description,
                 link: "https://www.vicanalytica.com",
                 productId: product

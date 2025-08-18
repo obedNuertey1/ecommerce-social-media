@@ -346,78 +346,100 @@ export const createSocialMediaPost = async (
     if (!igBusinessId) throw new Error('No linked Instagram account');
 
     // Create Facebook post
-if (shouldPost) {
-    try {
-        const fbParams = {
-            message: `${caption}\n\n${description}`,
-            access_token: pageAccessToken,
-        };
+    let facebookPostId = null;
+    if (shouldPost) {
+        try {
+            // First upload the media to Facebook
+            const mediaResponse = await axios.post(
+                `https://graph.facebook.com/${endpointVersion}/${pageId}/photos`,
+                {
+                    url: mediaUrl,
+                    published: false,
+                    access_token: pageAccessToken
+                }
+            );
 
-        // Add product attachment using the product ID
-        if (productId) {
-            fbParams.attached_media = JSON.stringify([{
-                media_fbid: productId // This is your catalogue product ID
-            }]);
-        } else {
-            fbParams.link = link || mediaUrl;
+            const mediaId = mediaResponse.data.id;
+
+            // Now create the post with the media and product tag
+            const fbParams = {
+                message: `${caption}\n\n${description}`,
+                access_token: pageAccessToken,
+                attached_media: JSON.stringify([{ media_fbid: mediaId }])
+            };
+
+            // Add product tag to the media
+            if (productId) {
+                await axios.post(
+                    `https://graph.facebook.com/${endpointVersion}/${mediaId}/tags`,
+                    {
+                        tags: JSON.stringify([{
+                            tag_uid: productId,
+                            tag_text: 'Product',
+                            x: 0.5,
+                            y: 0.5
+                        }]),
+                        access_token: pageAccessToken
+                    }
+                );
+            }
+
+            const fbRes = await axios.post(
+                `https://graph.facebook.com/${endpointVersion}/${pageId}/feed`,
+                fbParams
+            );
+            facebookPostId = fbRes.data.id;
+        } catch (error) {
+            console.error('Facebook post failed:', error.response?.data || error.message);
+            throw error;
         }
-
-        const fbRes = await axios.post(
-            `https://graph.facebook.com/${endpointVersion}/${pageId}/feed`,
-            fbParams
-        );
-        facebookPostId = fbRes.data.id;
-    } catch (error) {
-        console.error('Facebook post failed:', error.response?.data || error.message);
-        throw error;
     }
-}
 
     // Create Instagram post
-// Create Instagram post
-let instagramPostId = null;
-if (shouldPost) {
-    try {
-        const containerParams = {
-            image_url: mediaUrl,
-            caption: caption,
-            access_token: pageAccessToken,
-        };
+    // Create Instagram post
+    let instagramPostId = null;
+    if (shouldPost) {
+        try {
+            const containerParams = {
+                image_url: mediaUrl,
+                caption: caption,
+                access_token: pageAccessToken,
+            };
 
-        // Add product tagging
-        if (productId) {
-            containerParams.shopping_metadata = JSON.stringify({
-                product_tags: [{
-                    product_id: productId,  // Your catalogue product ID
-                    merchant_id: pageId,
-                    x: 0.5,
-                    y: 0.5
-                }]
-            });
-        }
-
-        const containerRes = await axios.post(
-            `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media`,
-            containerParams
-        );
-        
-        const containerId = containerRes.data.id;
-        
-        // Publish the container
-        const publishRes = await axios.post(
-            `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media_publish`,
-            {
-                creation_id: containerId,
-                access_token: pageAccessToken
+            // Add product tagging
+            if (productId) {
+                containerParams.shopping_metadata = JSON.stringify({
+                    product_tags: [{
+                        product_id: productId,  // Your catalogue product ID
+                        merchant_id: pageId,
+                        x: 0.5,
+                        y: 0.5
+                    }]
+                });
             }
-        );
-        
-        instagramPostId = publishRes.data.id;
-    } catch (error) {
-        console.error('Instagram post failed:', error.response?.data || error.message);
-        throw error;
+
+            const containerRes = await axios.post(
+                `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media`,
+                containerParams
+            );
+
+            const containerId = containerRes.data.id;
+
+            // Publish the container
+            const publishRes = await axios.post(
+                `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media_publish`,
+                {
+                    creation_id: containerId,
+                    access_token: pageAccessToken
+                }
+            );
+
+            instagramPostId = publishRes.data.id;
+        } catch (error) {
+            console.error('Instagram post failed:', error.response?.data || error.message);
+            throw error;
+        }
     }
-}
 
     return {
         facebookPostId,

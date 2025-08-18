@@ -333,7 +333,8 @@ export const useProductStore = create((set, get) => ({
             const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, `https://drive.google.com/thumbnail?id=${mediaIds[0]}&sz=w1000`, {
                 description: formData.description,
                 link: "https://www.vicanalytica.com",
-                productId: product
+                productId: product,
+                retailerId: retailId
             })
             // console.log({ product });
             // if upload to facebook and instagram posts is true

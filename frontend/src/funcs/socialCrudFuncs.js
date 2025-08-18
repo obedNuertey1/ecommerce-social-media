@@ -346,10 +346,11 @@ export const createSocialMediaPost = async (
     if (!igBusinessId) throw new Error('No linked Instagram account');
 
     // Create Facebook post
+    // Create Facebook post with product attachment
     let facebookPostId = null;
     if (shouldPost) {
         try {
-            // First upload the media to Facebook
+            // Upload media
             const mediaResponse = await axios.post(
                 `https://graph.facebook.com/${endpointVersion}/${pageId}/photos`,
                 {
@@ -361,28 +362,16 @@ export const createSocialMediaPost = async (
 
             const mediaId = mediaResponse.data.id;
 
-            // Now create the post with the media and product tag
+            // Create post with product attachment
             const fbParams = {
-                message: `${caption}\n\n${description}`,
+                message: `${caption}\n\n${description}\n\n${link}`,
                 access_token: pageAccessToken,
-                attached_media: JSON.stringify([{ media_fbid: mediaId }])
+                attached_media: JSON.stringify([{ media_fbid: mediaId }]),
+                product_set: JSON.stringify({
+                    id: productId,
+                    retailer_id: options.retailerId
+                })
             };
-
-            // Add product tag to the media
-            if (productId) {
-                await axios.post(
-                    `https://graph.facebook.com/${endpointVersion}/${mediaId}/tags`,
-                    {
-                        tags: JSON.stringify([{
-                            tag_uid: productId,
-                            tag_text: 'Product',
-                            x: 0.5,
-                            y: 0.5
-                        }]),
-                        access_token: pageAccessToken
-                    }
-                );
-            }
 
             const fbRes = await axios.post(
                 `https://graph.facebook.com/${endpointVersion}/${pageId}/feed`,
@@ -402,7 +391,7 @@ export const createSocialMediaPost = async (
         try {
             const containerParams = {
                 image_url: mediaUrl,
-                caption: caption,
+                caption: `${caption}\n\n${description}\n\n${link}`, // Add link to caption
                 access_token: pageAccessToken,
             };
 

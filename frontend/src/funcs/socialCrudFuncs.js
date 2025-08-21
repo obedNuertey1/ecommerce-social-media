@@ -274,7 +274,7 @@ export const createSocialMediaPost = async (
                 message: `${caption}\n\n${description}\n\n
                 ╔════════════════════════════════════════════════════════════════════════════════════════════════════x╗
                 ║ 🔥 LIMITED EDITION 🔥                                                                                                                               ║                                                                                                                
-                ║ 🛒 BUY NOW for Just for ${currency}${price.toFixed(2)}
+                ║ 🛒 BUY NOW for Just for ${currency}${Number(price).toFixed(2)}
                 ║                                                                        
                 ║     Order from the link below                                                                                             
                 ║     ${link}                                                                      
@@ -328,7 +328,7 @@ export const createSocialMediaPost = async (
                 caption: `${caption}\n\n${description}\n\n
                 ╔════════════════════════════════════════════════════════════════════════════════════════════════════x╗
                 ║ 🔥 **LIMITED EDITION** 🔥                                                                                                                                                                        
-                ║ 🛒 BUY NOW for Just for ${currency}${price.toFixed(2)}
+                ║ 🛒 BUY NOW for Just for ${currency}${Number(price).toFixed(2)}
                 ║     Order from the link below
                 ║                                                                                                 
                 ║     ${link}                                                                      

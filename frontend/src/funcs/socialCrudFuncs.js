@@ -446,11 +446,28 @@ export const updateSocialMediaPost = async (
 // Delete post
 export const deleteSocialMediaPost = async (accessToken, postId) => {
 
-    const res = await axios.delete(
-        `https://graph.facebook.com/${endpointVersion}/${postId}`,
-        { params: { access_token: accessToken } }
-    );
-    return { success: res.data.success };
+    try {
+        console.log(`Attempting to delete post ${postId}`);
+        const res = await axios.delete(
+            `https://graph.facebook.com/${endpointVersion}/${postId}`,
+            { 
+                params: { access_token: accessToken },
+                timeout: 10000 // Set a timeout to avoid hanging
+            }
+        );
+        console.log(`Successfully deleted post ${postId}:`, res.data);
+        return { success: res.data.success };
+    } catch (error) {
+        console.error(`Error deleting post ${postId}:`, {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
+        return { 
+            success: false, 
+            error: error.response?.data?.error || error.message 
+        };
+    }
 };
 
 // Get all Facebook page posts

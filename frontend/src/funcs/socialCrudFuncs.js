@@ -308,6 +308,7 @@ export const createSocialMediaPost = async (
 
     // Create Instagram carousel post
     let instagramPostId = null;
+    let instagramPermalink = null;
     if (shouldPost) {
         try {
             // Create children containers
@@ -370,7 +371,18 @@ export const createSocialMediaPost = async (
             );
 
             instagramPostId = publishRes.data.id;
-            console.log({instagramPublishRes: publishRes.data});
+            // Get the permalink for the Instagram post
+            const mediaInfo = await axios.get(
+                `https://graph.facebook.com/${endpointVersion}/${instagramPostId}`,
+                {
+                    params: {
+                        fields: 'permalink',
+                        access_token: pageAccessToken
+                    }
+                }
+            );
+
+            instagramPermalink = mediaInfo.data.permalink;
         } catch (error) {
             console.error('Instagram post failed:', error.response?.data || error.message);
             throw error;
@@ -380,6 +392,7 @@ export const createSocialMediaPost = async (
     return {
         facebookPostId,
         instagramPostId,
+        instagramPermalink,
         pageAccessToken
     };
 };

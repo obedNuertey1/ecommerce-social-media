@@ -7,6 +7,7 @@ import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
 import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails, deleteSocialMediaPost, getBusinessAssets } from "../funcs/socialCrudFuncs";
+import { showInstagramDeletionToast } from '../components/InstagramDeletionToast';
 
 
 const productSchema = schemas.find((schema) => schema.sheetName === "Products");
@@ -382,7 +383,8 @@ export const useProductStore = create((set, get) => ({
                 productId: product,
                 retailer_id: retailId,
                 facebookPostId: postInfo.facebookPostId,
-                instagramPostId: postInfo.instagramPostId
+                instagramPostId: postInfo.instagramPostId,
+                instagramPermalink: postInfo.instagramPermalink
 
 
                 // facebookProductPostId,
@@ -424,16 +426,15 @@ export const useProductStore = create((set, get) => ({
             set({ loading: false });
         }
     },
-    deleteProduct: async (id, gapi, mediaFolderId, metaProductId, facebookPostId, instagramPostId) => {
+    deleteProduct: async (id, gapi, mediaFolderId, metaProductId, facebookPostId, instagramPostId, instagramPermalink) => {
         set({ loading: true });
         try {
             const googleDrive = new GoogleDriveAPI(gapi);
             const googleSheet = new GoogleSheetsAPI(gapi);
-            // First Delete folder containing the media from google drive if this is successfull
-            const driveResult = await googleDrive.deleteFolderAndContents(mediaFolderId);
-            // Delete row from google sheet using the spreadSheetName, sheetName, and rowIndex
-            // console.log({index: id})
-            const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
+
+            // Delete from Google services first
+            await googleDrive.deleteFolderAndContents(mediaFolderId);
+            await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
 
             // Get the page access token for the business page
             const { pageAccessToken } = await getBusinessAssets(LONG_LIVED_META_ACCESS_TOKEN);
@@ -443,9 +444,7 @@ export const useProductStore = create((set, get) => ({
             if (facebookPostId) {
                 deletionPromises.push(deleteSocialMediaPost(pageAccessToken, facebookPostId));
             }
-            if (instagramPostId) {
-                deletionPromises.push(deleteSocialMediaPost(pageAccessToken, instagramPostId));
-            }
+            // Skip Instagram post deletion via API due to limitations
             if (metaProductId) {
                 // Use user access token for catalog product deletion
                 deletionPromises.push(deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, metaProductId));
@@ -463,23 +462,82 @@ export const useProductStore = create((set, get) => ({
                 }
             });
 
-
-
-            if (passkey) {
-                createLogs("Deleted", `${passkeyName} deleted a product with id ${id}`)
+            // Show Instagram manual deletion toast if needed
+            if (instagramPostId && instagramPermalink) {
+                showInstagramDeletionToast(instagramPermalink);
             }
 
-            set((prev) => (
-                { products: prev.products.filter((product) => product.id !== id) }
-            ));
+            if (passkey) {
+                createLogs("Deleted", `${passkeyName} deleted a product with id ${id}`);
+            }
+
+            set((prev) => ({
+                products: prev.products.filter((product) => product.id !== id)
+            }));
             toast.success("Product deleted successfully");
         } catch (e) {
-            console.log(`Error deleting product: ${e}`);
+            console.error(`Error deleting product: ${e}`);
             toast.error("Something went wrong");
         } finally {
             set({ loading: false });
         }
     },
+    // deleteProduct: async (id, gapi, mediaFolderId, metaProductId, facebookPostId, instagramPostId) => {
+    //     set({ loading: true });
+    //     try {
+    //         const googleDrive = new GoogleDriveAPI(gapi);
+    //         const googleSheet = new GoogleSheetsAPI(gapi);
+    //         // First Delete folder containing the media from google drive if this is successfull
+    //         const driveResult = await googleDrive.deleteFolderAndContents(mediaFolderId);
+    //         // Delete row from google sheet using the spreadSheetName, sheetName, and rowIndex
+    //         // console.log({index: id})
+    //         const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
+
+    //         // Get the page access token for the business page
+    //         const { pageAccessToken } = await getBusinessAssets(LONG_LIVED_META_ACCESS_TOKEN);
+
+    //         // Delete social media posts using the page access token
+    //         const deletionPromises = [];
+    //         if (facebookPostId) {
+    //             deletionPromises.push(deleteSocialMediaPost(pageAccessToken, facebookPostId));
+    //         }
+    //         if (instagramPostId) {
+    //             deletionPromises.push(deleteSocialMediaPost(pageAccessToken, instagramPostId));
+    //         }
+    //         if (metaProductId) {
+    //             // Use user access token for catalog product deletion
+    //             deletionPromises.push(deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, metaProductId));
+    //         }
+
+    //         // Wait for all deletions to complete, but don't throw if one fails
+    //         const results = await Promise.allSettled(deletionPromises);
+
+    //         // Log any errors
+    //         results.forEach((result, index) => {
+    //             if (result.status === 'rejected') {
+    //                 console.error(`Deletion ${index} failed:`, result.reason);
+    //             } else if (result.value && !result.value.success) {
+    //                 console.warn(`Deletion ${index} partially failed:`, result.value.error);
+    //             }
+    //         });
+
+
+
+    //         if (passkey) {
+    //             createLogs("Deleted", `${passkeyName} deleted a product with id ${id}`)
+    //         }
+
+    //         set((prev) => (
+    //             { products: prev.products.filter((product) => product.id !== id) }
+    //         ));
+    //         toast.success("Product deleted successfully");
+    //     } catch (e) {
+    //         console.log(`Error deleting product: ${e}`);
+    //         toast.error("Something went wrong");
+    //     } finally {
+    //         set({ loading: false });
+    //     }
+    // },
     fetchProducts: async (gapi, retries = 10, error = null) => {
         if (retries === 0) {
             if (error) {

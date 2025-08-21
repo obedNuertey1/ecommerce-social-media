@@ -60,7 +60,7 @@ function ProductCard({ product }) {
                         </Link>
                         <button
                             disabled={deletableAccess}
-                            onClick={() => deleteProduct(product.id, gapi, product.mediaFolderId, product.productId, product?.facebookPostId, product?.instagramPostId)}
+                            onClick={() => deleteProduct(product.id, gapi, product.mediaFolderId, product.productId, product?.facebookPostId, product?.instagramPostId, product?.instagramPermalink)}
                             className="btn btn-error btn-sm btn-outline">
                             <Trash2Icon className="size-5" />
                         </button>

@@ -435,6 +435,7 @@ export const useProductStore = create((set, get) => ({
             // console.log({index: id})
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
 
+            console.log({facebookPostId, instagramPostId});
             // Delete social media posts
             await Promise.all(
                 [...[facebookPostId, instagramPostId]

@@ -19,6 +19,7 @@ export async function getBusinessAssets(token) {
 
         if (pagesData.data?.length) {
             const page = pagesData.data[0];
+            console.log({page});
             return {
                 pageId: page.id,
                 igBusinessId: page.instagram_business_account?.id,
@@ -42,6 +43,8 @@ export async function getBusinessAssets(token) {
         if (!pageInfo.data.category) {
             throw new Error('Token is not a valid page token');
         }
+
+        console.log({pageInfo});
 
         return {
             pageId: pageInfo.data.id,

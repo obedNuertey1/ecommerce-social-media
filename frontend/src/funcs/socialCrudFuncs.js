@@ -272,13 +272,13 @@ export const createSocialMediaPost = async (
             // Create carousel post
             const fbParams = {
                 message: `${caption}\n\n${description}\n\n
-                ╔═════════════════════════════════════════════════════════════════x╗
+                ╔══════════════════════════════════════════════════x╗
                 ║ 🔥 LIMITED EDITION 🔥                                                                                                                               ║                                                                                                                
                 ║ 🛒 BUY NOW for Just for ${currency}${Number(price).toFixed(2)}
                 ║                                                                        
                 ║     Order from the link below                                                                                             
                 ║     ${link}                                                                      
-                ╚═════════════════════════════════════════════════════════════════x╝
+                ╚══════════════════════════════════════════════════x╝
                 `,
                 access_token: pageAccessToken,
                 attached_media: JSON.stringify(
@@ -326,13 +326,13 @@ export const createSocialMediaPost = async (
                 media_type: "CAROUSEL",
                 children: children.join(','),
                 caption: `${caption}\n\n${description}\n\n
-                ╔══════════════════════════════════════════════════════════════════x╗
+                ╔═══════════════════════════════════════════════════x╗
                 ║ 🔥 **LIMITED EDITION** 🔥                                                                                                                                                                        
                 ║ 🛒 BUY NOW for Just for ${currency}${Number(price).toFixed(2)}
                 ║     Order from the link below
                 ║                                                                                                 
                 ║     ${link}                                                                      
-                ╚══════════════════════════════════════════════════════════════════x╝
+                ╚═══════════════════════════════════════════════════x╝
                 `,
                 access_token: pageAccessToken,
             };
@@ -445,6 +445,7 @@ export const updateSocialMediaPost = async (
 
 // Delete post
 export const deleteSocialMediaPost = async (accessToken, postId) => {
+    console.log({postId})
     const res = await axios.delete(
         `https://graph.facebook.com/${endpointVersion}/${postId}`,
         { params: { access_token: accessToken } }

@@ -228,214 +228,6 @@ export const deleteProduct = async (userToken, productId) => {
 // POST MANAGEMENT ============================================================
 
 // Create social media post
-// export const createSocialMediaPost = async (
-//     token,
-//     caption,
-//     mediaUrl,
-//     options = {}
-// ) => {
-//     const {
-//         description = "",
-//         link = "",
-//         productId = null,
-//         shouldPost = true
-//     } = options;
-
-//     // Get page assets
-//     const { pageId, pageAccessToken } = await getBusinessAssets(token);
-
-//     // Verify Instagram link
-//     const igBusinessId = await verifyInstagramLink(pageId, pageAccessToken);
-//     if (!igBusinessId) throw new Error('No linked Instagram account');
-
-//     // Create Facebook post if shouldPost is true
-//     let facebookPostId = null;
-//     if (shouldPost) {
-//         const fbParams = {
-//             message: `${caption}\n\n${description}`,
-//             access_token: pageAccessToken,
-//         };
-
-//         if (productId) {
-//             fbParams.tags = [{
-//                 tag_uid: productId,
-//                 tag_text: 'Product',
-//                 x: 0.5,
-//                 y: 0.5
-//             }];
-//         } else {
-//             fbParams.link = link || mediaUrl;
-//         }
-
-//         try {
-//             const fbRes = await axios.post(
-//                 `https://graph.facebook.com/${endpointVersion}/${pageId}/feed`,
-//                 fbParams
-//             );
-//             facebookPostId = fbRes.data.id;
-//         } catch (error) {
-//             console.error('Facebook post failed:', error.response?.data || error.message);
-//         }
-//     }
-
-//     // Create Instagram post if shouldPost is true
-//     let instagramPostId = null;
-//     if (shouldPost) {
-//         try {
-//             const containerParams = {
-//                 image_url: mediaUrl,
-//                 caption: caption,
-//                 access_token: pageAccessToken,
-//             };
-
-//             if (productId) {
-//                 containerParams.shopping_metadata = JSON.stringify({
-//                     product_tags: [{
-//                         product_id: productId,
-//                         merchant_id: pageId,
-//                         x: 0.5,
-//                         y: 0.5
-//                     }]
-//                 });
-//             }
-
-//             const igUpload = await axios.post(
-//                 `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media`,
-//                 containerParams
-//             );
-
-//             const creationId = igUpload.data.id;
-
-//             const igPublish = await axios.post(
-//                 `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media_publish`,
-//                 { creation_id: creationId },
-//                 { params: { access_token: pageAccessToken } }
-//             );
-
-//             instagramPostId = igPublish.data.id;
-//         } catch (error) {
-//             console.error('Instagram post failed:', error.response?.data || error.message);
-//         }
-//     }
-
-//     return {
-//         facebookPostId,
-//         instagramPostId,
-//         pageAccessToken
-//     };
-// };
-// Create social media post
-// export const createSocialMediaPost = async (
-//     token,
-//     caption,
-//     mediaUrl,
-//     options = {}
-// ) => {
-//     const {
-//         description = "",
-//         link = "",
-//         productId = null,
-//         shouldPost = true
-//     } = options;
-
-//     // Get page assets
-//     const { pageId, pageAccessToken } = await getBusinessAssets(token);
-
-//     // Verify Instagram link
-//     const igBusinessId = await verifyInstagramLink(pageId, pageAccessToken);
-//     if (!igBusinessId) throw new Error('No linked Instagram account');
-
-//     // Create Facebook post
-//     // Create Facebook post with product attachment
-//     let facebookPostId = null;
-//     if (shouldPost) {
-//         try {
-//             // Upload media
-//             const mediaResponse = await axios.post(
-//                 `https://graph.facebook.com/${endpointVersion}/${pageId}/photos`,
-//                 {
-//                     url: mediaUrl,
-//                     published: false,
-//                     access_token: pageAccessToken
-//                 }
-//             );
-
-//             const mediaId = mediaResponse.data.id;
-
-//             // Create post with product attachment
-//             const fbParams = {
-//                 message: `${caption}\n\n${description}\n\n${link}`,
-//                 access_token: pageAccessToken,
-//                 attached_media: JSON.stringify([{ media_fbid: mediaId }]),
-//                 product_set: JSON.stringify({
-//                     id: productId,
-//                     retailer_id: options.retailerId
-//                 })
-//             };
-
-//             const fbRes = await axios.post(
-//                 `https://graph.facebook.com/${endpointVersion}/${pageId}/feed`,
-//                 fbParams
-//             );
-//             facebookPostId = fbRes.data.id;
-//         } catch (error) {
-//             console.error('Facebook post failed:', error.response?.data || error.message);
-//             throw error;
-//         }
-//     }
-
-//     // Create Instagram post
-//     // Create Instagram post
-//     let instagramPostId = null;
-//     if (shouldPost) {
-//         try {
-//             const containerParams = {
-//                 image_url: mediaUrl,
-//                 caption: `${caption}\n\n${description}\n\n${link}`, // Add link to caption
-//                 access_token: pageAccessToken,
-//             };
-
-//             // Add product tagging
-//             if (productId) {
-//                 containerParams.shopping_metadata = JSON.stringify({
-//                     product_tags: [{
-//                         product_id: productId,  // Your catalogue product ID
-//                         merchant_id: pageId,
-//                         x: 0.5,
-//                         y: 0.5
-//                     }]
-//                 });
-//             }
-
-//             const containerRes = await axios.post(
-//                 `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media`,
-//                 containerParams
-//             );
-
-//             const containerId = containerRes.data.id;
-
-//             // Publish the container
-//             const publishRes = await axios.post(
-//                 `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media_publish`,
-//                 {
-//                     creation_id: containerId,
-//                     access_token: pageAccessToken
-//                 }
-//             );
-
-//             instagramPostId = publishRes.data.id;
-//         } catch (error) {
-//             console.error('Instagram post failed:', error.response?.data || error.message);
-//             throw error;
-//         }
-//     }
-
-//     return {
-//         facebookPostId,
-//         instagramPostId,
-//         pageAccessToken
-//     };
-// };
 export const createSocialMediaPost = async (
     token,
     caption,
@@ -446,7 +238,9 @@ export const createSocialMediaPost = async (
         description = "",
         link = "",
         productId = null,
-        retailerId = "", // Add retailerId parameter
+        retailerId = "", // Add retailerId parameter,
+        price = "",
+        currency = "",
         shouldPost = true
     } = options;
 
@@ -477,7 +271,15 @@ export const createSocialMediaPost = async (
 
             // Create carousel post
             const fbParams = {
-                message: `${caption}\n\n${description}\n\n${link}`,
+                message: `${caption}\n\n${description}\n\n
+                ╔════════════════════════════════════════════════════════════════════════════════════════════════════x╗
+                ║ 🔥 LIMITED EDITION 🔥                                                                                                                               ║                                                                                                                
+                ║ 🛒 BUY NOW for Just for ${currency}${price.toFixed(2)}
+                ║                                                                        
+                ║     Order from the link below                                                                                             
+                ║     ${link}                                                                      
+                ╚════════════════════════════════════════════════════════════════════════════════════════════════════x╝
+                `,
                 access_token: pageAccessToken,
                 attached_media: JSON.stringify(
                     mediaIds.map(id => ({ media_fbid: id }))
@@ -523,7 +325,15 @@ export const createSocialMediaPost = async (
             const containerParams = {
                 media_type: "CAROUSEL",
                 children: children.join(','),
-                caption: `${caption}\n\n${description}\n\n${link}`,
+                caption: `${caption}\n\n${description}\n\n
+                ╔════════════════════════════════════════════════════════════════════════════════════════════════════x╗
+                ║ 🔥 **LIMITED EDITION** 🔥                                                                                                                                                                        
+                ║ 🛒 BUY NOW for Just for ${currency}${price.toFixed(2)}
+                ║     Order from the link below
+                ║                                                                                                 
+                ║     ${link}                                                                      
+                ╚════════════════════════════════════════════════════════════════════════════════════════════════════x╝
+                `,
                 access_token: pageAccessToken,
             };
 

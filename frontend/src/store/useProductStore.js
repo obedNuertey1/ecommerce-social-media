@@ -6,7 +6,7 @@ import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
-import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails } from "../funcs/socialCrudFuncs";
+import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails, deleteSocialMediaPost } from "../funcs/socialCrudFuncs";
 
 
 const productSchema = schemas.find((schema) => schema.sheetName === "Products");
@@ -330,15 +330,18 @@ export const useProductStore = create((set, get) => ({
             // console.log({product, productDetails});
             // Add 5-second delay to allow Facebook processing
             await new Promise(resolve => setTimeout(resolve, 5000));
-            const postId = await createSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`, 
+            const postInfo = await createS
+            postInfo.instagramPostIdocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, `${formData.name} for sale at an affordable price`,
                 // `https://drive.google.com/thumbnail?id=${mediaIds[0]}&sz=w1000`
-                mediaIds.map((elem)=>`https://lh3.googleusercontent.com/d/${elem}=s800`)
+                mediaIds.map((elem) => `https://lh3.googleusercontent.com/d/${elem}=s800`)
                 , {
-                description: formData.description,
-                link: "https://www.vicanalytica.com",
-                productId: product,
-                retailerId: retailId
-            })
+                    description: formData.description,
+                    link: "https://www.vicanalytica.com",
+                    productId: product,
+                    retailerId: retailId,
+                    price: formData.price,
+                    currency: formData.currency
+                })
             // console.log({ product });
             // if upload to facebook and instagram posts is true
             // upload product to facebook and instagram posts and get the postid
@@ -379,7 +382,9 @@ export const useProductStore = create((set, get) => ({
                 commerce_tax_category: formData.commerce_tax_category,
                 productId: product,
                 retailer_id: retailId,
-                postId
+                facebookPostId: postInfo.facebookPostId,
+                instagramPostId: postInfo.instagramPostId
+
 
                 // facebookProductPostId,
                 // instagramProductPostId,
@@ -420,7 +425,7 @@ export const useProductStore = create((set, get) => ({
             set({ loading: false });
         }
     },
-    deleteProduct: async (id, gapi, mediaFolderId, metaProductId) => {
+    deleteProduct: async (id, gapi, mediaFolderId, metaProductId, facebookPostId, instagramPostId) => {
         set({ loading: true });
         try {
             const googleDrive = new GoogleDriveAPI(gapi);
@@ -431,7 +436,15 @@ export const useProductStore = create((set, get) => ({
             // console.log({index: id})
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
 
-            await deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, metaProductId);
+            // Delete social media posts
+            await Promise.all(
+                [...[facebookPostId, instagramPostId]
+                    .filter(Boolean) // remove null/undefined
+                    .map((elem) =>
+                        deleteSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, elem)
+                    ), deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, metaProductId)]
+            );
+
 
             if (passkey) {
                 createLogs("Deleted", `${passkeyName} deleted a product with id ${id}`)

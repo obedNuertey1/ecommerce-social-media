@@ -27,12 +27,12 @@
     z-index: 10000;
 }
 
-.toast-container>div {
+/* .toast-container>div {
     @apply bg-transparent shadow-none p-0 m-0 !important;
-}
+} */
 
 /* Ensure toast follows theme */
-.toast-container .bg-base-100 {
+/* .toast-container .bg-base-100 {
     @apply bg-base-100 !important;
 }
 
@@ -42,4 +42,4 @@
 
 .toast-container .text-base-content {
     @apply text-base-content !important;
-}
+} */

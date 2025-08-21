@@ -6,7 +6,7 @@ import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
-import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails, deleteSocialMediaPost } from "../funcs/socialCrudFuncs";
+import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails, deleteSocialMediaPost, getBusinessAssets } from "../funcs/socialCrudFuncs";
 
 
 const productSchema = schemas.find((schema) => schema.sheetName === "Products");
@@ -435,15 +435,34 @@ export const useProductStore = create((set, get) => ({
             // console.log({index: id})
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
 
-            console.log({facebookPostId, instagramPostId});
-            // Delete social media posts
-            await Promise.all(
-                [...[facebookPostId, instagramPostId]
-                    .filter(Boolean) // remove null/undefined
-                    .map((elem) =>
-                        deleteSocialMediaPost(LONG_LIVED_META_ACCESS_TOKEN, elem)
-                    ), deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, metaProductId)]
-            );
+            // Get the page access token for the business page
+            const { pageAccessToken } = await getBusinessAssets(LONG_LIVED_META_ACCESS_TOKEN);
+
+            // Delete social media posts using the page access token
+            const deletionPromises = [];
+            if (facebookPostId) {
+                deletionPromises.push(deleteSocialMediaPost(pageAccessToken, facebookPostId));
+            }
+            if (instagramPostId) {
+                deletionPromises.push(deleteSocialMediaPost(pageAccessToken, instagramPostId));
+            }
+            if (metaProductId) {
+                // Use user access token for catalog product deletion
+                deletionPromises.push(deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, metaProductId));
+            }
+
+            // Wait for all deletions to complete, but don't throw if one fails
+            const results = await Promise.allSettled(deletionPromises);
+
+            // Log any errors
+            results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`Deletion ${index} failed:`, result.reason);
+                } else if (result.value && !result.value.success) {
+                    console.warn(`Deletion ${index} partially failed:`, result.value.error);
+                }
+            });
+
 
 
             if (passkey) {

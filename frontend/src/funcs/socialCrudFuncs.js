@@ -445,7 +445,7 @@ export const updateSocialMediaPost = async (
 
 // Delete post
 export const deleteSocialMediaPost = async (accessToken, postId) => {
-    console.log({postId})
+
     const res = await axios.delete(
         `https://graph.facebook.com/${endpointVersion}/${postId}`,
         { params: { access_token: accessToken } }

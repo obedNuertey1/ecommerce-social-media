@@ -4,7 +4,7 @@ const endpointVersion = "v23.0";
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID_2;
 
 // Unified function to get business assets (updated for long-lived tokens)
-async function getBusinessAssets(token) {
+export async function getBusinessAssets(token) {
     try {
         // Always try to get pages first (works for user tokens)
         const { data: pagesData } = await axios.get(

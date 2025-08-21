@@ -370,6 +370,7 @@ export const createSocialMediaPost = async (
             );
 
             instagramPostId = publishRes.data.id;
+            console.log({instagramPublishRes: publishRes.data});
         } catch (error) {
             console.error('Instagram post failed:', error.response?.data || error.message);
             throw error;

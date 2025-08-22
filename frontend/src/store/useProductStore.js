@@ -6,8 +6,9 @@ import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
-import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails, deleteSocialMediaPost, getBusinessAssets } from "../funcs/socialCrudFuncs";
+import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails, deleteSocialMediaPost, getBusinessAssets, updateSocialMediaPost } from "../funcs/socialCrudFuncs";
 import { showInstagramDeletionToast } from '../components/InstagramDeletionToast';
+import { showInstagramUpdateDeletionToast } from '../components/InstagramUpdateDeletionToast';
 
 
 const productSchema = schemas.find((schema) => schema.sheetName === "Products");
@@ -155,10 +156,83 @@ export const useProductStore = create((set, get) => ({
                 mediaIds: newMediaIds,
                 name: formData.name,
                 price: formData.price,
-                description: formData.description
+                description: formData.description,
+                // NEW FIELDS
+                custom_label_0: formData.custom_label_0,
+                custom_label_1: formData.custom_label_1,
+                custom_label_2: formData.custom_label_2,
+                custom_label_3: formData.custom_label_3,
+                custom_label_4: formData.custom_label_4,
+                commerce_tax_category: formData.commerce_tax_category,
+                inventoryQuantity: formData.inventoryQuantity,
+                brand: formData.brand,
+                category: formData.category,
+                material: formData.material,
+                availability: formData.availability,
+                condition: formData.condition,
+                shipping_weight: formData.shipping_weight,
+                shipping_weight_unit: formData.shipping_weight_unit,
+                sale_price: formData.sale_price,
+                sale_price_effective_date: formData.sale_price_effective_date,
+                gtin: formData.gtin,
+                mpn: formData.mpn,
+                gender: formData.gender,
+                age_group: formData.age_group,
+                pattern: formData.pattern,
+                size_type: formData.size_type,
+                size_system: formData.size_system,
+                product_type: formData.product_type,
+                tax: formData.tax,
+                retailer_id: formData.retailer_id
             })
 
             console.log({ updatedRow, productSchemaShape: productSchema.shape })
+
+            
+            if (product.facebookPostId) {
+                try {
+                    // Get the page access token for the business page
+                    const { pageAccessToken } = await getBusinessAssets(LONG_LIVED_META_ACCESS_TOKEN);
+                    await updateSocialMediaPost(pageAccessToken, product.facebookPostId, `${formData.name} for sale at an affordable price`, formData.description, {
+                        currency: product.currency,
+                        price: product.price,
+                        link: "https://www.vicanalytica.com"
+                    });
+                } catch (e) {
+                    console.error("Failed to update Facebook post:", e);
+                }
+            }
+
+            // For Instagram, we need to create a new post since we can't update
+            if (product.instagramPostId) {
+                try {
+                    // Create new Instagram post
+                    const { instagramPostId, instagramPermalink } = await createInstagramPost(
+                        LONG_LIVED_META_ACCESS_TOKEN,
+                        `${formData.name} for sale at an affordable price`,
+                        updatedRow.mediaIds.map(id => `https://lh3.googleusercontent.com/d/${id}=s800`),
+                        {
+                            description: formData.description,
+                            link: "https://www.vicanalytica.com",
+                            productId: updatedRow.productId,
+                            retailerId: updatedRow.retailer_id,
+                            price: formData.price,
+                            currency: formData.currency
+                        }
+                    );
+
+                    // Update the row data with the new Instagram post ID and permalink
+                    updatedRow.instagramPostId = instagramPostId;
+                    updatedRow.instagramPermalink = instagramPermalink;
+
+                    // Show toast notification with the new post's permalink
+                    showInstagramUpdateDeletionToast(instagramPermalink);
+                } catch (error) {
+                    console.error('Failed to create new Instagram post:', error);
+                    toast.error('Failed to create new Instagram post. Please create it manually.');
+                }
+            }
+
 
             const sheetUpdateRes = await googleSheet.updateRowByRowId(spreadsheetName, productSchema.sheetName, productSchema.shape, updatedRow, id);
             // Prepare the data
@@ -210,6 +284,7 @@ export const useProductStore = create((set, get) => ({
             // Update facebook product
             await updateMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, updatedRow.productId, metaProductData);
             console.log("Stops here at 208")
+
             if (passkey) {
                 createLogs("Modified", `
                 ${passkeyName} updated a product
@@ -482,62 +557,6 @@ export const useProductStore = create((set, get) => ({
             set({ loading: false });
         }
     },
-    // deleteProduct: async (id, gapi, mediaFolderId, metaProductId, facebookPostId, instagramPostId) => {
-    //     set({ loading: true });
-    //     try {
-    //         const googleDrive = new GoogleDriveAPI(gapi);
-    //         const googleSheet = new GoogleSheetsAPI(gapi);
-    //         // First Delete folder containing the media from google drive if this is successfull
-    //         const driveResult = await googleDrive.deleteFolderAndContents(mediaFolderId);
-    //         // Delete row from google sheet using the spreadSheetName, sheetName, and rowIndex
-    //         // console.log({index: id})
-    //         const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, "Products", id - 1);
-
-    //         // Get the page access token for the business page
-    //         const { pageAccessToken } = await getBusinessAssets(LONG_LIVED_META_ACCESS_TOKEN);
-
-    //         // Delete social media posts using the page access token
-    //         const deletionPromises = [];
-    //         if (facebookPostId) {
-    //             deletionPromises.push(deleteSocialMediaPost(pageAccessToken, facebookPostId));
-    //         }
-    //         if (instagramPostId) {
-    //             deletionPromises.push(deleteSocialMediaPost(pageAccessToken, instagramPostId));
-    //         }
-    //         if (metaProductId) {
-    //             // Use user access token for catalog product deletion
-    //             deletionPromises.push(deleteMetaProduct(LONG_LIVED_META_ACCESS_TOKEN, metaProductId));
-    //         }
-
-    //         // Wait for all deletions to complete, but don't throw if one fails
-    //         const results = await Promise.allSettled(deletionPromises);
-
-    //         // Log any errors
-    //         results.forEach((result, index) => {
-    //             if (result.status === 'rejected') {
-    //                 console.error(`Deletion ${index} failed:`, result.reason);
-    //             } else if (result.value && !result.value.success) {
-    //                 console.warn(`Deletion ${index} partially failed:`, result.value.error);
-    //             }
-    //         });
-
-
-
-    //         if (passkey) {
-    //             createLogs("Deleted", `${passkeyName} deleted a product with id ${id}`)
-    //         }
-
-    //         set((prev) => (
-    //             { products: prev.products.filter((product) => product.id !== id) }
-    //         ));
-    //         toast.success("Product deleted successfully");
-    //     } catch (e) {
-    //         console.log(`Error deleting product: ${e}`);
-    //         toast.error("Something went wrong");
-    //     } finally {
-    //         set({ loading: false });
-    //     }
-    // },
     fetchProducts: async (gapi, retries = 10, error = null) => {
         if (retries === 0) {
             if (error) {

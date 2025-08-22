@@ -19,7 +19,7 @@ export async function getBusinessAssets(token) {
 
         if (pagesData.data?.length) {
             const page = pagesData.data[0];
-            console.log({page});
+            console.log({ page });
             return {
                 pageId: page.id,
                 igBusinessId: page.instagram_business_account?.id,
@@ -44,7 +44,7 @@ export async function getBusinessAssets(token) {
             throw new Error('Token is not a valid page token');
         }
 
-        console.log({pageInfo});
+        console.log({ pageInfo });
 
         return {
             pageId: pageInfo.data.id,
@@ -287,7 +287,7 @@ export const createSocialMediaPost = async (
                 attached_media: JSON.stringify(
                     mediaIds.map(id => ({ media_fbid: id }))
                 ),
-                ...(productId && { 
+                ...(productId && {
                     product_set: JSON.stringify({
                         id: productId,
                         retailer_id: retailerId
@@ -428,17 +428,136 @@ export const getPostDetails = async (accessToken, postId) => {
     }
 };
 
+// Create Instagram post only
+export const createInstagramPost = async (
+    token,
+    caption,
+    mediaUrls,
+    options = {}
+) => {
+    const {
+        description = "",
+        link = "",
+        productId = null,
+        retailerId = "",
+        price = "",
+        currency = "",
+    } = options;
+
+    // Get page assets
+    const { pageId, pageAccessToken } = await getBusinessAssets(token);
+
+    // Verify Instagram link
+    const igBusinessId = await verifyInstagramLink(pageId, pageAccessToken);
+    if (!igBusinessId) throw new Error('No linked Instagram account');
+
+    let instagramPostId = null;
+    let instagramPermalink = null;
+
+    try {
+        // Create children containers
+        const children = [];
+        for (const url of mediaUrls) {
+            const childRes = await axios.post(
+                `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media`,
+                {
+                    image_url: url,
+                    is_carousel_item: true,
+                    access_token: pageAccessToken
+                }
+            );
+            children.push(childRes.data.id);
+        }
+
+        // Create carousel container
+        const containerParams = {
+            media_type: "CAROUSEL",
+            children: children.join(','),
+            caption: `${caption}\n\n${description}\n\n
+      ╔═══════════════════════════════════════════════════x╗
+      ║ 🔥 **LIMITED EDITION** 🔥                                                                                                                                                                        
+      ║ 🛒 BUY NOW for Just for ${currency}${Number(price).toFixed(2)}
+      ║     Order from the link below
+      ║                                                                                                 
+      ║     ${link}                                                                      
+      ╚═══════════════════════════════════════════════════x╝
+      `,
+            access_token: pageAccessToken,
+        };
+
+        // Add product tagging to first image
+        if (productId) {
+            containerParams.shopping_metadata = JSON.stringify([{
+                image_index: 0,
+                product_tags: [{
+                    product_id: productId,
+                    merchant_id: pageId,
+                    x: 0.5,
+                    y: 0.5
+                }]
+            }]);
+        }
+
+        const containerRes = await axios.post(
+            `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media`,
+            containerParams
+        );
+
+        const containerId = containerRes.data.id;
+
+        // Publish the carousel
+        const publishRes = await axios.post(
+            `https://graph.facebook.com/${endpointVersion}/${igBusinessId}/media_publish`,
+            {
+                creation_id: containerId,
+                access_token: pageAccessToken
+            }
+        );
+
+        instagramPostId = publishRes.data.id;
+
+        // Get the permalink for the Instagram post
+        const mediaInfo = await axios.get(
+            `https://graph.facebook.com/${endpointVersion}/${instagramPostId}`,
+            {
+                params: {
+                    fields: 'permalink',
+                    access_token: pageAccessToken
+                }
+            }
+        );
+        instagramPermalink = mediaInfo.data.permalink;
+
+    } catch (error) {
+        console.error('Instagram post failed:', error.response?.data || error.message);
+        throw error;
+    }
+
+    return { instagramPostId, instagramPermalink };
+};
+
 // Update post (Facebook only)
 export const updateSocialMediaPost = async (
     accessToken,
     postId,
     caption,
-    description
+    description,
+    options = {}
 ) => {
+    const { currency = "", price = "", link } = options;
+
     try {
         const res = await axios.post(
             `https://graph.facebook.com/${endpointVersion}/${postId}`,
-            { message: `${caption}\n\n${description}` },
+            {
+                message: `${caption}\n\n${description}\n\n
+                ╔══════════════════════════════════════════════════x╗
+                ║ 🔥 LIMITED EDITION 🔥                                                                                                                               ║                                                                                                                
+                ║ 🛒 BUY NOW for Just for ${currency}${Number(price).toFixed(2)}
+                ║                                                                        
+                ║     Order from the link below                                                                                             
+                ║     ${link}                                                                      
+                ╚══════════════════════════════════════════════════x╝` },
             { params: { access_token: accessToken } }
         );
         return { platform: 'facebook', success: res.data.success };
@@ -467,7 +586,7 @@ export const deleteSocialMediaPost = async (accessToken, postId) => {
         console.log(`Attempting to delete post ${postId}`);
         const res = await axios.delete(
             `https://graph.facebook.com/${endpointVersion}/${postId}`,
-            { 
+            {
                 params: { access_token: accessToken },
                 timeout: 10000 // Set a timeout to avoid hanging
             }
@@ -480,9 +599,9 @@ export const deleteSocialMediaPost = async (accessToken, postId) => {
             data: error.response?.data,
             message: error.message
         });
-        return { 
-            success: false, 
-            error: error.response?.data?.error || error.message 
+        return {
+            success: false,
+            error: error.response?.data?.error || error.message
         };
     }
 };

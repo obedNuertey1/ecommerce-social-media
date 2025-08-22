@@ -26,7 +26,7 @@ const InstagramDeletionToast = ({ permalink, toastId }) => {
                 </div>
                 <div className="ml-3 flex-1">
                     <p className="text-sm font-semibold text-base-content">
-                        Instagram Post Requires Manual Deletion
+                        Instagram Post Update Requires Manual Deletion of previous post
                     </p>
                     <p className="mt-1 text-sm text-base-content opacity-70">
                         Instagram posts can only be deleted manually. Use the link below to navigate to the post.
@@ -58,7 +58,7 @@ const InstagramDeletionToast = ({ permalink, toastId }) => {
 };
 
 // Function to show the Instagram deletion toast
-export const showInstagramDeletionToast = (permalink) => {
+export const showInstagramUpdateDeletionToast = (permalink) => {
     return toast.custom(
         (t) => <InstagramDeletionToast permalink={permalink} toastId={t.id} />,
         {

@@ -397,37 +397,6 @@ export const createSocialMediaPost = async (
     };
 };
 
-// Get post details
-export const getPostDetails = async (accessToken, postId) => {
-    try {
-        const response = await axios.get(
-            `https://graph.facebook.com/${endpointVersion}/${postId}`,
-            {
-                params: {
-                    fields: 'id,message,permalink_url,created_time,attachments',
-                    access_token: accessToken,
-                },
-            }
-        );
-        return { platform: 'facebook', data: response.data };
-    } catch (fbErr) {
-        try {
-            const response = await axios.get(
-                `https://graph.facebook.com/${endpointVersion}/${postId}`,
-                {
-                    params: {
-                        fields: 'id,caption,media_url,permalink,timestamp,media_type',
-                        access_token: accessToken,
-                    },
-                }
-            );
-            return { platform: 'instagram', data: response.data };
-        } catch (igErr) {
-            throw new Error('Post not found on either platform');
-        }
-    }
-};
-
 // Create Instagram post only
 export const createInstagramPost = async (
     token,
@@ -535,6 +504,38 @@ export const createInstagramPost = async (
 
     return { instagramPostId, instagramPermalink };
 };
+
+// Get post details
+export const getPostDetails = async (accessToken, postId) => {
+    try {
+        const response = await axios.get(
+            `https://graph.facebook.com/${endpointVersion}/${postId}`,
+            {
+                params: {
+                    fields: 'id,message,permalink_url,created_time,attachments',
+                    access_token: accessToken,
+                },
+            }
+        );
+        return { platform: 'facebook', data: response.data };
+    } catch (fbErr) {
+        try {
+            const response = await axios.get(
+                `https://graph.facebook.com/${endpointVersion}/${postId}`,
+                {
+                    params: {
+                        fields: 'id,caption,media_url,permalink,timestamp,media_type',
+                        access_token: accessToken,
+                    },
+                }
+            );
+            return { platform: 'instagram', data: response.data };
+        } catch (igErr) {
+            throw new Error('Post not found on either platform');
+        }
+    }
+};
+
 
 // Update post (Facebook only)
 export const updateSocialMediaPost = async (

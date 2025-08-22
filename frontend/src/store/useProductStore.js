@@ -6,7 +6,7 @@ import { GoogleDriveAPI, GoogleSheetsAPI } from "../lib/googleLibs";
 import { schemas } from "../schemas/initSheetSchema";
 import { cancellableWaiting } from "../hooks/waiting";
 import { createLogs, decryptData, replaceNulls } from "../funcs/essentialFuncs";
-import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails, deleteSocialMediaPost, getBusinessAssets, updateSocialMediaPost } from "../funcs/socialCrudFuncs";
+import { addProductToCatalog, createProductCatalog, getCatalogProducts, updateProduct as updateMetaProduct, deleteProduct as deleteMetaProduct, createSocialMediaPost, getProductDetails, deleteSocialMediaPost, getBusinessAssets, updateSocialMediaPost, createInstagramPost } from "../funcs/socialCrudFuncs";
 import { showInstagramDeletionToast } from '../components/InstagramDeletionToast';
 import { showInstagramUpdateDeletionToast } from '../components/InstagramUpdateDeletionToast';
 

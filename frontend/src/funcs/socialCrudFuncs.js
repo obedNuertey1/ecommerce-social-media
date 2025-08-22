@@ -423,6 +423,8 @@ export const createInstagramPost = async (
     let instagramPostId = null;
     let instagramPermalink = null;
 
+    console.log({mediaUrls});
+
     try {
         // Create children containers
         const children = [];

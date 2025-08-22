@@ -210,7 +210,7 @@ export const useProductStore = create((set, get) => ({
                     const { instagramPostId, instagramPermalink } = await createInstagramPost(
                         LONG_LIVED_META_ACCESS_TOKEN,
                         `${formData.name} for sale at an affordable price`,
-                        updatedRow.mediaIds.map(id => `https://lh3.googleusercontent.com/d/${id}=s800`),
+                        updatedRow.mediaIds.map(elem => `https://lh3.googleusercontent.com/d/${elem.id}=s800`),
                         {
                             description: formData.description,
                             link: "https://www.vicanalytica.com",

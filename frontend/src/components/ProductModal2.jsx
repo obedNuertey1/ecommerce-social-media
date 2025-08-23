@@ -456,8 +456,8 @@ function ProductModal2() {
                                         </label>
                                         <input
                                             type="number"
-                                            min="0"
-                                            step="1"
+                                            min="0.00"
+                                            step="0.01"
                                             placeholder="Discounted price"
                                             className="input input-bordered w-full"
                                             value={formData.sale_price || ""}

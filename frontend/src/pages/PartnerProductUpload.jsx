@@ -9,22 +9,13 @@ import {
     PlusCircleIcon
 } from "lucide-react";
 import { toast } from 'react-hot-toast';
+import { useProductStore } from '../store/useProductStore';
+import { useGoogleAuthContext } from '../contexts/GoogleAuthContext';
 
 const PartnerProductUpload = () => {
-    const [formData, setFormData] = useState({
-        name: "",
-        price: "",
-        description: "",
-        media: [],
-        currency: "USD",
-        brand: "",
-        category: "",
-        condition: "new",
-        latitude: "",
-        longitude: ""
-    });
+    const { addProduct, formData, setFormData, resetFormData, loading } = useProductStore();
+    const { gapi } = useGoogleAuthContext();
 
-    const [loading, setLoading] = useState(false);
     const [locationLoading, setLocationLoading] = useState(true);
     const [locationError, setLocationError] = useState("");
 
@@ -33,11 +24,11 @@ const PartnerProductUpload = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    setFormData(prev => ({
-                        ...prev,
+                    setFormData({
+                        ...formData,
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude
-                    }));
+                    });
                     setLocationLoading(false);
                 },
                 (error) => {
@@ -49,11 +40,11 @@ const PartnerProductUpload = () => {
                     fetch('https://ipapi.co/json/')
                         .then(res => res.json())
                         .then(data => {
-                            setFormData(prev => ({
-                                ...prev,
+                            setFormData({
+                                ...formData,
                                 latitude: data.latitude,
                                 longitude: data.longitude
-                            }));
+                            });
                         })
                         .catch(err => {
                             console.error("IP-based location also failed:", err);
@@ -82,7 +73,7 @@ const PartnerProductUpload = () => {
         });
 
         e.target.value = "";
-    }, [formData]);
+    }, [formData, setFormData]);
 
     const handleRemoveMedia = useCallback((mediaId) => {
         const mediaToRemove = formData.media.find(m => m.id === mediaId);
@@ -92,40 +83,36 @@ const PartnerProductUpload = () => {
             ...formData,
             media: formData.media.filter(m => m.id !== mediaId)
         });
-    }, [formData]);
+    }, [formData, setFormData]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
 
-        try {
-            // Here you would integrate with your API to submit the product
-            // along with the location data (formData.latitude, formData.longitude)
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            toast.success("Product uploaded successfully!");
-
-            // Reset form
-            setFormData({
-                name: "",
-                price: "",
-                description: "",
-                media: [],
-                currency: "USD",
-                brand: "",
-                category: "",
-                condition: "new",
-                latitude: "",
-                longitude: ""
-            });
-        } catch (error) {
-            console.error("Error uploading product:", error);
-            toast.error("Failed to upload product. Please try again.");
-        } finally {
-            setLoading(false);
+        // Validate required fields
+        if (!formData.name || !formData.price || formData.media.length === 0) {
+            toast.error("Please fill in all required fields");
+            return;
         }
+
+        if (!formData.latitude || !formData.longitude) {
+            toast.error("Location is required. Please enable location services.");
+            return;
+        }
+
+        // Add location data to custom labels (using custom_label_1 and custom_label_2)
+        const formDataWithLocation = {
+            ...formData,
+            custom_label_1: `Latitude: ${formData.latitude}`,
+            custom_label_2: `Longitude: ${formData.longitude}`
+        };
+
+        setFormData(formDataWithLocation);
+
+        // Call the addProduct function from your store
+        await addProduct(gapi);
+
+        // Reset form after successful submission
+        resetFormData();
     };
 
     return (
@@ -158,7 +145,7 @@ const PartnerProductUpload = () => {
                                         <input
                                             type="text"
                                             className="input input-bordered"
-                                            value={formData.latitude}
+                                            value={formData.latitude || ""}
                                             onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
                                             required
                                         />
@@ -171,7 +158,7 @@ const PartnerProductUpload = () => {
                                         <input
                                             type="text"
                                             className="input input-bordered"
-                                            value={formData.longitude}
+                                            value={formData.longitude || ""}
                                             onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
                                             required
                                         />
@@ -186,7 +173,7 @@ const PartnerProductUpload = () => {
                             <div className="space-y-4">
                                 <div className="form-control">
                                     <label className="label">
-                                        <span className="label-text">Product Name</span>
+                                        <span className="label-text">Product Name *</span>
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
@@ -206,7 +193,7 @@ const PartnerProductUpload = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="form-control">
                                         <label className="label">
-                                            <span className="label-text">Price</span>
+                                            <span className="label-text">Price *</span>
                                         </label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-base-content/50">
@@ -227,11 +214,11 @@ const PartnerProductUpload = () => {
 
                                     <div className="form-control">
                                         <label className="label">
-                                            <span className="label-text">Currency</span>
+                                            <span className="label-text">Currency *</span>
                                         </label>
                                         <select
                                             className="select select-bordered"
-                                            value={formData.currency}
+                                            value={formData.currency || "USD"}
                                             onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                                             required
                                         >
@@ -252,7 +239,7 @@ const PartnerProductUpload = () => {
                                         type="text"
                                         placeholder="e.g., Samsung"
                                         className="input input-bordered w-full"
-                                        value={formData.brand}
+                                        value={formData.brand || ""}
                                         onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                                     />
                                 </div>
@@ -268,7 +255,7 @@ const PartnerProductUpload = () => {
                                         type="text"
                                         placeholder="e.g., Electronics/Phones"
                                         className="input input-bordered w-full"
-                                        value={formData.category}
+                                        value={formData.category || ""}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                     />
                                 </div>
@@ -279,7 +266,7 @@ const PartnerProductUpload = () => {
                                     </label>
                                     <select
                                         className="select select-bordered"
-                                        value={formData.condition}
+                                        value={formData.condition || "new"}
                                         onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
                                     >
                                         <option value="new">New</option>
@@ -295,7 +282,7 @@ const PartnerProductUpload = () => {
                                     <textarea
                                         className="textarea textarea-bordered h-32"
                                         placeholder="Product description..."
-                                        value={formData.description}
+                                        value={formData.description || ""}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     ></textarea>
                                 </div>
@@ -305,7 +292,7 @@ const PartnerProductUpload = () => {
                         {/* Media Upload Section */}
                         <div className={`form-control ${formData.media.length === 0 ? 'border border-error rounded-lg p-4' : ''}`}>
                             <label className="label">
-                                <span className="label-text">Product Images (max 8)</span>
+                                <span className="label-text">Product Images (max 8) *</span>
                             </label>
                             <div className="flex flex-wrap gap-4">
                                 {formData.media.map((media) => (

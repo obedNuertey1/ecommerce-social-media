@@ -200,7 +200,7 @@ function PartnerProductUpload() {
                                 />
                             </div>
 
-                            <div className="form-control">
+                            {/* <div className="form-control">
                                 <label className="label">
                                     <span className="label-text">Company Phone Number</span>
                                 </label>
@@ -211,6 +211,31 @@ function PartnerProductUpload() {
                                     value={formData.companyPhone || ""}
                                     onChange={(e) => setFormData({ ...formData, companyPhone: e.target.value })}
                                 />
+                            </div> */}
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Company Phone Number</span>
+                                    <span className="label-text-alt text-red-500">* Required</span>
+                                </label>
+                                <input
+                                    type="tel"
+                                    className="input input-bordered"
+                                    placeholder="Enter company phone number (e.g., +1-555-123-4567)"
+                                    value={formData.companyPhone || ""}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // Basic phone number validation (allows numbers, spaces, parentheses, hyphens, and plus sign)
+                                        if (/^[0-9\s\(\)\-\+]*$/.test(value) || value === "") {
+                                            setFormData({ ...formData, companyPhone: value });
+                                        }
+                                    }}
+                                    pattern="^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$"
+                                    title="Please enter a valid phone number (e.g., +1-555-123-4567)"
+                                    required
+                                />
+                                <label className="label">
+                                    <span className="label-text-alt text-gray-500">Format: +1-555-123-4567</span>
+                                </label>
                             </div>
                         </div>
 
@@ -850,7 +875,7 @@ function PartnerProductUpload() {
 
                         <div className="flex justify-end mt-8">
                             <button
-                                disabled={!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media.length === 0) || !formData.inventoryQuantity || !formData.currency || !formData.latitude || !formData.longitude}
+                                disabled={!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media.length === 0) || !formData.inventoryQuantity || !formData.currency || !formData.latitude || !formData.longitude || !formData.companyPhone || !formData.companyName}
                                 type="submit"
                                 className="btn btn-md btn-primary"
                             >

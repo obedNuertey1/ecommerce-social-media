@@ -66,7 +66,11 @@ export const useProductStore = create((set, get) => ({
         custom_label_2: "",
         custom_label_3: "",
         custom_label_4: "",
-        commerce_tax_category: ""
+        commerce_tax_category: "",
+        latitude: "",
+        longitude: "",
+        companyPhone: "",
+        companyName: ""
     },
     setFormData: (formData) => set({ formData }),
     resetFormData: () => set({
@@ -107,7 +111,13 @@ export const useProductStore = create((set, get) => ({
             custom_label_2: "",
             custom_label_3: "",
             custom_label_4: "",
-            commerce_tax_category: ""
+            commerce_tax_category: "",
+            retailer_id: "",
+            instagramPermalink: "",
+            latitude: "",
+            longitude: "",
+            companyPhone: "",
+            companyName: ""
         }
     }),
     updateProduct: async (id, gapi, imagesToDelete) => {

@@ -29,6 +29,7 @@ import { useGoogleAuthContext } from "./contexts/GoogleAuthContext";
 import { cancellableWaiting } from "./hooks/waiting";
 import { useNotifications } from './hooks/useNotifications';
 import useQueryStore from "./hooks/useQuery";
+import PartnerProductUpload from "./pages/PartnerProductUpload";
 
 // Components
 import ScrollToTopButton from "./components/ScrollToTopButton";
@@ -240,6 +241,7 @@ function App() {
               <Route element={<PasskeyLogsPage />} path="/passkey/logs" />
               <Route element={<PasskeyLearnMorePage />} path="/passkeys/learn-more" />
               <Route element={<ConversionFunneBusinessInsight />} path="/info/charts-learn-more" />
+              <Route element={<PartnerProductUpload />} path="/partner/upload" />
             </> :
             <>
               {
@@ -252,6 +254,16 @@ function App() {
                 <>
                   <Route element={<Navigate to="/404" replace />} path="/" />
                   <Route element={<Navigate to="/404" replace />} path="/product/:id" />
+                </>
+              }
+              {
+                JSON?.parse(localStorage.accessiblePages)?.includes("partnerProductUpload") ?
+                <>
+                  <Route element={<PartnerProductUpload />} path="/partner/upload" />
+                </>
+                :
+                <>
+                  <Route element={<Navigate to="/404" replace />} path="/partner/upload" />
                 </>
               }
               {

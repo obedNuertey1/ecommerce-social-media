@@ -83,7 +83,8 @@ const PasskeyPage = () => {
         { label: 'Analytics', value: 'analytics' },
         { label: 'Passkeys', value: 'passkeys' },
         { label: 'Passkey Logs', value: 'passkey-logs' },
-        { label: "Chat", value: "chat" }
+        { label: "Chat", value: "chat" },
+        { label: "PartnerProductUpload", value: "partner/upload" },
     ];
 
     const generateRandomHash = () => {

@@ -236,7 +236,7 @@ function PartnerProductUpload() {
                                         type="text"
                                         className="input input-bordered"
                                         value={formData.latitude || ""}
-                                        onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                                        // onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
                                         required
                                     />
                                 </div>
@@ -249,7 +249,7 @@ function PartnerProductUpload() {
                                         type="text"
                                         className="input input-bordered"
                                         value={formData.longitude || ""}
-                                        onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                                        // onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
                                         required
                                     />
                                 </div>

@@ -1,11 +1,11 @@
 // PartnerProductUpload.jsx
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  PlusCircleIcon, 
-  Package2Icon, 
-  DollarSignIcon, 
-  XIcon,
-  MapPinIcon
+import {
+    PlusCircleIcon,
+    Package2Icon,
+    DollarSignIcon,
+    XIcon,
+    MapPinIcon
 } from "lucide-react";
 import { useProductStore } from "../store/useProductStore";
 import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
@@ -74,7 +74,7 @@ function PartnerProductUpload() {
                     console.error("Error getting location:", error);
                     setLocationError("Unable to get your location. Please ensure location services are enabled.");
                     setLocationLoading(false);
-                    
+
                     // Fallback to IP-based location
                     fetch('https://ipapi.co/json/')
                         .then(res => res.json())
@@ -158,16 +158,16 @@ function PartnerProductUpload() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Add location data to custom labels
         const formDataWithLocation = {
             ...formData,
             custom_label_3: `Latitude: ${formData.latitude}`,
             custom_label_4: `Longitude: ${formData.longitude}`
         };
-        
+
         setFormData(formDataWithLocation);
-        
+
         // Call the addProduct function from your store
         await addProduct(gapi);
     };
@@ -177,14 +177,48 @@ function PartnerProductUpload() {
             <div className="card bg-base-100 shadow-xl">
                 <div className="card-body">
                     <h2 className="card-title text-3xl mb-8">Upload Product</h2>
-                    
+
                     {/* Location Information */}
                     <div className="bg-base-200 p-4 rounded-lg mb-6">
                         <div className="flex items-center mb-2">
                             <MapPinIcon className="w-5 h-5 mr-2 text-primary" />
+                            <h3 className="font-semibold">Store Information</h3>
+                        </div>
+
+                        {/* Company Name and Phone Number */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Company Name</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    className="input input-bordered"
+                                    placeholder="Enter your company name"
+                                    value={formData.companyName || ""}
+                                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Company Phone Number</span>
+                                </label>
+                                <input
+                                    type="tel"
+                                    className="input input-bordered"
+                                    placeholder="Enter company phone number"
+                                    value={formData.companyPhone || ""}
+                                    onChange={(e) => setFormData({ ...formData, companyPhone: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center mb-2">
+                            <MapPinIcon className="w-5 h-5 mr-2 text-primary" />
                             <h3 className="font-semibold">Store Location</h3>
                         </div>
-                        
+
                         {locationLoading ? (
                             <div className="flex items-center">
                                 <span className="loading loading-spinner loading-sm mr-2"></span>
@@ -202,11 +236,11 @@ function PartnerProductUpload() {
                                         type="text"
                                         className="input input-bordered"
                                         value={formData.latitude || ""}
-                                        onChange={(e) => setFormData({...formData, latitude: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
                                         required
                                     />
                                 </div>
-                                
+
                                 <div className="form-control">
                                     <label className="label">
                                         <span className="label-text">Longitude</span>
@@ -215,7 +249,7 @@ function PartnerProductUpload() {
                                         type="text"
                                         className="input input-bordered"
                                         value={formData.longitude || ""}
-                                        onChange={(e) => setFormData({...formData, longitude: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
                                         required
                                     />
                                 </div>

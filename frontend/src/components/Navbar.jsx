@@ -201,7 +201,7 @@ function Navbar() {
                         >
                             <ShoppingCartIcon className="size-9 text-primary" />
                             <span className="font-semibold font-mono tracking-widest text-2xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                                POSGRESTORE
+                                ByteMart
                             </span>
                         </Link>
                     </div>

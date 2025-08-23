@@ -26,10 +26,10 @@ const InstagramDeletionToast = ({ permalink, toastId }) => {
                 </div>
                 <div className="ml-3 flex-1">
                     <p className="text-sm font-semibold text-base-content">
-                        Instagram Post Update Requires Manual Deletion of previous post
+                        New Instagram Post Created
                     </p>
                     <p className="mt-1 text-sm text-base-content opacity-70">
-                        Instagram posts can only be deleted manually. Use the link below to navigate to the post.
+                        Instagram doesn't allow post updates. A new post was created. You may want to delete the old post manually.
                     </p>
                 </div>
             </div>

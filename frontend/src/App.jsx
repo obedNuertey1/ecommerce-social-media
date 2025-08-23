@@ -257,7 +257,7 @@ function App() {
                 </>
               }
               {
-                JSON?.parse(localStorage.accessiblePages)?.includes("partnerProductUpload") ?
+                JSON?.parse(localStorage.accessiblePages)?.includes("partner/upload") ?
                 <>
                   <Route element={<PartnerProductUpload />} path="/partner/upload" />
                 </>

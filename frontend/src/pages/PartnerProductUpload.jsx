@@ -163,8 +163,8 @@ function PartnerProductUpload() {
         // Add location data to custom labels
         const formDataWithLocation = {
             ...formData,
-            custom_label_3: `Latitude: ${formData.latitude}`,
-            custom_label_4: `Longitude: ${formData.longitude}`
+            latitude: `${formData.latitude}`,
+            longitude: `${formData.longitude}`
         };
 
         setFormData(formDataWithLocation);

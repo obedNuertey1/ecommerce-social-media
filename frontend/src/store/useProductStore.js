@@ -193,7 +193,10 @@ export const useProductStore = create((set, get) => ({
                 size_system: formData.size_system,
                 product_type: formData.product_type,
                 tax: formData.tax,
-                retailer_id: formData.retailer_id
+                retailer_id: formData.retailer_id,
+                longitude: formData.longitude,
+                latitude: formData.latitude,
+                companyPhone: formData.companyPhone
             })
 
             console.log({ updatedRow, productSchemaShape: productSchema.shape })
@@ -469,7 +472,10 @@ export const useProductStore = create((set, get) => ({
                 retailer_id: retailId,
                 facebookPostId: postInfo.facebookPostId,
                 instagramPostId: postInfo.instagramPostId,
-                instagramPermalink: postInfo.instagramPermalink
+                instagramPermalink: postInfo.instagramPermalink,
+                longitude: formData.longitude,
+                latitude: formData.latitude,
+                companyPhone: formData.companyPhone,
 
 
                 // facebookProductPostId,

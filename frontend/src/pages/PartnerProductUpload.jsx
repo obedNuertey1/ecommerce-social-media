@@ -193,6 +193,7 @@ function PartnerProductUpload() {
                                 </label>
                                 <input
                                     type="text"
+                                    required
                                     className="input input-bordered"
                                     placeholder="Enter your company name"
                                     value={formData.companyName || ""}

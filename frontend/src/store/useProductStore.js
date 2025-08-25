@@ -500,7 +500,9 @@ export const useProductStore = create((set, get) => ({
             }
 
             set({ formData: { name: "", price: "", description: "", image: "", media: [] }, error: null });
-            document.getElementById("my_modal_2").close();
+            if((location.href)?.split(location.origin)[1] !== "/partner/upload"){
+                document.getElementById("my_modal_2")?.close();
+            }
             toast.success("Product added successfully");
 
             await get().fetchProducts(gapi);

@@ -883,7 +883,7 @@ function PartnerProductUpload() {
 
                         <div className="flex justify-end mt-8">
                             <button
-                                disabled={!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media.length === 0) || !formData.inventoryQuantity || !formData.currency || !formData.latitude || !formData.longitude || !formData.companyPhone || !formData.companyName}
+                                disabled={!formData.name || !formData.price || !formData.media || !formData.commerce_tax_category || (formData.media.length === 0) || !formData.inventoryQuantity || !formData.currency || !formData.latitude || !formData.longitude || !formData.companyPhone || !formData.companyName || !formData.catalogueId || !formData.companyPhone}
                                 type="submit"
                                 className="btn btn-md btn-primary"
                             >

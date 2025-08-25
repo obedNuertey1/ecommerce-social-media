@@ -196,7 +196,8 @@ export const useProductStore = create((set, get) => ({
                 retailer_id: formData.retailer_id,
                 longitude: formData.longitude,
                 latitude: formData.latitude,
-                companyPhone: formData.companyPhone
+                companyPhone: formData.companyPhone,
+                companyName: formData.companyName
             })
 
             console.log({ updatedRow, productSchemaShape: productSchema.shape })
@@ -476,6 +477,7 @@ export const useProductStore = create((set, get) => ({
                 longitude: formData.longitude,
                 latitude: formData.latitude,
                 companyPhone: formData.companyPhone,
+                companyName: formData.companyName
 
 
                 // facebookProductPostId,

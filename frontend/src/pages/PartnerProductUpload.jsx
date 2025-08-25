@@ -194,6 +194,7 @@ function PartnerProductUpload() {
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text">Company Name</span>
+                                    <span className="label-text-alt text-red-500">* Required</span>
                                 </label>
                                 <input
                                     type="text"
@@ -293,6 +294,7 @@ function PartnerProductUpload() {
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text text-base font-medium">Product Catalogue</span>
+                                    <span className="label-text-alt text-red-500">* Required</span>
                                 </label>
                                 <div className="flex flex-col gap-3">
                                     {loadingCatalogues ? (
@@ -306,6 +308,7 @@ function PartnerProductUpload() {
                                                 className="select select-bordered w-full"
                                                 value={formData.catalogueId || ""}
                                                 onChange={handleCatalogueChange}
+                                                required
                                             >
                                                 <option value="">Select a catalogue</option>
                                                 {catalogues.map(catalogue => (

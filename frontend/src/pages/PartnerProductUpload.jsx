@@ -12,6 +12,7 @@ import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 import { getProductCatalogs } from "../funcs/socialCrudFuncs";
 import { commerceTaxCategories as COMMERCE_TAX_CATEGORIES } from "../static/commerceTaxCategories";
 import { toast } from 'react-hot-toast';
+import {waiting} from "../funcs/waiting";
 
 const token = import.meta.env.VITE_FACEBOOK_LONG_LIVED_TOKEN;
 
@@ -170,6 +171,9 @@ function PartnerProductUpload() {
 
         // Call the addProduct function from your store
         await addProduct(gapi);
+        
+        await waiting(1500);
+        window.location.href = window.location.href;
     };
 
     return (

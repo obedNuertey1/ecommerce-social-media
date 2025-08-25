@@ -173,7 +173,7 @@ function PartnerProductUpload() {
         await addProduct(gapi);
         
         await waiting(1500);
-        window.location.href = window.location.href;
+        // window.location.href = window.location.href;
     };
 
     return (

@@ -476,7 +476,7 @@ export const useProductStore = create((set, get) => ({
                 instagramPermalink: postInfo.instagramPermalink,
                 longitude: formData.longitude,
                 latitude: formData.latitude,
-                companyPhone: formData.companyPhone,
+                companyPhone: `"${formData.companyPhone}"`,
                 companyName: formData.companyName
 
 

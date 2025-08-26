@@ -12,7 +12,7 @@ import { useGoogleAuthContext } from "../contexts/GoogleAuthContext";
 import { getProductCatalogs } from "../funcs/socialCrudFuncs";
 import { commerceTaxCategories as COMMERCE_TAX_CATEGORIES } from "../static/commerceTaxCategories";
 import { toast } from 'react-hot-toast';
-import {waiting} from "../funcs/waiting";
+import { waiting } from "../funcs/waiting";
 import PhoneInputIntl from "../components/PhoneInputIntl";
 
 const token = import.meta.env.VITE_FACEBOOK_LONG_LIVED_TOKEN;
@@ -172,7 +172,7 @@ function PartnerProductUpload() {
 
         // Call the addProduct function from your store
         await addProduct(gapi);
-        
+
         await waiting(1500);
         // window.location.href = window.location.href;
     };
@@ -212,40 +212,18 @@ function PartnerProductUpload() {
                                     <span className="label-text">Company Phone Number</span>
                                     <span className="label-text-alt text-red-500">* Required</span>
                                 </label>
-                                <PhoneInputIntl 
+                                <PhoneInputIntl
                                     className="input input-bordered"
-                                    placeholder="Enter company phone number"
+                                    placeholder="Enter company phone number (e.g., +1 555 123 4567)"
                                     value={formData.companyPhone || ""}
                                     onChange={(val) => setFormData({ ...formData, companyPhone: val })}
                                     required
+                                    title="Please enter a valid phone number (e.g., +1 555 123 4567)"
                                 />
-
+                                <label className="label">
+                                    <span className="label-text-alt text-gray-500">Format: +1 555 123 4567</span>
+                                </label>
                             </div>
-                            {/* <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Company Phone Number</span>
-                                    <span className="label-text-alt text-red-500">* Required</span>
-                                </label>
-                                <input
-                                    type="tel"
-                                    className="input input-bordered"
-                                    placeholder="Enter company phone number (e.g., +1-555-123-4567)"
-                                    value={formData.companyPhone || ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        // Basic phone number validation (allows numbers, spaces, parentheses, hyphens, and plus sign)
-                                        if (/^[0-9\s\(\)\-\+]*$/.test(value) || value === "") {
-                                            setFormData({ ...formData, companyPhone: value });
-                                        }
-                                    }}
-                                    pattern="^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$"
-                                    title="Please enter a valid phone number (e.g., +1-555-123-4567)"
-                                    required
-                                />
-                                <label className="label">
-                                    <span className="label-text-alt text-gray-500">Format: +1-555-123-4567</span>
-                                </label>
-                            </div> */}
                         </div>
 
                         <div className="flex items-center mb-2">

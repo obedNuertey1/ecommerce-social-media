@@ -13,6 +13,7 @@ import { getProductCatalogs } from "../funcs/socialCrudFuncs";
 import { commerceTaxCategories as COMMERCE_TAX_CATEGORIES } from "../static/commerceTaxCategories";
 import { toast } from 'react-hot-toast';
 import {waiting} from "../funcs/waiting";
+import PhoneInputIntl from "../components/PhoneInputIntl";
 
 const token = import.meta.env.VITE_FACEBOOK_LONG_LIVED_TOKEN;
 
@@ -206,19 +207,21 @@ function PartnerProductUpload() {
                                 />
                             </div>
 
-                            {/* <div className="form-control">
+                            <div className="form-control">
                                 <label className="label">
                                     <span className="label-text">Company Phone Number</span>
+                                    <span className="label-text-alt text-red-500">* Required</span>
                                 </label>
-                                <input
-                                    type="tel"
+                                <PhoneInputIntl 
                                     className="input input-bordered"
                                     placeholder="Enter company phone number"
                                     value={formData.companyPhone || ""}
                                     onChange={(e) => setFormData({ ...formData, companyPhone: e.target.value })}
+                                    required
                                 />
-                            </div> */}
-                            <div className="form-control">
+
+                            </div>
+                            {/* <div className="form-control">
                                 <label className="label">
                                     <span className="label-text">Company Phone Number</span>
                                     <span className="label-text-alt text-red-500">* Required</span>
@@ -242,7 +245,7 @@ function PartnerProductUpload() {
                                 <label className="label">
                                     <span className="label-text-alt text-gray-500">Format: +1-555-123-4567</span>
                                 </label>
-                            </div>
+                            </div> */}
                         </div>
 
                         <div className="flex items-center mb-2">

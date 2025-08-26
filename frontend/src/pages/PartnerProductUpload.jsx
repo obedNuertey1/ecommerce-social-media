@@ -216,7 +216,7 @@ function PartnerProductUpload() {
                                     className="input input-bordered"
                                     placeholder="Enter company phone number"
                                     value={formData.companyPhone || ""}
-                                    onChange={(e) => setFormData({ ...formData, companyPhone: e.target.value })}
+                                    onChange={(val) => setFormData({ ...formData, companyPhone: val })}
                                     required
                                 />
 

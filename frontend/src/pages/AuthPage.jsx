@@ -172,6 +172,8 @@ export default function AuthPage() {
         url = "/passkey";
       } else if (pages.includes("passkey-logs")) {
         url = "/passkey/logs";
+      } else if (pages.includes("partner/upload")) {
+        url = "partner/upload";
       } else {
         url = "/";
       }

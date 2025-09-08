@@ -35,7 +35,7 @@ const passkeySchema = initSheetSchema.find((schema) => schema.sheetName === "Pas
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [passkey, setPasskey] = useState("");
+  const [passkey2, setPasskey2] = useState("");
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { gapi } = useGoogleAuthContext();
@@ -74,13 +74,13 @@ export default function AuthPage() {
         return;
       }
 
-      if (!passkey.trim()) {
+      if (!passkey2.trim()) {
         toast.error("Please enter a valid passkey");
         return;
       }
       
       // 1. Validate passkey
-      const encryptedRefreshToken = (passkey.split(HASH_SPLIT_POINT))[1];
+      const encryptedRefreshToken = (passkey2.split(HASH_SPLIT_POINT))[1];
       if(!encryptedRefreshToken){
         toast.error("Invalid passkey");
         return;
@@ -119,8 +119,8 @@ export default function AuthPage() {
       const googleSheet = new GoogleSheetsAPI(gapi2);
       // const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
       const passkeys = await fetchPasskeys2(gapi2);
-      console.log("122 works")
-      const passkeyFromSheet = passkeys.find((pk) => pk.passkey == passkey);
+      console.log("122 works=",{passkeys})
+      const passkeyFromSheet = passkeys.find((pk) => pk.passkey == passkey2);
       console.log("124 works")
 
 
@@ -273,9 +273,9 @@ export default function AuthPage() {
                   type="text"
                   placeholder="Secret Passkey"
                   className="input input-md input-bordered w-full"
-                  value={passkey}
+                  value={passkey2}
                   disabled={isLoading || !acceptedTerms}
-                  onChange={(e) => setPasskey(e.target.value)}
+                  onChange={(e) => setPasskey2(e.target.value)}
                 />
                 <label className="label p-0 pt-1">
                   <span className="label-text-alt text-xs text-base-content/60">

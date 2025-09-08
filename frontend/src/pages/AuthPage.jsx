@@ -119,9 +119,7 @@ export default function AuthPage() {
       const googleSheet = new GoogleSheetsAPI(gapi2);
       // const passkeys = await googleSheet.getSpreadsheetValuesByName2("EcommerceSpreadSheet", passkeySchema.sheetName);
       const passkeys = await fetchPasskeys2(gapi2);
-      console.log("122 works=",{passkeys})
       const passkeyFromSheet = passkeys.find((pk) => pk.passkey == passkey);
-      console.log("124 works")
 
 
       const passkeyExist = Boolean(passkeyFromSheet);

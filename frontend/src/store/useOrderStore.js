@@ -36,7 +36,7 @@ export const useOrderStore = create((set, get) => ({
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
             const orders = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName);
-            const allOrders = orders.map((elem, idx) => {
+            const allOrders = orders.reverse().map((elem, idx) => {
                 if (Array.isArray(elem.phone)) {
                     elem.phone = elem.phone[0];
                 }
@@ -77,7 +77,7 @@ export const useOrderStore = create((set, get) => ({
                 // ####### After test remove from inner try catch block
                 console.log("Line 76 of useOrderStore works");
                 console.log({orders});
-                allOrders = orders.map((elem, idx) => {
+                allOrders = orders.reverse().map((elem, idx) => {
                     if (Array.isArray(elem.phone)) {
                         elem.phone = elem.phone[0];
                     }
@@ -87,7 +87,7 @@ export const useOrderStore = create((set, get) => ({
                 })
                 console.log("Line 86 of useOrderStore works");
                 console.log({allOrders});
-                notifyOrders = newOrdersNotif.map((elem, idx) => {
+                notifyOrders = newOrdersNotif.reverse().map((elem, idx) => {
                     if (Array.isArray(elem.phone)) {
                         elem.phone = elem.phone[0];
                     }

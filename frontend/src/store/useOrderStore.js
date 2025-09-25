@@ -38,14 +38,14 @@ export const useOrderStore = create((set, get) => ({
             const orders = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName);
             console.log("Line 39 of useOrderStore works");
             console.log({orders});
-            const allOrders = orders.reverse().map((elem, idx) => {
+            const allOrders = orders.map((elem, idx) => {
                 if (Array.isArray(elem.phone)) {
                     elem.phone = elem.phone[0];
                 }
                 elem["orderNumber"] = `#${String(idx + 1).padStart(3, '0')}`
                 elem["id"] = idx + 2;
                 return elem
-            })
+            }).reverse();
 
             set({ orders: allOrders, error: null, loading: false });
             return;
@@ -79,14 +79,14 @@ export const useOrderStore = create((set, get) => ({
                 // ####### After test remove from inner try catch block
                 console.log("Line 76 of useOrderStore works");
                 console.log({orders});
-                allOrders = orders.reverse().map((elem, idx) => {
+                allOrders = orders.map((elem, idx) => {
                     if (Array.isArray(elem.phone)) {
                         elem.phone = elem.phone[0];
                     }
                     elem["orderNumber"] = `#${String(idx + 1).padStart(3, '0')}`
                     elem["id"] = idx + 2;
                     return elem
-                })
+                }).reverse()
                 console.log("Line 86 of useOrderStore works");
                 console.log({allOrders});
                 notifyOrders = newOrdersNotif.reverse().map((elem, idx) => {
@@ -96,7 +96,7 @@ export const useOrderStore = create((set, get) => ({
                     elem["orderNumber"] = `#${String(idx + 1).padStart(3, '0')}`
                     elem["id"] = idx + 2;
                     return elem
-                })
+                }).reverse()
                 console.log("Line 96 of useOrderStore works");
                 console.log({notifyOrders});
                 // ####################################################

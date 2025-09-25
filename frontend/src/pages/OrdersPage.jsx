@@ -238,7 +238,7 @@ export default function OrdersPage() {
                                         </td>
                                     </tr>
                                 );
-                            })}
+                            }).reverse()}
                         </tbody>
                     </table>
                     }

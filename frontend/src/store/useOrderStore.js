@@ -68,6 +68,8 @@ export const useOrderStore = create((set, get) => ({
             const googleSheet = new GoogleSheetsAPI(gapi);
             const orders = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName);
             const newOrdersNotif = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, newOrderSchema.sheetName);
+            console.log("Line 71 of useOrderStore works");
+            console.log({newOrdersNotif});
             let allOrders = [];
             let notifyOrders = [];
             console.log("Line 73 of useOrderStore works");

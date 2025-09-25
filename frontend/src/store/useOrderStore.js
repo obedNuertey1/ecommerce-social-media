@@ -70,8 +70,11 @@ export const useOrderStore = create((set, get) => ({
             const newOrdersNotif = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, newOrderSchema.sheetName);
             let allOrders = [];
             let notifyOrders = [];
+            console.log("Line 73 of useOrderStore works");
             try {
                 // ####### After test remove from inner try catch block
+                console.log("Line 76 of useOrderStore works");
+                console.log({orders});
                 allOrders = orders.map((elem, idx) => {
                     if (Array.isArray(elem.phone)) {
                         elem.phone = elem.phone[0];
@@ -80,6 +83,8 @@ export const useOrderStore = create((set, get) => ({
                     elem["id"] = idx + 2;
                     return elem
                 })
+                console.log("Line 86 of useOrderStore works");
+                console.log({allOrders});
                 notifyOrders = newOrdersNotif.map((elem, idx) => {
                     if (Array.isArray(elem.phone)) {
                         elem.phone = elem.phone[0];
@@ -88,6 +93,8 @@ export const useOrderStore = create((set, get) => ({
                     elem["id"] = idx + 2;
                     return elem
                 })
+                console.log("Line 96 of useOrderStore works");
+                console.log({notifyOrders});
                 // ####################################################
             } catch (e) {
                 console.log(e);

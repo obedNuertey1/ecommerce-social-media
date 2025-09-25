@@ -36,6 +36,8 @@ export const useOrderStore = create((set, get) => ({
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
             const orders = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName);
+            console.log("Line 39 of useOrderStore works");
+            console.log({orders});
             const allOrders = orders.reverse().map((elem, idx) => {
                 if (Array.isArray(elem.phone)) {
                     elem.phone = elem.phone[0];

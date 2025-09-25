@@ -64,7 +64,7 @@ export const useOrderStore = create((set, get) => ({
             }
             return [];
         }
-        set({ loading: true });
+        // set({ loading: true });
         const { promise, cancel } = cancellableWaiting(1000);
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
@@ -147,7 +147,7 @@ export const useOrderStore = create((set, get) => ({
         // }
     },
     deleteOrder: async (id, gapi) => {
-        // set({loading: true});
+        set({loading: true});
         try {
             const googleSheet = new GoogleSheetsAPI(gapi);
             const sheetResult = await googleSheet.deleteRowAtIndexByName(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName, id - 1);
@@ -158,6 +158,8 @@ export const useOrderStore = create((set, get) => ({
             if (passkey) {
                 createLogs("Deleted", `${passkeyName} deleted an order with id ${id}`);
             }
+
+            await get().fetchOrders(gapi);
 
             toast.success("Order deleted successfully");
         } catch (e) {

@@ -68,27 +68,41 @@ export const useOrderStore = create((set, get) => ({
             const googleSheet = new GoogleSheetsAPI(gapi);
             const orders = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, orderSchema.sheetName);
             const newOrdersNotif = await googleSheet.getSpreadsheetValuesByName2(GOOGLE_SPREADSHEET_NAME, newOrderSchema.sheetName);
-            const allOrders = orders.map((elem, idx) => {
-                if (Array.isArray(elem.phone)) {
-                    elem.phone = elem.phone[0];
-                }
-                elem["orderNumber"] = `#${String(idx + 1).padStart(3, '0')}`
-                elem["id"] = idx + 2;
-                return elem
-            })
-            const notifyOrders = newOrdersNotif.map((elem, idx) => {
-                if (Array.isArray(elem.phone)) {
-                    elem.phone = elem.phone[0];
-                }
-                elem["orderNumber"] = `#${String(idx + 1).padStart(3, '0')}`
-                elem["id"] = idx + 2;
-                return elem
-            })
+            let allOrders = [];
+            let notifyOrders = [];
+            try {
+                // ####### After test remove from inner try catch block
+                allOrders = orders.map((elem, idx) => {
+                    if (Array.isArray(elem.phone)) {
+                        elem.phone = elem.phone[0];
+                    }
+                    elem["orderNumber"] = `#${String(idx + 1).padStart(3, '0')}`
+                    elem["id"] = idx + 2;
+                    return elem
+                })
+                notifyOrders = newOrdersNotif.map((elem, idx) => {
+                    if (Array.isArray(elem.phone)) {
+                        elem.phone = elem.phone[0];
+                    }
+                    elem["orderNumber"] = `#${String(idx + 1).padStart(3, '0')}`
+                    elem["id"] = idx + 2;
+                    return elem
+                })
+                // ####################################################
+            } catch (e) {
+                console.log(e);
+            }
 
             set({ orders: allOrders, error: null, loading: false });
-
-            if (notifyOrders.length > 0) {
-                await googleSheet.deleteAllRowsByName(GOOGLE_SPREADSHEET_NAME, newOrderSchema.sheetName, [1, notifyOrders.length]);
+            try{
+                console.log({notifyOrders});
+                // ####### After test remove from inner try catch block
+                if (notifyOrders.length > 0) {
+                    await googleSheet.deleteAllRowsByName(GOOGLE_SPREADSHEET_NAME, newOrderSchema.sheetName, [1, notifyOrders.length]);
+                }
+                // ####################################################
+            }catch(e){
+                console.log(e);
             }
             return notifyOrders || [];
         } catch (e) {
@@ -129,11 +143,11 @@ export const useOrderStore = create((set, get) => ({
             set((prev) => ({
                 orders: prev.orders.filter((order) => order.id !== id)
             }))
-            
-            if(passkey){
-                createLogs("Deleted", `${passkeyName} deleted an order with id ${id}`); 
+
+            if (passkey) {
+                createLogs("Deleted", `${passkeyName} deleted an order with id ${id}`);
             }
-            
+
             toast.success("Order deleted successfully");
         } catch (e) {
             console.log(`Error deleting product: ${e}`);
@@ -155,10 +169,10 @@ export const useOrderStore = create((set, get) => ({
             const sheetUpdates = await googleSheet.updateRowByRowId(spreadsheetName, orderSchema.sheetName, orderSchema.shape, order, id);
             set({ loading: false, error: null });
 
-            if(passkey){
-                createLogs("Modified", `${passkeyName} updated an order with order id ${id}`); 
+            if (passkey) {
+                createLogs("Modified", `${passkeyName} updated an order with order id ${id}`);
             }
-            
+
             toast.success("Status update successful");
             return sheetUpdates;
         } catch (e) {

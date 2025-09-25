@@ -25,7 +25,7 @@ const PasskeyPage = () => {
     });
     const { passkeys: passkeysData, setPasskey, passkey: passkey2, addPasskey, fetchPasskeys, updatePasskey, deletePasskey, updateAddLoading, loading, fetchPasskeys2 } = usePasskeyStore();
     const { gapi } = useGoogleAuthContext();
-    const { deletableAccess, updatableAccess, creatableAccess } = privilegeAccess();
+    const {deletableAccess, updatableAccess, creatableAccess} = privilegeAccess();
     const pageLoadedRef = useRef(false);
 
     const passkeyLogsIsActive = !localStorage.hasOwnProperty("passkey") ? false : (localStorage.hasOwnProperty("passkey") && JSON.parse(localStorage.getItem("accessiblePages")).includes("passkey-logs")) ? false : true;
@@ -48,16 +48,16 @@ const PasskeyPage = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        const pageLoaded = () => {
-            if (localStorage.getItem("passkey")) {
-                if (pageLoadedRef.current) return;
+        const pageLoaded = ()=>{
+            if(localStorage.getItem("passkey")){
+                if(pageLoadedRef.current) return;
                 const passkeyName = localStorage.getItem("passkeyName");
                 createLogs("Accessed", `${passkeyName} entered the Passkeys Page`)
                 pageLoadedRef.current = true;
             }
         }
         pageLoaded();
-        return () => { }
+        return ()=>{}
     }, [])
 
     useEffect(() => {
@@ -186,7 +186,7 @@ LoginPage   =   ${origin}/auth
 `;
         navigator.clipboard.writeText(clipText);
 
-        if (localStorage.getItem("passkey")) {
+        if(localStorage.getItem("passkey")){
             const passkeyName = localStorage.getItem("passkeyName");
             createLogs("Accessed", `${passkeyName} copied passkey with passkey name ${passkeyName} to clipboard`)
         }
@@ -238,140 +238,132 @@ LoginPage   =   ${origin}/auth
                 </div>
             </Link>
             {passkeysData?.length > 0 ? (
-                <>
-                    {
-                        loading ?
-                            <><div className="flex h-64 flex-col items-center justify-center">
-                                <div className="loading loading-spinner loading-lg"></div>
-                            </div></> :
-                            <><div className="overflow-x-auto rounded-lg border border-base-200">
-                                <table className="table table-zebra table-xs lg:table-md">
-                                    <thead className="bg-base-200">
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Passkey</th>
-                                            <th>Created</th>
-                                            <th>Modified</th>
-                                            <th>isOnline</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {passkeysData.map(pk => (
-                                            <tr key={pk.passkey}>
-                                                <td className="whitespace-nowrap">{pk.name}</td>
-                                                <td>
-                                                    <div className="flex items-center gap-2">
-                                                        <span
-                                                            className="font-mono text-xs lg:text-sm"
-                                                            title={pk.passkey}
-                                                        >
-                                                            {shortenHash(pk.passkey)}
-                                                        </span>
-                                                        <button
-                                                            onClick={() => copyToClipboard(pk.passkey)}
-                                                            className="btn btn-ghost btn-xs"
-                                                        >
-                                                            <Clipboard className="w-3 h-3 lg:w-4 lg:h-4" />
-                                                        </button>
+                <div className="overflow-x-auto rounded-lg border border-base-200">
+                    <table className="table table-zebra table-xs lg:table-md">
+                        <thead className="bg-base-200">
+                            <tr>
+                                <th>Name</th>
+                                <th>Passkey</th>
+                                <th>Created</th>
+                                <th>Modified</th>
+                                <th>isOnline</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {passkeysData.map(pk => (
+                                <tr key={pk.passkey}>
+                                    <td className="whitespace-nowrap">{pk.name}</td>
+                                    <td>
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className="font-mono text-xs lg:text-sm"
+                                                title={pk.passkey}
+                                            >
+                                                {shortenHash(pk.passkey)}
+                                            </span>
+                                            <button
+                                                onClick={() => copyToClipboard(pk.passkey)}
+                                                className="btn btn-ghost btn-xs"
+                                            >
+                                                <Clipboard className="w-3 h-3 lg:w-4 lg:h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td className="whitespace-nowrap">
+                                        {new Date(pk.dateCreated).toLocaleDateString()}
+                                    </td>
+                                    <td className="whitespace-nowrap">
+                                        {new Date(pk.dateModified).toLocaleDateString()}
+                                    </td>
+                                    <td className='whitespace-nowrap'>
+                                        <div className="flex items-center gap-1" text="online">
+                                            {JSON.parse((pk.isOnline)?.toLowerCase()) ?
+                                                <>
+                                                    <div className='blur-[0.75px] animate-pulse'>
+                                                        <span className='size-3 font-sans bg-success rounded-full inline-block shadow-inner shadow-success' />
                                                     </div>
-                                                </td>
-                                                <td className="whitespace-nowrap">
-                                                    {new Date(pk.dateCreated).toLocaleDateString()}
-                                                </td>
-                                                <td className="whitespace-nowrap">
-                                                    {new Date(pk.dateModified).toLocaleDateString()}
-                                                </td>
-                                                <td className='whitespace-nowrap'>
-                                                    <div className="flex items-center gap-1" text="online">
-                                                        {JSON.parse((pk.isOnline)?.toLowerCase()) ?
-                                                            <>
-                                                                <div className='blur-[0.75px] animate-pulse'>
-                                                                    <span className='size-3 font-sans bg-success rounded-full inline-block shadow-inner shadow-success' />
-                                                                </div>
-                                                                true
-                                                            </>
-                                                            :
-                                                            <>
-                                                                <div className=''>
-                                                                    <span text="online" className='size-3 font-sans bg-error rounded-full inline-block shadow-inner shadow-error' />
-                                                                </div>
-                                                                false
-                                                            </>
-                                                        }
+                                                    true
+                                                </>
+                                                :
+                                                <>
+                                                    <div className=''>
+                                                        <span text="online" className='size-3 font-sans bg-error rounded-full inline-block shadow-inner shadow-error' />
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    <div className="flex gap-1">
-                                                        <button
-                                                            disabled={updatableAccess}
-                                                            onClick={() => {
-                                                                if (JSON.parse((pk.isOnline)?.toLowerCase())) {
-                                                                    toast.custom((t) => (
-                                                                        <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
-                                                                bg-warning/60 border border-warning-content/70 rounded-box p-4 shadow-lg`}>
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="flex-none">
-                                                                                    <div className="avatar placeholder">
-                                                                                        <div className="bg-warning-content rounded-full w-8">
-                                                                                            <AlertTriangle className="size-5 text-warning" />
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div className="flex-1">
-                                                                                    <h3 className="font-semibold">{pk.name} is online!</h3>
-                                                                                    <p className="text-sm">
-                                                                                        Let {pk.name} logout before editing
-                                                                                    </p>
-                                                                                </div>
+                                                    false
+                                                </>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="flex gap-1">
+                                            <button
+                                                disabled={updatableAccess}
+                                                onClick={() => {
+                                                    if (JSON.parse((pk.isOnline)?.toLowerCase())) {
+                                                        toast.custom((t) => (
+                                                            <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
+                                                            bg-warning/60 border border-warning-content/70 rounded-box p-4 shadow-lg`}>
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="flex-none">
+                                                                        <div className="avatar placeholder">
+                                                                            <div className="bg-warning-content rounded-full w-8">
+                                                                                <AlertTriangle className="size-5 text-warning" />
                                                                             </div>
                                                                         </div>
-                                                                    ), {
-                                                                        duration: 4000,
-                                                                    });
-                                                                    return;
-                                                                }
-                                                                handleEdit(pk)
-                                                            }}
-                                                            className="btn btn-ghost btn-xs"
-                                                            aria-label="Edit"
-                                                        >
-                                                            <Edit className="w-3 h-3 lg:w-4 lg:h-4" />
-                                                        </button>
-                                                        <button
-                                                            disabled={deletableAccess}
-                                                            onClick={() => {
-                                                                handleDelete(pk)
-                                                            }}
-                                                            className="btn btn-ghost btn-xs text-error"
-                                                            aria-label="Delete"
-                                                        >
-                                                            <Trash2 className="w-3 h-3 lg:w-4 lg:h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setViewedPrivileges(pk.privileges);
-                                                                setViewedPages(pk.accessiblePages);
-                                                                setViewPrivilegesModal(true);
-                                                                if (localStorage.getItem("passkey")) {
-                                                                    const passkeyName = localStorage.getItem("passkeyName");
-                                                                    createLogs("Accessed", `${passkeyName} viewed privileges and accessible pages of passkey with id ${pk.id} and name ${pk.name}`)
-                                                                }
-                                                            }}
-                                                            className="btn btn-ghost btn-xs"
-                                                            aria-label="View Privileges"
-                                                        >
-                                                            <Eye className="w-3 h-3 lg:w-4 lg:h-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div></>
-                    }
-                </>
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <h3 className="font-semibold">{pk.name} is online!</h3>
+                                                                        <p className="text-sm">
+                                                                            Let {pk.name} logout before editing
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ), {
+                                                            duration: 4000,
+                                                        });
+                                                        return;
+                                                    }
+                                                    handleEdit(pk)
+                                                }}
+                                                className="btn btn-ghost btn-xs"
+                                                aria-label="Edit"
+                                            >
+                                                <Edit className="w-3 h-3 lg:w-4 lg:h-4" />
+                                            </button>
+                                            <button
+                                                disabled={deletableAccess}
+                                                onClick={() => {
+                                                    handleDelete(pk)
+                                                }}
+                                                className="btn btn-ghost btn-xs text-error"
+                                                aria-label="Delete"
+                                            >
+                                                <Trash2 className="w-3 h-3 lg:w-4 lg:h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setViewedPrivileges(pk.privileges);
+                                                    setViewedPages(pk.accessiblePages);
+                                                    setViewPrivilegesModal(true);
+                                                    if(localStorage.getItem("passkey")){
+                                                        const passkeyName = localStorage.getItem("passkeyName");
+                                                        createLogs("Accessed", `${passkeyName} viewed privileges and accessible pages of passkey with id ${pk.id} and name ${pk.name}`)
+                                                    }
+                                                }}
+                                                className="btn btn-ghost btn-xs"
+                                                aria-label="View Privileges"
+                                            >
+                                                <Eye className="w-3 h-3 lg:w-4 lg:h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
                 <>
                     {loading ? <div className="flex h-64 flex-col items-center justify-center">

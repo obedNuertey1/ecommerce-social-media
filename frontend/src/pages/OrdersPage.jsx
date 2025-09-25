@@ -176,7 +176,10 @@ export default function OrdersPage() {
             </button> */}
             {orders2?.length > 0 ? (
                 <div className="overflow-x-auto rounded-lg border border-base-200 bg-base-300/80">
-                    <table className="table w-full">
+                    {
+                        loading ? <div className="flex h-64 flex-col items-center justify-center">
+                            <div className="loading loading-spinner loading-lg"></div>
+                        </div> : <table className="table w-full">
                         <thead className="bg-base-200">
                             <tr>
                                 <th>Order Number</th>
@@ -238,6 +241,7 @@ export default function OrdersPage() {
                             })}
                         </tbody>
                     </table>
+                    }
                 </div>
             ) :
                 (
